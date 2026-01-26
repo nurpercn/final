@@ -114,7 +114,7 @@ public final class BatchRunner {
           "stage1RuntimeMs," +
           "stage2PreShakeTotalLateness,stage2PreShakeTotalSamples,stage2PreShakeRuntimeMs,stage2DidShake,stage2RuntimeMs," +
           "stage2Passes,stage2Evals,stage2Shakes,stage2VnsRuntimeMs," +
-          "runtimeMs");
+          "scheduleEvals,runtimeMs");
       w.newLine();
  
       for (var e : rowsByInstance.entrySet()) {
@@ -209,6 +209,7 @@ public final class BatchRunner {
             best.stage2Evals + "," +
             best.stage2Shakes + "," +
             best.stage2VnsRuntimeMs + "," +
+            scheduleEvals + "," +
             (t1 - t0));
         w.newLine();
         w.flush(); // stream results as each instance completes
