@@ -127,10 +127,10 @@ public final class HeuristicSolver {
     if (Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC) {
       // When used as a scoring subroutine inside room local-search, DO NOT emit progress logs.
       Stage2Result improved = stage2_increaseSamples(0, room, projects, false);
-      Scheduler.EvalResult eval = scheduler.evaluateNoCopy(improved.projects, room);
+      Scheduler.EvalResult eval = scheduler.evaluateFastNoCopy(improved.projects, room);
       return new RoomScore(eval.totalLateness);
     }
-    Scheduler.EvalResult eval = scheduler.evaluateNoCopy(projects, room);
+    Scheduler.EvalResult eval = scheduler.evaluateFastNoCopy(projects, room);
     return new RoomScore(eval.totalLateness);
   }
 
@@ -278,7 +278,7 @@ public final class HeuristicSolver {
 
     final long tStart = System.nanoTime();
 
-    Scheduler.EvalResult baseEval = scheduler.evaluateNoCopy(current, room);
+    Scheduler.EvalResult baseEval = scheduler.evaluateFastNoCopy(current, room);
     if (verbose) {
       System.out.println("INFO: Stage2 initial total lateness = " + baseEval.totalLateness);
     }
@@ -326,7 +326,7 @@ public final class HeuristicSolver {
           if (ns == curSamples) continue;
 
           p0.samples = ns;
-          Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
+          Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
           evals++;
           p0.samples = curSamples;
 
@@ -380,7 +380,7 @@ public final class HeuristicSolver {
             if (si + 1 <= Data.SAMPLE_MAX && sj - 1 >= Data.MIN_SAMPLES) {
               pi.samples = si + 1;
               pj.samples = sj - 1;
-              Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
+              Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
               evals++;
               pi.samples = si;
               pj.samples = sj;
@@ -397,7 +397,7 @@ public final class HeuristicSolver {
             if (si - 1 >= Data.MIN_SAMPLES && sj + 1 <= Data.SAMPLE_MAX) {
               pi.samples = si - 1;
               pj.samples = sj + 1;
-              Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
+              Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
               evals++;
               pi.samples = si;
               pj.samples = sj;
@@ -584,7 +584,7 @@ public final class HeuristicSolver {
     }
     if (changed == 0) return false;
 
-    Scheduler.EvalResult e = scheduler.evaluateNoCopy(cand, room);
+    Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(cand, room);
     evals++;
     current.clear();
     current.addAll(cand);
@@ -633,7 +633,7 @@ public final class HeuristicSolver {
     }
     if (changed == 0) return false;
 
-    Scheduler.EvalResult e = scheduler.evaluateNoCopy(cand, room);
+    Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(cand, room);
     evals++;
     current.clear();
     current.addAll(cand);

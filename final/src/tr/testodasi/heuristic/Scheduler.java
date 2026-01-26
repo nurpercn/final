@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class Scheduler {
+  private static final List<ProjectResult> NO_RESULTS = List.of();
+  private static final List<ScheduledJob> NO_SCHEDULE = List.of();
   private long evalCount = 0L;
 
   public void resetEvalCount() {
@@ -115,15 +117,25 @@ public final class Scheduler {
   }
 
   public EvalResult evaluate(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, true);
+    return evaluateInternal(projects, chamberEnv, true, true);
   }
 
   /** Faster path: assumes caller will not mutate projects during evaluation. */
   public EvalResult evaluateNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, false);
+    return evaluateInternal(projects, chamberEnv, false, true);
   }
 
-  private EvalResult evaluateInternal(List<Project> projects, Map<String, Env> chamberEnv, boolean copyProjects) {
+  /** Fast scoring path: skips building schedule and project result lists. */
+  public EvalResult evaluateFast(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, true, false);
+  }
+
+  /** Fast scoring path: skips building schedule and project result lists. */
+  public EvalResult evaluateFastNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, false, false);
+  }
+
+  private EvalResult evaluateInternal(List<Project> projects, Map<String, Env> chamberEnv, boolean copyProjects, boolean buildDetails) {
     Objects.requireNonNull(projects);
     Objects.requireNonNull(chamberEnv);
     evalCount++;
@@ -142,11 +154,11 @@ public final class Scheduler {
 
     // Sade sürüm: sadece JOB_BASED evaluator.
     ChamberIndex index = new ChamberIndex(chambers);
-    return evaluateJobBased(ps, index);
+    return evaluateJobBased(ps, index, buildDetails);
   }
 
   /** Job-based: tüm projelerden hazır job havuzu ile çizelgele. */
-  private EvalResult evaluateJobBased(List<Project> projects, ChamberIndex index) {
+  private EvalResult evaluateJobBased(List<Project> projects, ChamberIndex index, boolean buildDetails) {
     List<Project> ps = projects;
 
     Map<String, ProjectState> stateByProject = new HashMap<>();
@@ -155,7 +167,7 @@ public final class Scheduler {
     }
 
     // Remaining jobs as counters/sets in state; loop until all scheduled.
-    List<ScheduledJob> schedule = new ArrayList<>();
+    List<ScheduledJob> schedule = buildDetails ? new ArrayList<>() : null;
 
     int safety = 0;
     while (true) {
@@ -174,17 +186,25 @@ public final class Scheduler {
 
       // apply chosen candidate
       best.apply();
-      schedule.add(best.toScheduledJob());
+      if (buildDetails) {
+        schedule.add(best.toScheduledJob());
+      }
     }
 
     // compute results
     int totalLateness = 0;
-    List<ProjectResult> results = new ArrayList<>();
+    List<ProjectResult> results = buildDetails ? new ArrayList<>() : null;
     for (ProjectState st : stateByProject.values()) {
       int completion = st.projectCompletion();
       int lateness = Math.max(0, completion - st.p.dueDateDays);
       totalLateness += lateness;
-      results.add(new ProjectResult(st.p.id, completion, st.p.dueDateDays, lateness));
+      if (buildDetails) {
+        results.add(new ProjectResult(st.p.id, completion, st.p.dueDateDays, lateness));
+      }
+    }
+
+    if (!buildDetails) {
+      return new EvalResult(totalLateness, NO_RESULTS, NO_SCHEDULE);
     }
 
     return new EvalResult(totalLateness, results, schedule);
