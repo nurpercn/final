@@ -8,6 +8,16 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class Scheduler {
+  private long evalCount = 0L;
+
+  public void resetEvalCount() {
+    evalCount = 0L;
+  }
+
+  public long getEvalCount() {
+    return evalCount;
+  }
+
   public static final class ScheduledJob {
     public final String projectId;
     public final String testId;
@@ -116,6 +126,7 @@ public final class Scheduler {
   private EvalResult evaluateInternal(List<Project> projects, Map<String, Env> chamberEnv, boolean copyProjects) {
     Objects.requireNonNull(projects);
     Objects.requireNonNull(chamberEnv);
+    evalCount++;
 
     List<Project> ps = copyProjects ? projects.stream().map(Project::copy).toList() : projects;
 

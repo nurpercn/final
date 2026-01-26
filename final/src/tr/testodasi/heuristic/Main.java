@@ -23,6 +23,7 @@ public final class Main {
     String csvDir = null;
     boolean csvFlag = false;
     boolean diagnose = false;
+    boolean printScheduleEvals = false;
     String batchPath = null;
     String batchOut = null;
     String batchDetailsDir = null;
@@ -86,6 +87,10 @@ public final class Main {
         diagnose = true;
       }
  
+      if ("--scheduleEvals".equalsIgnoreCase(a) || "--schedevals".equalsIgnoreCase(a)) {
+        printScheduleEvals = true;
+      }
+
       // CSV arg parsing (case-insensitive, supports both --csvDir=path and --csvDir path)
       if (a != null && startsWithIgnoreCase(a, "--csvdir=")) {
         csvDir = a.substring("--csvdir=".length()).trim();
@@ -196,7 +201,8 @@ public final class Main {
             Paths.get(out),
             (batchDetailsDir == null || batchDetailsDir.isBlank()) ? null : Paths.get(batchDetailsDir),
             batchSchedule,
-            verbose
+            verbose,
+            printScheduleEvals
         );
       } catch (IOException e) {
         throw new RuntimeException("Failed to run batch: " + batchPath, e);
@@ -212,6 +218,7 @@ public final class Main {
     long solveT0 = System.currentTimeMillis();
     List<Solution> sols = solver.solve();
     long solveT1 = System.currentTimeMillis();
+    long scheduleEvals = solver.getScheduleEvalCount();
  
     Solution best = sols.stream().min(Comparator.comparingInt(s -> s.totalLateness)).orElseThrow();
     int bestLateProjects = countLateProjects(best);
@@ -222,6 +229,9 @@ public final class Main {
     }
  
     System.out.println("TOTAL runtimeMs = " + (solveT1 - solveT0));
+    if (printScheduleEvals) {
+      System.out.println("TOTAL scheduleEvals = " + scheduleEvals);
+    }
  
     System.out.println("====================");
     System.out.println("BEST (min total lateness): iter=" + best.iteration +
@@ -294,6 +304,7 @@ public final class Main {
     System.out.println("  --dumpProject=P17          Dump detailed schedule for one project id");
     System.out.println("  --dumpFirst10              Dump detailed schedule for P1..P10");
     System.out.println("  --diagnose, --diag         Print capacity/workload diagnostics");
+    System.out.println("  --scheduleEvals            Print schedule evaluation count");
     System.out.println();
     System.out.println("  --csv                      Export CSV to ./csv_out");
     System.out.println("  --csvDir <dir>             Export CSV to <dir> (creates dir if missing)");

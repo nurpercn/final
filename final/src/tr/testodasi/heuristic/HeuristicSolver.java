@@ -39,6 +39,7 @@ public final class HeuristicSolver {
   public List<Solution> solveWithProjects(List<Project> projects) {
     Objects.requireNonNull(projects);
 
+    scheduler.resetEvalCount();
     List<Solution> solutions = new ArrayList<>();
     Map<String, Env> prevRoom = null;
 
@@ -114,6 +115,10 @@ public final class HeuristicSolver {
     }
 
     return solutions;
+  }
+
+  public long getScheduleEvalCount() {
+    return scheduler.getEvalCount();
   }
 
   private record RoomScore(int totalLateness) {}

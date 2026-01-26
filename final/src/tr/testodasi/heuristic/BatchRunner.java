@@ -33,7 +33,7 @@ public final class BatchRunner {
   private BatchRunner() {}
  
   public static void run(Path instancesCsv, Path outCsv, boolean verbose) throws IOException {
-    run(instancesCsv, outCsv, null, false, verbose);
+    run(instancesCsv, outCsv, null, false, verbose, false);
   }
  
   /**
@@ -41,6 +41,15 @@ public final class BatchRunner {
    * @param includeSchedule if true, also writes the full schedule rows (can be large)
    */
   public static void run(Path instancesCsv, Path outCsv, Path detailsDir, boolean includeSchedule, boolean verbose) throws IOException {
+    run(instancesCsv, outCsv, detailsDir, includeSchedule, verbose, false);
+  }
+
+  /**
+   * @param detailsDir if non-null, writes additional detailed CSVs into this directory
+   * @param includeSchedule if true, also writes the full schedule rows (can be large)
+   * @param printScheduleEvals if true, prints schedule evaluation counts per instance
+   */
+  public static void run(Path instancesCsv, Path outCsv, Path detailsDir, boolean includeSchedule, boolean verbose, boolean printScheduleEvals) throws IOException {
     Objects.requireNonNull(instancesCsv);
     Objects.requireNonNull(outCsv);
  
@@ -172,6 +181,7 @@ public final class BatchRunner {
         List<Solution> sols = solver.solveWithProjects(projects);
         Solution best = sols.stream().min(java.util.Comparator.comparingInt(s -> s.totalLateness)).orElseThrow();
         long t1 = System.currentTimeMillis();
+        long scheduleEvals = solver.getScheduleEvalCount();
  
         Utilization.Summary util = Utilization.compute(best);
         int totalSamples = 0;
@@ -257,6 +267,9 @@ public final class BatchRunner {
             " vnsMs=" + best.stage2VnsRuntimeMs +
             " stage2Ms=" + best.stage2RuntimeMs +
             " runtimeMs=" + (t1 - t0));
+        if (printScheduleEvals) {
+          System.out.println("SCHEDULE_EVALS: instance=" + instanceId + " evals=" + scheduleEvals);
+        }
       }
     } finally {
       if (projW != null) try { projW.close(); } catch (IOException ignored) {}
