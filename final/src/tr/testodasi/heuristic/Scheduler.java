@@ -69,6 +69,25 @@ public final class Scheduler {
     }
   }
 
+  private static final class ChamberIndex {
+    private final Map<Env, List<ChamberInstance>> byEnv = new HashMap<>();
+    private final Map<Env, List<ChamberInstance>> byEnvVolt = new HashMap<>();
+
+    ChamberIndex(List<ChamberInstance> chambers) {
+      for (ChamberInstance ch : chambers) {
+        byEnv.computeIfAbsent(ch.env, k -> new ArrayList<>()).add(ch);
+        if (ch.spec.voltageCapable) {
+          byEnvVolt.computeIfAbsent(ch.env, k -> new ArrayList<>()).add(ch);
+        }
+      }
+    }
+
+    List<ChamberInstance> candidates(Env env, boolean needsVoltage) {
+      List<ChamberInstance> list = needsVoltage ? byEnvVolt.get(env) : byEnv.get(env);
+      return list != null ? list : List.of();
+    }
+  }
+
   private static final class Planned {
     final ChamberInstance chamber;
     final int stationIdx;
@@ -86,8 +105,19 @@ public final class Scheduler {
   }
 
   public EvalResult evaluate(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, true);
+  }
+
+  /** Faster path: assumes caller will not mutate projects during evaluation. */
+  public EvalResult evaluateNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, false);
+  }
+
+  private EvalResult evaluateInternal(List<Project> projects, Map<String, Env> chamberEnv, boolean copyProjects) {
     Objects.requireNonNull(projects);
     Objects.requireNonNull(chamberEnv);
+
+    List<Project> ps = copyProjects ? projects.stream().map(Project::copy).toList() : projects;
 
     List<ChamberInstance> chambers = new ArrayList<>();
     for (ChamberSpec spec : Data.CHAMBERS) {
@@ -100,12 +130,13 @@ public final class Scheduler {
     }
 
     // Sade sürüm: sadece JOB_BASED evaluator.
-    return evaluateJobBased(projects, chambers);
+    ChamberIndex index = new ChamberIndex(chambers);
+    return evaluateJobBased(ps, index);
   }
 
   /** Job-based: tüm projelerden hazır job havuzu ile çizelgele. */
-  private EvalResult evaluateJobBased(List<Project> projects, List<ChamberInstance> chambers) {
-    List<Project> ps = projects.stream().map(Project::copy).toList();
+  private EvalResult evaluateJobBased(List<Project> projects, ChamberIndex index) {
+    List<Project> ps = projects;
 
     Map<String, ProjectState> stateByProject = new HashMap<>();
     for (Project p : ps) {
@@ -123,7 +154,7 @@ public final class Scheduler {
 
       Candidate best = null;
       for (ProjectState st : stateByProject.values()) {
-        Candidate cand = st.bestReadyCandidate(chambers);
+        Candidate cand = st.bestReadyCandidate(index);
         if (cand == null) continue;
         if (best == null || cand.betterThan(best)) best = cand;
       }
@@ -259,25 +290,27 @@ public final class Scheduler {
 
     int projectCompletion() { return completionMax; }
 
-    Candidate bestReadyCandidate(List<ChamberInstance> chambers) {
+    Candidate bestReadyCandidate(ChamberIndex index) {
       Candidate best = null;
 
       // GAS ready at 0
       if (!gasScheduled) {
         TestDef gas = get("GAS_43");
         int release = 0;
-        Planned pl = planBestOverSamples(chambers, p.needsVoltage, gas.env, gas.durationDays, release, sampleAvail);
+        List<ChamberInstance> pool = index.candidates(gas.env, p.needsVoltage);
+        Planned pl = planBestOverSamples(pool, p.needsVoltage, gas.env, gas.durationDays, release, sampleAvail);
         best = new Candidate(this, JobKind.GAS, gas, pl);
       }
 
       // PULLDOWN ready after gas
       if (pulldownRequired && gasScheduled) {
         TestDef pd = get("PULLDOWN_43");
+        List<ChamberInstance> pool = index.candidates(pd.env, p.needsVoltage);
         for (int s = 0; s < pulldownScheduledBySample.length; s++) {
           if (pulldownScheduledBySample[s]) continue;
           int release = gasEnd;
           int earliest = Math.max(release, sampleAvail[s]);
-          Planned pl = planBestSingleSample(chambers, p.needsVoltage, pd.env, pd.durationDays, earliest, s);
+          Planned pl = planBestSingleSample(pool, p.needsVoltage, pd.env, pd.durationDays, earliest, s);
           Candidate c = new Candidate(this, JobKind.PULLDOWN, pd, pl);
           if (best == null || c.betterThan(best)) best = c;
         }
@@ -296,7 +329,8 @@ public final class Scheduler {
             if (!gasScheduled) continue;
             release = gasEnd;
           }
-          Planned pl = planBestOverSamples(chambers, p.needsVoltage, t.env, t.durationDays, release, sampleAvail);
+          List<ChamberInstance> pool = index.candidates(t.env, p.needsVoltage);
+          Planned pl = planBestOverSamples(pool, p.needsVoltage, t.env, t.durationDays, release, sampleAvail);
           Candidate c = new Candidate(this, JobKind.OTHER, t, pl);
           if (best == null || c.betterThan(best)) best = c;
         }
@@ -309,7 +343,8 @@ public final class Scheduler {
         } else {
           int release = Math.max(maxStartOther, (pulldownRequired ? pulldownEndMax : gasEnd));
           for (TestDef t : remainingCu) {
-            Planned pl = planBestOverSamples(chambers, p.needsVoltage, t.env, t.durationDays, release, sampleAvail);
+            List<ChamberInstance> pool = index.candidates(t.env, p.needsVoltage);
+            Planned pl = planBestOverSamples(pool, p.needsVoltage, t.env, t.durationDays, release, sampleAvail);
             Candidate c = new Candidate(this, JobKind.CU, t, pl);
             if (best == null || c.betterThan(best)) best = c;
           }

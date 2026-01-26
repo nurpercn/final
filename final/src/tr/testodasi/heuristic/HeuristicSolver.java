@@ -76,7 +76,7 @@ public final class HeuristicSolver {
       // Stage2: EDD scheduling + sample artırma
       Stage2Result stage2 = Data.ENABLE_SAMPLE_INCREASE ? stage2_increaseSamples(iter, room, current, true) : Stage2Result.identity(deepCopy(current));
       List<Project> improved = stage2.projects;
-      Scheduler.EvalResult eval = scheduler.evaluate(improved, room);
+      Scheduler.EvalResult eval = scheduler.evaluateNoCopy(improved, room);
 
       solutions.add(new Solution(
           iter,
@@ -122,10 +122,10 @@ public final class HeuristicSolver {
     if (Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC) {
       // When used as a scoring subroutine inside room local-search, DO NOT emit progress logs.
       Stage2Result improved = stage2_increaseSamples(0, room, projects, false);
-      Scheduler.EvalResult eval = scheduler.evaluate(improved.projects, room);
+      Scheduler.EvalResult eval = scheduler.evaluateNoCopy(improved.projects, room);
       return new RoomScore(eval.totalLateness);
     }
-    Scheduler.EvalResult eval = scheduler.evaluate(projects, room);
+    Scheduler.EvalResult eval = scheduler.evaluateNoCopy(projects, room);
     return new RoomScore(eval.totalLateness);
   }
 
@@ -273,7 +273,7 @@ public final class HeuristicSolver {
 
     final long tStart = System.nanoTime();
 
-    Scheduler.EvalResult baseEval = scheduler.evaluate(current, room);
+    Scheduler.EvalResult baseEval = scheduler.evaluateNoCopy(current, room);
     if (verbose) {
       System.out.println("INFO: Stage2 initial total lateness = " + baseEval.totalLateness);
     }
@@ -320,10 +320,10 @@ public final class HeuristicSolver {
           if (ns > Data.SAMPLE_MAX) continue;
           if (ns == curSamples) continue;
 
-          List<Project> cand = deepCopy(current);
-          cand.get(i).samples = ns;
-          Scheduler.EvalResult e = scheduler.evaluate(cand, room);
+          p0.samples = ns;
+          Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
           evals++;
+          p0.samples = curSamples;
 
           if (e.totalLateness < bestEval.totalLateness ||
               (e.totalLateness == bestEval.totalLateness && ns < bestSamples)) {
@@ -366,16 +366,19 @@ public final class HeuristicSolver {
 
         for (int i = 0; i < current.size() && evals < evalBudget; i++) {
           for (int j = i + 1; j < current.size() && evals < evalBudget; j++) {
-            int si = current.get(i).samples;
-            int sj = current.get(j).samples;
+            Project pi = current.get(i);
+            Project pj = current.get(j);
+            int si = pi.samples;
+            int sj = pj.samples;
 
             // Direction 1: i+1, j-1
             if (si + 1 <= Data.SAMPLE_MAX && sj - 1 >= Data.MIN_SAMPLES) {
-              List<Project> cand = deepCopy(current);
-              cand.get(i).samples = si + 1;
-              cand.get(j).samples = sj - 1;
-              Scheduler.EvalResult e = scheduler.evaluate(cand, room);
+              pi.samples = si + 1;
+              pj.samples = sj - 1;
+              Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
               evals++;
+              pi.samples = si;
+              pj.samples = sj;
               if (e.totalLateness < bestPairEval.totalLateness) {
                 bestPairEval = e;
                 bestI = i;
@@ -387,11 +390,12 @@ public final class HeuristicSolver {
             // Direction 2: i-1, j+1
             if (evals >= evalBudget) break;
             if (si - 1 >= Data.MIN_SAMPLES && sj + 1 <= Data.SAMPLE_MAX) {
-              List<Project> cand = deepCopy(current);
-              cand.get(i).samples = si - 1;
-              cand.get(j).samples = sj + 1;
-              Scheduler.EvalResult e = scheduler.evaluate(cand, room);
+              pi.samples = si - 1;
+              pj.samples = sj + 1;
+              Scheduler.EvalResult e = scheduler.evaluateNoCopy(current, room);
               evals++;
+              pi.samples = si;
+              pj.samples = sj;
               if (e.totalLateness < bestPairEval.totalLateness) {
                 bestPairEval = e;
                 bestI = i;
@@ -575,7 +579,7 @@ public final class HeuristicSolver {
     }
     if (changed == 0) return false;
 
-    Scheduler.EvalResult e = scheduler.evaluate(cand, room);
+    Scheduler.EvalResult e = scheduler.evaluateNoCopy(cand, room);
     evals++;
     current.clear();
     current.addAll(cand);
@@ -624,7 +628,7 @@ public final class HeuristicSolver {
     }
     if (changed == 0) return false;
 
-    Scheduler.EvalResult e = scheduler.evaluate(cand, room);
+    Scheduler.EvalResult e = scheduler.evaluateNoCopy(cand, room);
     evals++;
     current.clear();
     current.addAll(cand);
