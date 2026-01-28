@@ -26,7 +26,8 @@ import java.util.Objects;
  * - samples (per-project initial samples)
  * - initialSamples (per-instance default samples)
  * - enableSampleIncrease, sampleMax, sampleSearchMaxEvals
- * - vnsNoPlusMinusTwo, lsRestrictByLateness, lsLateEarlyPairing, vnsSkipLocalSearchIfWorse
+ * - vnsNoPlusMinusTwo, lsRestrictByLateness, lsLateEarlyPairing, lsLateEarlyPairCount
+ * - vnsSkipLocalSearchIfWorse, vnsSkipLocalSearchThreshold
  * - enableRoomLS, roomLSMaxEvals, roomLSSwap, roomLSMove, roomLSIncludeSample
  * - validate
  */
@@ -115,7 +116,10 @@ public final class BatchRunner {
           "stage1RuntimeMs," +
           "stage2PreShakeTotalLateness,stage2PreShakeTotalSamples,stage2PreShakeRuntimeMs,stage2DidShake,stage2RuntimeMs," +
           "stage2Passes,stage2Evals,stage2Shakes,stage2VnsRuntimeMs," +
-          "scheduleEvals,runtimeMs");
+          "scheduleEvals," +
+          "vnsNoPlusMinusTwo,lsRestrictByLateness,lsLateEarlyPairing,lsLateEarlyPairCount," +
+          "vnsSkipLocalSearchIfWorse,vnsSkipLocalSearchThreshold," +
+          "runtimeMs");
       w.newLine();
  
       for (var e : rowsByInstance.entrySet()) {
@@ -211,6 +215,12 @@ public final class BatchRunner {
             best.stage2Shakes + "," +
             best.stage2VnsRuntimeMs + "," +
             scheduleEvals + "," +
+            Data.VNS_DISABLE_PLUS_MINUS_TWO + "," +
+            Data.LS_RESTRICT_MOVES_BY_LATENESS + "," +
+            Data.LS_LATE_EARLY_PAIRING + "," +
+            Data.LS_LATE_EARLY_PAIR_COUNT + "," +
+            Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE + "," +
+            fmt(Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD) + "," +
             (t1 - t0));
         w.newLine();
         w.flush(); // stream results as each instance completes
@@ -327,7 +337,9 @@ public final class BatchRunner {
     final Boolean vnsNoPlusMinusTwo;
     final Boolean lsRestrictByLateness;
     final Boolean lsLateEarlyPairing;
+    final Integer lsLateEarlyPairCount;
     final Boolean vnsSkipLocalSearchIfWorse;
+    final Double vnsSkipLocalSearchThreshold;
  
     final Boolean enableRoomLS;
     final Integer roomLSMaxEvals;
@@ -345,7 +357,9 @@ public final class BatchRunner {
         Boolean vnsNoPlusMinusTwo,
         Boolean lsRestrictByLateness,
         Boolean lsLateEarlyPairing,
+        Integer lsLateEarlyPairCount,
         Boolean vnsSkipLocalSearchIfWorse,
+        Double vnsSkipLocalSearchThreshold,
         Boolean enableRoomLS,
         Integer roomLSMaxEvals,
         Boolean roomLSSwap,
@@ -360,7 +374,9 @@ public final class BatchRunner {
       this.vnsNoPlusMinusTwo = vnsNoPlusMinusTwo;
       this.lsRestrictByLateness = lsRestrictByLateness;
       this.lsLateEarlyPairing = lsLateEarlyPairing;
+      this.lsLateEarlyPairCount = lsLateEarlyPairCount;
       this.vnsSkipLocalSearchIfWorse = vnsSkipLocalSearchIfWorse;
+      this.vnsSkipLocalSearchThreshold = vnsSkipLocalSearchThreshold;
       this.enableRoomLS = enableRoomLS;
       this.roomLSMaxEvals = roomLSMaxEvals;
       this.roomLSSwap = roomLSSwap;
@@ -378,7 +394,9 @@ public final class BatchRunner {
           firstBool(rows, col, "vnsnoplusminustwo"),
           firstBool(rows, col, "lsrestrictbylateness"),
           firstBool(rows, col, "lslateearlypairing"),
+          firstInt(rows, col, "lslateearlypaircount"),
           firstBool(rows, col, "vnsskiplocalsearchifworse"),
+          firstDouble(rows, col, "vnsskiplocalsearchthreshold"),
           firstBool(rows, col, "enableroomls"),
           firstInt(rows, col, "roomlsmaxevals"),
           firstBool(rows, col, "roomlsswap"),
@@ -396,7 +414,9 @@ public final class BatchRunner {
       if (vnsNoPlusMinusTwo != null) Data.VNS_DISABLE_PLUS_MINUS_TWO = vnsNoPlusMinusTwo;
       if (lsRestrictByLateness != null) Data.LS_RESTRICT_MOVES_BY_LATENESS = lsRestrictByLateness;
       if (lsLateEarlyPairing != null) Data.LS_LATE_EARLY_PAIRING = lsLateEarlyPairing;
+      if (lsLateEarlyPairCount != null) Data.LS_LATE_EARLY_PAIR_COUNT = lsLateEarlyPairCount;
       if (vnsSkipLocalSearchIfWorse != null) Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = vnsSkipLocalSearchIfWorse;
+      if (vnsSkipLocalSearchThreshold != null) Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD = vnsSkipLocalSearchThreshold;
  
       if (enableRoomLS != null) Data.ENABLE_ROOM_LOCAL_SEARCH = enableRoomLS;
       if (roomLSMaxEvals != null) Data.ROOM_LS_MAX_EVALS = roomLSMaxEvals;
@@ -417,6 +437,8 @@ public final class BatchRunner {
     final boolean lsRestrictByLateness = Data.LS_RESTRICT_MOVES_BY_LATENESS;
     final boolean lsLateEarlyPairing = Data.LS_LATE_EARLY_PAIRING;
     final boolean vnsSkipLocalSearchIfWorse = Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE;
+    final int lsLateEarlyPairCount = Data.LS_LATE_EARLY_PAIR_COUNT;
+    final double vnsSkipLocalSearchThreshold = Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD;
  
     final boolean enableRoomLS = Data.ENABLE_ROOM_LOCAL_SEARCH;
     final int roomLSMaxEvals = Data.ROOM_LS_MAX_EVALS;
@@ -437,6 +459,8 @@ public final class BatchRunner {
       Data.LS_RESTRICT_MOVES_BY_LATENESS = lsRestrictByLateness;
       Data.LS_LATE_EARLY_PAIRING = lsLateEarlyPairing;
       Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = vnsSkipLocalSearchIfWorse;
+      Data.LS_LATE_EARLY_PAIR_COUNT = lsLateEarlyPairCount;
+      Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD = vnsSkipLocalSearchThreshold;
  
       Data.ENABLE_ROOM_LOCAL_SEARCH = enableRoomLS;
       Data.ROOM_LS_MAX_EVALS = roomLSMaxEvals;
@@ -482,6 +506,15 @@ public final class BatchRunner {
     }
   }
  
+  private static double parseDouble(String s, String ctx) {
+    if (s == null || s.isBlank()) throw new IllegalArgumentException("Missing double for " + ctx);
+    try {
+      return Double.parseDouble(s.trim());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid double for " + ctx + ": " + s);
+    }
+  }
+
   private static boolean parseBool(String s) {
     if (s == null) return false;
     String v = s.trim().toLowerCase(Locale.ROOT);
@@ -502,6 +535,15 @@ public final class BatchRunner {
     for (List<String> r : rows) {
       String v = get(r, col, key);
       if (v != null && !v.isBlank()) return parseBool(v);
+    }
+    return null;
+  }
+
+  private static Double firstDouble(List<List<String>> rows, Map<String, Integer> col, String key) {
+    if (!col.containsKey(key)) return null;
+    for (List<String> r : rows) {
+      String v = get(r, col, key);
+      if (v != null && !v.isBlank()) return parseDouble(v, key);
     }
     return null;
   }

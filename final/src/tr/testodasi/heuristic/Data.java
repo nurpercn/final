@@ -79,7 +79,7 @@ public final class Data {
   public static boolean LS_LATE_EARLY_PAIRING = false;
 
   /** Stage2 local search: eşleştirme için maksimum çift sayısı. */
-  public static final int LS_LATE_EARLY_PAIR_COUNT = 10;
+  public static int LS_LATE_EARLY_PAIR_COUNT = 10;
 
   /** VNS: çözüm en iyi çözümden %20 kötü ise local search'e girme. */
   public static boolean VNS_SKIP_LOCAL_SEARCH_IF_WORSE = false;

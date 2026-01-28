@@ -170,6 +170,33 @@ public final class Main {
         }
       }
 
+      if (a != null && a.startsWith("--lsLateEarlyPairCount=")) {
+        try {
+          Data.LS_LATE_EARLY_PAIR_COUNT = Integer.parseInt(a.substring("--lsLateEarlyPairCount=".length()).trim());
+        } catch (NumberFormatException ignored) {}
+      } else if ("--lsLateEarlyPairCount".equalsIgnoreCase(a)) {
+        if (idx + 1 < args.length) {
+          try {
+            Data.LS_LATE_EARLY_PAIR_COUNT = Integer.parseInt(args[idx + 1].trim());
+            idx++;
+          } catch (NumberFormatException ignored) {}
+        }
+      }
+
+      if (a != null && a.startsWith("--vnsSkipLocalSearchThreshold=")) {
+        try {
+          Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD =
+              Double.parseDouble(a.substring("--vnsSkipLocalSearchThreshold=".length()).trim());
+        } catch (NumberFormatException ignored) {}
+      } else if ("--vnsSkipLocalSearchThreshold".equalsIgnoreCase(a)) {
+        if (idx + 1 < args.length) {
+          try {
+            Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD = Double.parseDouble(args[idx + 1].trim());
+            idx++;
+          } catch (NumberFormatException ignored) {}
+        }
+      }
+
       if (a != null && a.startsWith("--vnsNoPlusMinusTwo=")) {
         String v = a.substring("--vnsNoPlusMinusTwo=".length()).trim();
         Data.VNS_DISABLE_PLUS_MINUS_TWO = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
@@ -350,7 +377,9 @@ public final class Main {
     System.out.println("  --vnsNoPlusMinusTwo=<bool> Disable +/-2 sample moves in Stage2");
     System.out.println("  --lsRestrictByLateness=<bool>  Only increase late, decrease on-time");
     System.out.println("  --lsLateEarlyPairing=<bool>    Pair late/early projects in local search");
+    System.out.println("  --lsLateEarlyPairCount=<n>     Max late/early pairs (default=10)");
     System.out.println("  --vnsSkipLocalSearchIfWorse=<bool>  Skip local search if 20% worse than best");
+    System.out.println("  --vnsSkipLocalSearchThreshold=<x>  Threshold ratio (default=0.20)");
     System.out.println();
     System.out.println("  --roomLS=<bool>            Enable/disable room local-search");
     System.out.println("  --roomLSMaxEvals=<n>       Room local-search evaluation budget");
