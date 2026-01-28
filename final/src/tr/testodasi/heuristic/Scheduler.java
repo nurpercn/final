@@ -117,25 +117,41 @@ public final class Scheduler {
   }
 
   public EvalResult evaluate(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, true, true);
+    return evaluateInternal(projects, chamberEnv, true, true, true);
   }
 
   /** Faster path: assumes caller will not mutate projects during evaluation. */
   public EvalResult evaluateNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, false, true);
+    return evaluateInternal(projects, chamberEnv, false, true, true);
   }
 
   /** Fast scoring path: skips building schedule and project result lists. */
   public EvalResult evaluateFast(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, true, false);
+    return evaluateInternal(projects, chamberEnv, true, false, false);
   }
 
   /** Fast scoring path: skips building schedule and project result lists. */
   public EvalResult evaluateFastNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
-    return evaluateInternal(projects, chamberEnv, false, false);
+    return evaluateInternal(projects, chamberEnv, false, false, false);
   }
 
-  private EvalResult evaluateInternal(List<Project> projects, Map<String, Env> chamberEnv, boolean copyProjects, boolean buildDetails) {
+  /** Fast scoring path: builds project results but skips schedule list. */
+  public EvalResult evaluateResultsNoSchedule(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, true, false, true);
+  }
+
+  /** Fast scoring path: builds project results but skips schedule list. */
+  public EvalResult evaluateResultsNoScheduleNoCopy(List<Project> projects, Map<String, Env> chamberEnv) {
+    return evaluateInternal(projects, chamberEnv, false, false, true);
+  }
+
+  private EvalResult evaluateInternal(
+      List<Project> projects,
+      Map<String, Env> chamberEnv,
+      boolean copyProjects,
+      boolean buildSchedule,
+      boolean buildResults
+  ) {
     Objects.requireNonNull(projects);
     Objects.requireNonNull(chamberEnv);
     evalCount++;
@@ -154,11 +170,16 @@ public final class Scheduler {
 
     // Sade sürüm: sadece JOB_BASED evaluator.
     ChamberIndex index = new ChamberIndex(chambers);
-    return evaluateJobBased(ps, index, buildDetails);
+    return evaluateJobBased(ps, index, buildSchedule, buildResults);
   }
 
   /** Job-based: tüm projelerden hazır job havuzu ile çizelgele. */
-  private EvalResult evaluateJobBased(List<Project> projects, ChamberIndex index, boolean buildDetails) {
+  private EvalResult evaluateJobBased(
+      List<Project> projects,
+      ChamberIndex index,
+      boolean buildSchedule,
+      boolean buildResults
+  ) {
     List<Project> ps = projects;
 
     Map<String, ProjectState> stateByProject = new HashMap<>();
@@ -167,7 +188,7 @@ public final class Scheduler {
     }
 
     // Remaining jobs as counters/sets in state; loop until all scheduled.
-    List<ScheduledJob> schedule = buildDetails ? new ArrayList<>() : null;
+    List<ScheduledJob> schedule = buildSchedule ? new ArrayList<>() : null;
 
     int safety = 0;
     while (true) {
@@ -186,26 +207,25 @@ public final class Scheduler {
 
       // apply chosen candidate
       best.apply();
-      if (buildDetails) {
+      if (buildSchedule) {
         schedule.add(best.toScheduledJob());
       }
     }
 
     // compute results
     int totalLateness = 0;
-    List<ProjectResult> results = buildDetails ? new ArrayList<>() : null;
+    List<ProjectResult> results = buildResults ? new ArrayList<>() : null;
     for (ProjectState st : stateByProject.values()) {
       int completion = st.projectCompletion();
       int lateness = Math.max(0, completion - st.p.dueDateDays);
       totalLateness += lateness;
-      if (buildDetails) {
+      if (buildResults) {
         results.add(new ProjectResult(st.p.id, completion, st.p.dueDateDays, lateness));
       }
     }
 
-    if (!buildDetails) {
-      return new EvalResult(totalLateness, NO_RESULTS, NO_SCHEDULE);
-    }
+    if (!buildResults) results = NO_RESULTS;
+    if (!buildSchedule) schedule = NO_SCHEDULE;
 
     return new EvalResult(totalLateness, results, schedule);
   }

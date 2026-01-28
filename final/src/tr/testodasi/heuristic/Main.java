@@ -169,6 +169,34 @@ public final class Main {
           Data.ENABLE_SAMPLE_INCREASE = true;
         }
       }
+
+      if (a != null && a.startsWith("--vnsNoPlusMinusTwo=")) {
+        String v = a.substring("--vnsNoPlusMinusTwo=".length()).trim();
+        Data.VNS_DISABLE_PLUS_MINUS_TWO = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
+      } else if ("--vnsNoPlusMinusTwo".equalsIgnoreCase(a)) {
+        Data.VNS_DISABLE_PLUS_MINUS_TWO = true;
+      }
+
+      if (a != null && a.startsWith("--lsRestrictByLateness=")) {
+        String v = a.substring("--lsRestrictByLateness=".length()).trim();
+        Data.LS_RESTRICT_MOVES_BY_LATENESS = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
+      } else if ("--lsRestrictByLateness".equalsIgnoreCase(a)) {
+        Data.LS_RESTRICT_MOVES_BY_LATENESS = true;
+      }
+
+      if (a != null && a.startsWith("--lsLateEarlyPairing=")) {
+        String v = a.substring("--lsLateEarlyPairing=".length()).trim();
+        Data.LS_LATE_EARLY_PAIRING = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
+      } else if ("--lsLateEarlyPairing".equalsIgnoreCase(a)) {
+        Data.LS_LATE_EARLY_PAIRING = true;
+      }
+
+      if (a != null && a.startsWith("--vnsSkipLocalSearchIfWorse=")) {
+        String v = a.substring("--vnsSkipLocalSearchIfWorse=".length()).trim();
+        Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
+      } else if ("--vnsSkipLocalSearchIfWorse".equalsIgnoreCase(a)) {
+        Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = true;
+      }
     }
  
     // Enforce global minimum samples
@@ -319,6 +347,10 @@ public final class Main {
     System.out.println("  --sampleIncrease           Enable sample local-search (same as true)");
     System.out.println("  --sampleIncrease <bool>    Enable/disable sample local-search");
     System.out.println("  --sampleIncrease=<bool>    Enable/disable sample local-search");
+    System.out.println("  --vnsNoPlusMinusTwo=<bool> Disable +/-2 sample moves in Stage2");
+    System.out.println("  --lsRestrictByLateness=<bool>  Only increase late, decrease on-time");
+    System.out.println("  --lsLateEarlyPairing=<bool>    Pair late/early projects in local search");
+    System.out.println("  --vnsSkipLocalSearchIfWorse=<bool>  Skip local search if 20% worse than best");
     System.out.println();
     System.out.println("  --roomLS=<bool>            Enable/disable room local-search");
     System.out.println("  --roomLSMaxEvals=<n>       Room local-search evaluation budget");

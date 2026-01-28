@@ -26,6 +26,7 @@ import java.util.Objects;
  * - samples (per-project initial samples)
  * - initialSamples (per-instance default samples)
  * - enableSampleIncrease, sampleMax, sampleSearchMaxEvals
+ * - vnsNoPlusMinusTwo, lsRestrictByLateness, lsLateEarlyPairing, vnsSkipLocalSearchIfWorse
  * - enableRoomLS, roomLSMaxEvals, roomLSSwap, roomLSMove, roomLSIncludeSample
  * - validate
  */
@@ -323,6 +324,10 @@ public final class BatchRunner {
     final Boolean enableSampleIncrease;
     final Integer sampleMax;
     final Integer sampleSearchMaxEvals;
+    final Boolean vnsNoPlusMinusTwo;
+    final Boolean lsRestrictByLateness;
+    final Boolean lsLateEarlyPairing;
+    final Boolean vnsSkipLocalSearchIfWorse;
  
     final Boolean enableRoomLS;
     final Integer roomLSMaxEvals;
@@ -337,6 +342,10 @@ public final class BatchRunner {
         Boolean enableSampleIncrease,
         Integer sampleMax,
         Integer sampleSearchMaxEvals,
+        Boolean vnsNoPlusMinusTwo,
+        Boolean lsRestrictByLateness,
+        Boolean lsLateEarlyPairing,
+        Boolean vnsSkipLocalSearchIfWorse,
         Boolean enableRoomLS,
         Integer roomLSMaxEvals,
         Boolean roomLSSwap,
@@ -348,6 +357,10 @@ public final class BatchRunner {
       this.enableSampleIncrease = enableSampleIncrease;
       this.sampleMax = sampleMax;
       this.sampleSearchMaxEvals = sampleSearchMaxEvals;
+      this.vnsNoPlusMinusTwo = vnsNoPlusMinusTwo;
+      this.lsRestrictByLateness = lsRestrictByLateness;
+      this.lsLateEarlyPairing = lsLateEarlyPairing;
+      this.vnsSkipLocalSearchIfWorse = vnsSkipLocalSearchIfWorse;
       this.enableRoomLS = enableRoomLS;
       this.roomLSMaxEvals = roomLSMaxEvals;
       this.roomLSSwap = roomLSSwap;
@@ -362,6 +375,10 @@ public final class BatchRunner {
           firstBool(rows, col, "enablesampleincrease"),
           firstInt(rows, col, "samplemax"),
           firstInt(rows, col, "samplesearchmaxevals"),
+          firstBool(rows, col, "vnsnoplusminustwo"),
+          firstBool(rows, col, "lsrestrictbylateness"),
+          firstBool(rows, col, "lslateearlypairing"),
+          firstBool(rows, col, "vnsskiplocalsearchifworse"),
           firstBool(rows, col, "enableroomls"),
           firstInt(rows, col, "roomlsmaxevals"),
           firstBool(rows, col, "roomlsswap"),
@@ -376,6 +393,10 @@ public final class BatchRunner {
       if (enableSampleIncrease != null) Data.ENABLE_SAMPLE_INCREASE = enableSampleIncrease;
       if (sampleMax != null) Data.SAMPLE_MAX = sampleMax;
       if (sampleSearchMaxEvals != null) Data.SAMPLE_SEARCH_MAX_EVALS = sampleSearchMaxEvals;
+      if (vnsNoPlusMinusTwo != null) Data.VNS_DISABLE_PLUS_MINUS_TWO = vnsNoPlusMinusTwo;
+      if (lsRestrictByLateness != null) Data.LS_RESTRICT_MOVES_BY_LATENESS = lsRestrictByLateness;
+      if (lsLateEarlyPairing != null) Data.LS_LATE_EARLY_PAIRING = lsLateEarlyPairing;
+      if (vnsSkipLocalSearchIfWorse != null) Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = vnsSkipLocalSearchIfWorse;
  
       if (enableRoomLS != null) Data.ENABLE_ROOM_LOCAL_SEARCH = enableRoomLS;
       if (roomLSMaxEvals != null) Data.ROOM_LS_MAX_EVALS = roomLSMaxEvals;
@@ -392,6 +413,10 @@ public final class BatchRunner {
     final boolean enableSampleIncrease = Data.ENABLE_SAMPLE_INCREASE;
     final int sampleMax = Data.SAMPLE_MAX;
     final int sampleSearchMaxEvals = Data.SAMPLE_SEARCH_MAX_EVALS;
+    final boolean vnsNoPlusMinusTwo = Data.VNS_DISABLE_PLUS_MINUS_TWO;
+    final boolean lsRestrictByLateness = Data.LS_RESTRICT_MOVES_BY_LATENESS;
+    final boolean lsLateEarlyPairing = Data.LS_LATE_EARLY_PAIRING;
+    final boolean vnsSkipLocalSearchIfWorse = Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE;
  
     final boolean enableRoomLS = Data.ENABLE_ROOM_LOCAL_SEARCH;
     final int roomLSMaxEvals = Data.ROOM_LS_MAX_EVALS;
@@ -408,6 +433,10 @@ public final class BatchRunner {
       Data.ENABLE_SAMPLE_INCREASE = enableSampleIncrease;
       Data.SAMPLE_MAX = sampleMax;
       Data.SAMPLE_SEARCH_MAX_EVALS = sampleSearchMaxEvals;
+      Data.VNS_DISABLE_PLUS_MINUS_TWO = vnsNoPlusMinusTwo;
+      Data.LS_RESTRICT_MOVES_BY_LATENESS = lsRestrictByLateness;
+      Data.LS_LATE_EARLY_PAIRING = lsLateEarlyPairing;
+      Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE = vnsSkipLocalSearchIfWorse;
  
       Data.ENABLE_ROOM_LOCAL_SEARCH = enableRoomLS;
       Data.ROOM_LS_MAX_EVALS = roomLSMaxEvals;

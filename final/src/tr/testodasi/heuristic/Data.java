@@ -69,6 +69,24 @@ public final class Data {
   
   public static int STAGE2_MAX_SHAKES = 0;
 
+  /** Stage2 local search: +/-2 sample denemelerini kapat. */
+  public static boolean VNS_DISABLE_PLUS_MINUS_TWO = false;
+
+  /** Stage2 local search: gecikmeyen projelerde sadece azaltma, gecikenlerde sadece arttırma. */
+  public static boolean LS_RESTRICT_MOVES_BY_LATENESS = false;
+
+  /** Stage2 local search: geciken/erken biten projelerden 10'ar taneyi eşleştir. */
+  public static boolean LS_LATE_EARLY_PAIRING = false;
+
+  /** Stage2 local search: eşleştirme için maksimum çift sayısı. */
+  public static final int LS_LATE_EARLY_PAIR_COUNT = 10;
+
+  /** VNS: çözüm en iyi çözümden %20 kötü ise local search'e girme. */
+  public static boolean VNS_SKIP_LOCAL_SEARCH_IF_WORSE = false;
+
+  /** VNS: local search'e girmeme eşiği (ör: 0.20 => %20). */
+  public static double VNS_SKIP_LOCAL_SEARCH_THRESHOLD = 0.20;
+
   // Test sırasi: ekrandaki kolon sırasını takip eder.
   public static final List<TestDef> TESTS = List.of(
       new TestDef("GAS_43", "Gas Amount Determination", new Env(43, Humidity.NORMAL), 10, TestCategory.GAS),

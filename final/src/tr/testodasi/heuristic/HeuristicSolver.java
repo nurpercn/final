@@ -268,6 +268,37 @@ public final class HeuristicSolver {
     }
   }
 
+  private static final class LatenessInfo {
+    final int[] lateness;
+    final int[] earlySlack;
+
+    private LatenessInfo(int[] lateness, int[] earlySlack) {
+      this.lateness = lateness;
+      this.earlySlack = earlySlack;
+    }
+
+    boolean isLate(int idx) {
+      return lateness[idx] > 0;
+    }
+
+    static LatenessInfo fromResults(List<Project> projects, Map<String, Integer> idxById, List<ProjectResult> results) {
+      int n = projects.size();
+      int[] late = new int[n];
+      int[] slack = new int[n];
+      for (ProjectResult r : results) {
+        Integer idx = idxById.get(r.projectId);
+        if (idx == null) continue;
+        int completion = r.completionDay;
+        int due = r.dueDate;
+        int l = Math.max(0, completion - due);
+        int s = Math.max(0, due - completion);
+        late[idx] = l;
+        slack[idx] = s;
+      }
+      return new LatenessInfo(late, slack);
+    }
+  }
+
   private Stage2Result stage2_increaseSamples(int outerIteration, Map<String, Env> room, List<Project> startProjects, boolean emitProgress) {
     List<Project> current = deepCopy(startProjects);
 
@@ -278,7 +309,19 @@ public final class HeuristicSolver {
 
     final long tStart = System.nanoTime();
 
-    Scheduler.EvalResult baseEval = scheduler.evaluateFastNoCopy(current, room);
+    boolean needsProjectResults = Data.LS_RESTRICT_MOVES_BY_LATENESS || Data.LS_LATE_EARLY_PAIRING;
+    Map<String, Integer> idxById = null;
+    if (needsProjectResults) {
+      idxById = new HashMap<>();
+      for (int i = 0; i < current.size(); i++) idxById.put(current.get(i).id, i);
+    }
+
+    Scheduler.EvalResult baseEval = needsProjectResults
+        ? scheduler.evaluateResultsNoScheduleNoCopy(current, room)
+        : scheduler.evaluateFastNoCopy(current, room);
+    LatenessInfo latenessInfo = needsProjectResults
+        ? LatenessInfo.fromResults(current, idxById, baseEval.projectResults)
+        : null;
     if (verbose) {
       System.out.println("INFO: Stage2 initial total lateness = " + baseEval.totalLateness);
     }
@@ -308,128 +351,79 @@ public final class HeuristicSolver {
       boolean improvedAny = false;
       passes++;
 
-      for (int i = 0; i < current.size() && evals < evalBudget; i++) {
-        Project p0 = current.get(i);
-        int curSamples = p0.samples;
-
-        int bestSamples = curSamples;
-        Scheduler.EvalResult bestEval = baseEval;
-
-        int[] deltas = (curSamples <= Data.MIN_SAMPLES)
-            ? new int[]{+1, +2}
-            : new int[]{+1, +2, -1, -2};
-        for (int d : deltas) {
-          if (evals >= evalBudget) break;
-          int ns = curSamples + d;
-          if (ns < Data.MIN_SAMPLES) continue;
-          if (ns > Data.SAMPLE_MAX) continue;
-          if (ns == curSamples) continue;
-
-          p0.samples = ns;
-          Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
-          evals++;
-          p0.samples = curSamples;
-
-          if (e.totalLateness < bestEval.totalLateness ||
-              (e.totalLateness == bestEval.totalLateness && ns < bestSamples)) {
-            bestEval = e;
-            bestSamples = ns;
-          }
-        }
-
-        boolean accept =
-            bestEval.totalLateness < baseEval.totalLateness ||
-                (bestEval.totalLateness == baseEval.totalLateness && bestSamples < curSamples);
-
-        if (accept && bestSamples != curSamples) {
-          p0.samples = bestSamples;
-          baseEval = bestEval;
-          improvedAny = true;
-          if (verbose) {
-            System.out.println("INFO: Stage2 accept sample move => " + p0.id +
-                " " + curSamples + " -> " + bestSamples +
-                " totalLateness=" + baseEval.totalLateness);
-          }
-        }
-
-        // track global best
-        if (baseEval.totalLateness < bestOverallEval.totalLateness ||
-            (baseEval.totalLateness == bestOverallEval.totalLateness && totalSamples(current) < bestOverallTotalSamples)) {
-          bestOverall = deepCopy(current);
-          bestOverallEval = baseEval;
-          bestOverallTotalSamples = totalSamples(bestOverall);
+      boolean skipLocalSearch = false;
+      if (Data.VNS_SKIP_LOCAL_SEARCH_IF_WORSE) {
+        if (bestOverallEval.totalLateness == 0) {
+          skipLocalSearch = baseEval.totalLateness > 0;
+        } else {
+          double limit = bestOverallEval.totalLateness * (1.0 + Data.VNS_SKIP_LOCAL_SEARCH_THRESHOLD);
+          skipLocalSearch = baseEval.totalLateness > limit;
         }
       }
 
-      // If single-project moves stall, try 2-project exchange moves:
-      // one project +1 sample while another project -1 sample (keeps total samples constant).
-      if (!improvedAny && evals < evalBudget) {
-        int bestI = -1;
-        int bestJ = -1;
-        boolean bestDir = true; // true => i+1, j-1 ; false => i-1, j+1
-        Scheduler.EvalResult bestPairEval = baseEval;
-
+      if (!skipLocalSearch) {
         for (int i = 0; i < current.size() && evals < evalBudget; i++) {
-          for (int j = i + 1; j < current.size() && evals < evalBudget; j++) {
-            Project pi = current.get(i);
-            Project pj = current.get(j);
-            int si = pi.samples;
-            int sj = pj.samples;
+          Project p0 = current.get(i);
+          int curSamples = p0.samples;
 
-            // Direction 1: i+1, j-1
-            if (si + 1 <= Data.SAMPLE_MAX && sj - 1 >= Data.MIN_SAMPLES) {
-              pi.samples = si + 1;
-              pj.samples = sj - 1;
-              Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
-              evals++;
-              pi.samples = si;
-              pj.samples = sj;
-              if (e.totalLateness < bestPairEval.totalLateness) {
-                bestPairEval = e;
-                bestI = i;
-                bestJ = j;
-                bestDir = true;
-              }
-            }
+          int bestSamples = curSamples;
+          Scheduler.EvalResult bestEval = baseEval;
 
-            // Direction 2: i-1, j+1
-            if (evals >= evalBudget) break;
-            if (si - 1 >= Data.MIN_SAMPLES && sj + 1 <= Data.SAMPLE_MAX) {
-              pi.samples = si - 1;
-              pj.samples = sj + 1;
-              Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
-              evals++;
-              pi.samples = si;
-              pj.samples = sj;
-              if (e.totalLateness < bestPairEval.totalLateness) {
-                bestPairEval = e;
-                bestI = i;
-                bestJ = j;
-                bestDir = false;
-              }
-            }
-          }
-        }
-
-        if (bestI >= 0 && bestJ >= 0 && bestPairEval.totalLateness < baseEval.totalLateness) {
-          Project pi = current.get(bestI);
-          Project pj = current.get(bestJ);
-          int si0 = pi.samples;
-          int sj0 = pj.samples;
-          if (bestDir) {
-            pi.samples = si0 + 1;
-            pj.samples = sj0 - 1;
+          int[] deltas;
+          if (Data.VNS_DISABLE_PLUS_MINUS_TWO) {
+            deltas = (curSamples <= Data.MIN_SAMPLES)
+                ? new int[]{+1}
+                : new int[]{+1, -1};
           } else {
-            pi.samples = si0 - 1;
-            pj.samples = sj0 + 1;
+            deltas = (curSamples <= Data.MIN_SAMPLES)
+                ? new int[]{+1, +2}
+                : new int[]{+1, +2, -1, -2};
           }
-          baseEval = bestPairEval;
-          improvedAny = true;
-          if (verbose) {
-            System.out.println("INFO: Stage2 accept pair exchange => " +
-                pi.id + " " + si0 + " -> " + pi.samples + ", " +
-                pj.id + " " + sj0 + " -> " + pj.samples +
-                " totalLateness=" + baseEval.totalLateness);
+
+          boolean restrict = Data.LS_RESTRICT_MOVES_BY_LATENESS && latenessInfo != null;
+          boolean isLate = restrict && latenessInfo.isLate(i);
+
+          for (int d : deltas) {
+            if (evals >= evalBudget) break;
+            if (restrict) {
+              if (isLate && d < 0) continue;
+              if (!isLate && d > 0) continue;
+            }
+            int ns = curSamples + d;
+            if (ns < Data.MIN_SAMPLES) continue;
+            if (ns > Data.SAMPLE_MAX) continue;
+            if (ns == curSamples) continue;
+
+            p0.samples = ns;
+            Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
+            evals++;
+            p0.samples = curSamples;
+
+            if (e.totalLateness < bestEval.totalLateness ||
+                (e.totalLateness == bestEval.totalLateness && ns < bestSamples)) {
+              bestEval = e;
+              bestSamples = ns;
+            }
+          }
+
+          boolean accept =
+              bestEval.totalLateness < baseEval.totalLateness ||
+                  (bestEval.totalLateness == baseEval.totalLateness && bestSamples < curSamples);
+
+          if (accept && bestSamples != curSamples) {
+            p0.samples = bestSamples;
+            baseEval = needsProjectResults
+                ? scheduler.evaluateResultsNoScheduleNoCopy(current, room)
+                : bestEval;
+            if (needsProjectResults) {
+              latenessInfo = LatenessInfo.fromResults(current, idxById, baseEval.projectResults);
+            }
+            improvedAny = true;
+            if (verbose) {
+              System.out.println("INFO: Stage2 accept sample move => " + p0.id +
+                  " " + curSamples + " -> " + bestSamples +
+                  " totalLateness=" + baseEval.totalLateness);
+            }
           }
 
           // track global best
@@ -438,6 +432,168 @@ public final class HeuristicSolver {
             bestOverall = deepCopy(current);
             bestOverallEval = baseEval;
             bestOverallTotalSamples = totalSamples(bestOverall);
+          }
+        }
+      }
+
+      // If single-project moves stall, try 2-project exchange moves:
+      // one project +1 sample while another project -1 sample (keeps total samples constant).
+      if (!skipLocalSearch && !improvedAny && evals < evalBudget) {
+        if (Data.LS_LATE_EARLY_PAIRING && latenessInfo != null) {
+          int bestLateIdx = -1;
+          int bestEarlyIdx = -1;
+          Scheduler.EvalResult bestPairEval = baseEval;
+
+          List<Integer> lateIdx = new ArrayList<>();
+          List<Integer> earlyIdx = new ArrayList<>();
+          for (int i = 0; i < current.size(); i++) {
+            if (latenessInfo.lateness[i] > 0) {
+              lateIdx.add(i);
+            } else if (latenessInfo.earlySlack[i] > 0) {
+              earlyIdx.add(i);
+            }
+          }
+
+          if (!lateIdx.isEmpty() && !earlyIdx.isEmpty()) {
+            final int[] lateArr = latenessInfo.lateness;
+            final int[] slackArr = latenessInfo.earlySlack;
+            lateIdx.sort((a, b) -> Integer.compare(lateArr[b], lateArr[a]));
+            earlyIdx.sort((a, b) -> Integer.compare(slackArr[b], slackArr[a]));
+
+            int k = Math.min(Data.LS_LATE_EARLY_PAIR_COUNT, Math.min(lateIdx.size(), earlyIdx.size()));
+            for (int t = 0; t < k && evals < evalBudget; t++) {
+              int i = lateIdx.get(t);
+              int j = earlyIdx.get(t);
+              Project pi = current.get(i);
+              Project pj = current.get(j);
+              if (pi.samples + 1 > Data.SAMPLE_MAX) continue;
+              if (pj.samples - 1 < Data.MIN_SAMPLES) continue;
+
+              pi.samples += 1;
+              pj.samples -= 1;
+              Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
+              evals++;
+              pi.samples -= 1;
+              pj.samples += 1;
+
+              if (e.totalLateness < bestPairEval.totalLateness) {
+                bestPairEval = e;
+                bestLateIdx = i;
+                bestEarlyIdx = j;
+              }
+            }
+          }
+
+          if (bestLateIdx >= 0 && bestEarlyIdx >= 0 && bestPairEval.totalLateness < baseEval.totalLateness) {
+            Project pi = current.get(bestLateIdx);
+            Project pj = current.get(bestEarlyIdx);
+            int si0 = pi.samples;
+            int sj0 = pj.samples;
+            pi.samples = si0 + 1;
+            pj.samples = sj0 - 1;
+            baseEval = needsProjectResults
+                ? scheduler.evaluateResultsNoScheduleNoCopy(current, room)
+                : bestPairEval;
+            if (needsProjectResults) {
+              latenessInfo = LatenessInfo.fromResults(current, idxById, baseEval.projectResults);
+            }
+            improvedAny = true;
+            if (verbose) {
+              System.out.println("INFO: Stage2 accept late/early pair => " +
+                  pi.id + " " + si0 + " -> " + pi.samples + ", " +
+                  pj.id + " " + sj0 + " -> " + pj.samples +
+                  " totalLateness=" + baseEval.totalLateness);
+            }
+
+            // track global best
+            if (baseEval.totalLateness < bestOverallEval.totalLateness ||
+                (baseEval.totalLateness == bestOverallEval.totalLateness && totalSamples(current) < bestOverallTotalSamples)) {
+              bestOverall = deepCopy(current);
+              bestOverallEval = baseEval;
+              bestOverallTotalSamples = totalSamples(bestOverall);
+            }
+          }
+        } else {
+          int bestI = -1;
+          int bestJ = -1;
+          boolean bestDir = true; // true => i+1, j-1 ; false => i-1, j+1
+          Scheduler.EvalResult bestPairEval = baseEval;
+
+          for (int i = 0; i < current.size() && evals < evalBudget; i++) {
+            for (int j = i + 1; j < current.size() && evals < evalBudget; j++) {
+              Project pi = current.get(i);
+              Project pj = current.get(j);
+              int si = pi.samples;
+              int sj = pj.samples;
+
+              // Direction 1: i+1, j-1
+              if (si + 1 <= Data.SAMPLE_MAX && sj - 1 >= Data.MIN_SAMPLES) {
+                pi.samples = si + 1;
+                pj.samples = sj - 1;
+                Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
+                evals++;
+                pi.samples = si;
+                pj.samples = sj;
+                if (e.totalLateness < bestPairEval.totalLateness) {
+                  bestPairEval = e;
+                  bestI = i;
+                  bestJ = j;
+                  bestDir = true;
+                }
+              }
+
+              // Direction 2: i-1, j+1
+              if (evals >= evalBudget) break;
+              if (si - 1 >= Data.MIN_SAMPLES && sj + 1 <= Data.SAMPLE_MAX) {
+                pi.samples = si - 1;
+                pj.samples = sj + 1;
+                Scheduler.EvalResult e = scheduler.evaluateFastNoCopy(current, room);
+                evals++;
+                pi.samples = si;
+                pj.samples = sj;
+                if (e.totalLateness < bestPairEval.totalLateness) {
+                  bestPairEval = e;
+                  bestI = i;
+                  bestJ = j;
+                  bestDir = false;
+                }
+              }
+            }
+          }
+
+          if (bestI >= 0 && bestJ >= 0 && bestPairEval.totalLateness < baseEval.totalLateness) {
+            Project pi = current.get(bestI);
+            Project pj = current.get(bestJ);
+            int si0 = pi.samples;
+            int sj0 = pj.samples;
+            if (bestDir) {
+              pi.samples = si0 + 1;
+              pj.samples = sj0 - 1;
+            } else {
+              pi.samples = si0 - 1;
+              pj.samples = sj0 + 1;
+            }
+            baseEval = needsProjectResults
+                ? scheduler.evaluateResultsNoScheduleNoCopy(current, room)
+                : bestPairEval;
+            if (needsProjectResults) {
+              latenessInfo = LatenessInfo.fromResults(current, idxById, baseEval.projectResults);
+            }
+            improvedAny = true;
+            if (verbose) {
+              System.out.println("INFO: Stage2 accept pair exchange => " +
+                  pi.id + " " + si0 + " -> " + pi.samples + ", " +
+                  pj.id + " " + sj0 + " -> " + pj.samples +
+                  " totalLateness=" + baseEval.totalLateness);
+            }
+
+            // track global best
+            if (baseEval.totalLateness < bestOverallEval.totalLateness ||
+                (baseEval.totalLateness == bestOverallEval.totalLateness && totalSamples(current) < bestOverallTotalSamples)) {
+              bestOverall = deepCopy(current);
+              bestOverallEval = baseEval;
+              bestOverallTotalSamples = totalSamples(bestOverall);
+            }
           }
         }
       }
@@ -484,7 +640,12 @@ public final class HeuristicSolver {
 
         if (didShake) {
           // tryShake* mutates current/baseEval via returned holder
-          baseEval = lastShakeEval;
+          baseEval = needsProjectResults
+              ? scheduler.evaluateResultsNoScheduleNoCopy(current, room)
+              : lastShakeEval;
+          if (needsProjectResults) {
+            latenessInfo = LatenessInfo.fromResults(current, idxById, baseEval.projectResults);
+          }
           evals = lastShakeEvals;
           improvedAny = true;
           shakes++;
