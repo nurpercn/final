@@ -122,6 +122,7 @@ public final class HeuristicSolver {
   }
 
   private record RoomScore(int totalLateness) {}
+  private record ChamberLoad(ChamberSpec chamber, int busyDays, double normalizedBusyDays) {}
 
   private RoomScore scoreRoom(Map<String, Env> room, List<Project> projects) {
     if (Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC) {
@@ -156,21 +157,30 @@ public final class HeuristicSolver {
     boolean improvedAny;
     do {
       improvedAny = false;
+      List<ChamberLoad> denseOrder = rankChambersByLoad(projects, best);
+      List<ChamberLoad> sparseOrder = new ArrayList<>(denseOrder);
+      sparseOrder.sort(
+          Comparator.comparingDouble((ChamberLoad x) -> x.normalizedBusyDays)
+              .thenComparingInt(x -> x.busyDays)
+              .thenComparing(x -> x.chamber.id)
+      );
 
-      // SWAP neighbors
+      // SWAP: en yoğun oda ile en boş oda çiftlerini öncelikle dene.
       if (Data.ROOM_LS_ENABLE_SWAP) {
-        for (int i = 0; i < Data.CHAMBERS.size() && evals < maxEvals; i++) {
-          for (int j = i + 1; j < Data.CHAMBERS.size() && evals < maxEvals; j++) {
-            ChamberSpec ci = Data.CHAMBERS.get(i);
-            ChamberSpec cj = Data.CHAMBERS.get(j);
-            Env ei = best.get(ci.id);
-            Env ej = best.get(cj.id);
-            if (ei == null || ej == null || ei.equals(ej)) continue;
-            if (!canAssign(ci, ej) || !canAssign(cj, ei)) continue;
+        for (ChamberLoad dense : denseOrder) {
+          if (evals >= maxEvals) break;
+          for (ChamberLoad sparse : sparseOrder) {
+            if (evals >= maxEvals) break;
+            if (dense.chamber.id.equals(sparse.chamber.id)) continue;
+            if (dense.normalizedBusyDays <= sparse.normalizedBusyDays) continue;
+            Env denseEnv = best.get(dense.chamber.id);
+            Env sparseEnv = best.get(sparse.chamber.id);
+            if (denseEnv == null || sparseEnv == null || denseEnv.equals(sparseEnv)) continue;
+            if (!canAssign(dense.chamber, sparseEnv) || !canAssign(sparse.chamber, denseEnv)) continue;
 
             Map<String, Env> candRoom = new LinkedHashMap<>(best);
-            candRoom.put(ci.id, ej);
-            candRoom.put(cj.id, ei);
+            candRoom.put(dense.chamber.id, sparseEnv);
+            candRoom.put(sparse.chamber.id, denseEnv);
             if (!isRoomFeasible(candRoom, demanded, demandedByVolt)) continue;
             evals++;
             int s = scoreRoom(candRoom, projects).totalLateness;
@@ -185,17 +195,21 @@ public final class HeuristicSolver {
         }
       }
 
-      // MOVE neighbors
+      // MOVE: en boş odanın ayarını en yoğun odanın env değerine taşı.
       if (!improvedAny && Data.ROOM_LS_ENABLE_MOVE) {
-        for (int i = 0; i < Data.CHAMBERS.size() && evals < maxEvals; i++) {
-          ChamberSpec c = Data.CHAMBERS.get(i);
-          Env cur = best.get(c.id);
-          for (Env target : demanded) {
+        for (ChamberLoad dense : denseOrder) {
+          if (evals >= maxEvals) break;
+          Env denseEnv = best.get(dense.chamber.id);
+          if (denseEnv == null) continue;
+          for (ChamberLoad sparse : sparseOrder) {
             if (evals >= maxEvals) break;
-            if (target.equals(cur)) continue;
-            if (!canAssign(c, target)) continue;
+            if (dense.chamber.id.equals(sparse.chamber.id)) continue;
+            if (dense.normalizedBusyDays <= sparse.normalizedBusyDays) continue;
+            Env sparseEnv = best.get(sparse.chamber.id);
+            if (sparseEnv == null || denseEnv.equals(sparseEnv)) continue;
+            if (!canAssign(sparse.chamber, denseEnv)) continue;
             Map<String, Env> candRoom = new LinkedHashMap<>(best);
-            candRoom.put(c.id, target);
+            candRoom.put(sparse.chamber.id, denseEnv);
             if (!isRoomFeasible(candRoom, demanded, demandedByVolt)) continue;
             evals++;
             int s = scoreRoom(candRoom, projects).totalLateness;
@@ -221,6 +235,26 @@ public final class HeuristicSolver {
   private static boolean canAssign(ChamberSpec chamber, Env env) {
     if (env.humidity == Humidity.H85 && !chamber.humidityAdjustable) return false;
     return true;
+  }
+
+  private List<ChamberLoad> rankChambersByLoad(List<Project> projects, Map<String, Env> room) {
+    Scheduler.EvalResult eval = scheduler.evaluateNoCopy(projects, room);
+    Map<String, Integer> busyDaysByChamber = new HashMap<>();
+    for (Scheduler.ScheduledJob j : eval.schedule) {
+      busyDaysByChamber.merge(j.chamberId, j.durationDays, Integer::sum);
+    }
+    List<ChamberLoad> out = new ArrayList<>(Data.CHAMBERS.size());
+    for (ChamberSpec c : Data.CHAMBERS) {
+      int busyDays = busyDaysByChamber.getOrDefault(c.id, 0);
+      double normalized = busyDays / (double) Math.max(1, c.stations);
+      out.add(new ChamberLoad(c, busyDays, normalized));
+    }
+    out.sort(
+        Comparator.comparingDouble((ChamberLoad x) -> x.normalizedBusyDays).reversed()
+            .thenComparingInt(x -> x.busyDays).reversed()
+            .thenComparing(x -> x.chamber.id)
+    );
+    return out;
   }
 
   private static boolean isRoomFeasible(Map<String, Env> room, Set<Env> demanded, Set<Env> demandedByVolt) {
