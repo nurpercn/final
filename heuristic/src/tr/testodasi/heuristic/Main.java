@@ -139,6 +139,14 @@ public final class Main {
         String v = a.substring("--roomLSIncludeSample=".length()).trim();
         Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
       }
+      if (a != null && startsWithIgnoreCase(a, "--seed=")) {
+        applySeedArg(a.substring("--seed=".length()));
+      } else if ("--seed".equalsIgnoreCase(a)) {
+        if (idx + 1 < args.length) {
+          applySeedArg(args[idx + 1]);
+          idx++;
+        }
+      }
       if (a != null && a.startsWith("--validate=")) {
         String v = a.substring("--validate=".length()).trim();
         Data.ENABLE_SCHEDULE_VALIDATION = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
@@ -238,6 +246,7 @@ public final class Main {
       System.out.println("- SAMPLE_MAX=" + Data.SAMPLE_MAX + " SAMPLE_SEARCH_MAX_EVALS=" + Data.SAMPLE_SEARCH_MAX_EVALS);
       System.out.println("- SCHEDULING_MODE=" + Data.SCHEDULING_MODE + " JOB_DISPATCH_RULE=" + Data.JOB_DISPATCH_RULE);
       System.out.println("- ENABLE_ROOM_LOCAL_SEARCH=" + Data.ENABLE_ROOM_LOCAL_SEARCH);
+      System.out.println("- RANDOM_SEED=" + (Data.RANDOM_SEED == null ? "random" : Data.RANDOM_SEED));
     }
  
     if (batchPath != null && !batchPath.isBlank()) {
@@ -386,6 +395,7 @@ public final class Main {
     System.out.println("  --roomLSSwap=<bool>        Enable/disable swap neighbors");
     System.out.println("  --roomLSMove=<bool>        Enable/disable move neighbors");
     System.out.println("  --roomLSIncludeSample=<bool>  Score rooms using sample-heuristic too (slower)");
+    System.out.println("  --seed=<n|random>          RNG seed (default=42, use random for non-deterministic runs)");
     System.out.println();
     System.out.println("  --validate=<bool>          Enable/disable schedule validation");
     System.out.println();
@@ -552,6 +562,19 @@ public final class Main {
     if (s == null || prefix == null) return false;
     if (s.length() < prefix.length()) return false;
     return s.regionMatches(true, 0, prefix, 0, prefix.length());
+  }
+
+  private static void applySeedArg(String raw) {
+    if (raw == null) return;
+    String v = raw.trim();
+    if (v.isEmpty()) return;
+    if ("random".equalsIgnoreCase(v) || "none".equalsIgnoreCase(v) || "null".equalsIgnoreCase(v)) {
+      Data.RANDOM_SEED = null;
+      return;
+    }
+    try {
+      Data.RANDOM_SEED = Long.parseLong(v);
+    } catch (NumberFormatException ignored) {}
   }
  
   private static void printDiagnostics(Solution best) {

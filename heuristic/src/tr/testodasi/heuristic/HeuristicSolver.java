@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -16,6 +17,7 @@ public final class HeuristicSolver {
   private final Scheduler scheduler = new Scheduler();
   private final boolean verbose;
   private final ProgressListener listener;
+  private Random seededRandom;
 
   public HeuristicSolver() {
     this(false);
@@ -40,6 +42,7 @@ public final class HeuristicSolver {
     Objects.requireNonNull(projects);
 
     scheduler.resetEvalCount();
+    seededRandom = Data.RANDOM_SEED != null ? new Random(Data.RANDOM_SEED) : null;
     List<Solution> solutions = new ArrayList<>();
     Map<String, Env> prevRoom = null;
 
@@ -745,6 +748,16 @@ public final class HeuristicSolver {
     return sum;
   }
 
+  private int nextRandomInt(int boundExclusive) {
+    if (boundExclusive <= 0) {
+      throw new IllegalArgumentException("boundExclusive must be > 0");
+    }
+    if (seededRandom != null) {
+      return seededRandom.nextInt(boundExclusive);
+    }
+    return ThreadLocalRandom.current().nextInt(boundExclusive);
+  }
+
   private boolean tryShakeDownToMin(
       Map<String, Env> room,
       List<Project> current,
@@ -762,7 +775,7 @@ public final class HeuristicSolver {
     if (idxs.isEmpty()) return false;
     // Randomly select projects (uniform, without replacement).
     for (int i = idxs.size() - 1; i > 0; i--) {
-      int j = ThreadLocalRandom.current().nextInt(i + 1);
+      int j = nextRandomInt(i + 1);
       int tmp = idxs.get(i);
       idxs.set(i, idxs.get(j));
       idxs.set(j, tmp);
@@ -811,7 +824,7 @@ public final class HeuristicSolver {
     if (idxs.isEmpty()) return false;
     // Randomly select projects (uniform, without replacement).
     for (int i = idxs.size() - 1; i > 0; i--) {
-      int j = ThreadLocalRandom.current().nextInt(i + 1);
+      int j = nextRandomInt(i + 1);
       int tmp = idxs.get(i);
       idxs.set(i, idxs.get(j));
       idxs.set(j, tmp);

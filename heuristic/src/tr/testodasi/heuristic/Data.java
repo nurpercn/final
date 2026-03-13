@@ -49,6 +49,14 @@ public final class Data {
   /** Room LS scoring: sample artırmayı da dahil et (daha pahalı). */
   public static boolean ROOM_LS_INCLUDE_SAMPLE_HEURISTIC = false;
 
+  /**
+   * Rastgele adımlar için seed.
+   *
+   * <p>Varsayılan deterministik davranış için sabit bir seed kullanılır. Farklı sonuçlar için
+   * CLI'dan {@code --seed=random} verilebilir.
+   */
+  public static Long RANDOM_SEED = 42L;
+
   /** Schedule doğrulama (ihlal varsa exception). */
   public static boolean ENABLE_SCHEDULE_VALIDATION = true;
 
