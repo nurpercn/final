@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.TreeSet;
  
 public final class Main {
+  private static final int VNS_PROGRESS_STEP = 200;
+
   public static void main(String[] args) {
     boolean verbose = false;
     String dumpProjectId = null;
@@ -278,7 +280,30 @@ public final class Main {
       return;
     }
  
-    HeuristicSolver solver = new HeuristicSolver(verbose);
+    Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
+    HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
+      @Override
+      public void onVnsIteration(int outerIteration, int vnsIteration, String kind, int totalLateness, int totalSamples, long stage2ElapsedMs) {
+        int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
+        if (maxShakes < VNS_PROGRESS_STEP) return;
+
+        int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
+        while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
+          System.out.println(
+              "VNS checkpoint: outerIter=" + outerIteration +
+                  " vnsIter=" + nextCheckpoint + "/" + maxShakes +
+                  " totalLateness=" + totalLateness +
+                  " totalSamples=" + totalSamples +
+                  " stage2ElapsedMs=" + stage2ElapsedMs +
+                  " lastShake=" + kind
+          );
+          nextCheckpoint += VNS_PROGRESS_STEP;
+        }
+        nextVnsCheckpointByOuter.put(outerIteration, nextCheckpoint);
+      }
+    };
+
+    HeuristicSolver solver = new HeuristicSolver(verbose, listener);
     long solveT0 = System.currentTimeMillis();
     List<Solution> sols = solver.solve();
     long solveT1 = System.currentTimeMillis();
