@@ -20,6 +20,7 @@ public final class Main {
 
   public static void main(String[] args) {
     boolean verbose = false;
+    Long randomSeed = HeuristicSolver.DEFAULT_RANDOM_SEED;
     String dumpProjectId = null;
     boolean dumpFirst10 = false;
     String csvDir = null;
@@ -142,10 +143,10 @@ public final class Main {
         Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
       }
       if (a != null && startsWithIgnoreCase(a, "--seed=")) {
-        applySeedArg(a.substring("--seed=".length()));
+        randomSeed = parseSeedArg(a.substring("--seed=".length()), randomSeed);
       } else if ("--seed".equalsIgnoreCase(a)) {
         if (idx + 1 < args.length) {
-          applySeedArg(args[idx + 1]);
+          randomSeed = parseSeedArg(args[idx + 1], randomSeed);
           idx++;
         }
       }
@@ -248,7 +249,7 @@ public final class Main {
       System.out.println("- SAMPLE_MAX=" + Data.SAMPLE_MAX + " SAMPLE_SEARCH_MAX_EVALS=" + Data.SAMPLE_SEARCH_MAX_EVALS);
       System.out.println("- SCHEDULING_MODE=" + Data.SCHEDULING_MODE + " JOB_DISPATCH_RULE=" + Data.JOB_DISPATCH_RULE);
       System.out.println("- ENABLE_ROOM_LOCAL_SEARCH=" + Data.ENABLE_ROOM_LOCAL_SEARCH);
-      System.out.println("- RANDOM_SEED=" + (Data.RANDOM_SEED == null ? "random" : Data.RANDOM_SEED));
+      System.out.println("- RANDOM_SEED=" + (randomSeed == null ? "random" : randomSeed));
     }
  
     if (batchPath != null && !batchPath.isBlank()) {
@@ -303,7 +304,7 @@ public final class Main {
       }
     };
 
-    HeuristicSolver solver = new HeuristicSolver(verbose, listener);
+    HeuristicSolver solver = new HeuristicSolver(verbose, listener, randomSeed);
     long solveT0 = System.currentTimeMillis();
     List<Solution> sols = solver.solve();
     long solveT1 = System.currentTimeMillis();
@@ -589,17 +590,18 @@ public final class Main {
     return s.regionMatches(true, 0, prefix, 0, prefix.length());
   }
 
-  private static void applySeedArg(String raw) {
-    if (raw == null) return;
+  private static Long parseSeedArg(String raw, Long current) {
+    if (raw == null) return current;
     String v = raw.trim();
-    if (v.isEmpty()) return;
+    if (v.isEmpty()) return current;
     if ("random".equalsIgnoreCase(v) || "none".equalsIgnoreCase(v) || "null".equalsIgnoreCase(v)) {
-      Data.RANDOM_SEED = null;
-      return;
+      return null;
     }
     try {
-      Data.RANDOM_SEED = Long.parseLong(v);
-    } catch (NumberFormatException ignored) {}
+      return Long.parseLong(v);
+    } catch (NumberFormatException ignored) {
+      return current;
+    }
   }
  
   private static void printDiagnostics(Solution best) {
