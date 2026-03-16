@@ -17,6 +17,17 @@ import java.util.TreeSet;
  
 public final class Main {
   private static final int VNS_PROGRESS_STEP = 200;
+  private record VnsCheckpointRow(
+      int outerIteration,
+      int checkpointVnsIteration,
+      int maxShakes,
+      int bestTotalLateness,
+      int bestTotalSamples,
+      int currentTotalLateness,
+      int currentTotalSamples,
+      long stage2ElapsedMs,
+      String lastShakeKind
+  ) {}
 
   public static void main(String[] args) {
     boolean verbose = false;
@@ -282,19 +293,43 @@ public final class Main {
     }
  
     Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
+    Map<Integer, int[]> bestAtOuterByLatenessSamples = new HashMap<>();
+    List<VnsCheckpointRow> vnsCheckpointRows = new ArrayList<>();
     HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
       @Override
       public void onVnsIteration(int outerIteration, int vnsIteration, String kind, int totalLateness, int totalSamples, long stage2ElapsedMs) {
         int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
         if (maxShakes < VNS_PROGRESS_STEP) return;
 
+        int[] best = bestAtOuterByLatenessSamples.get(outerIteration);
+        if (best == null ||
+            totalLateness < best[0] ||
+            (totalLateness == best[0] && totalSamples < best[1])) {
+          best = new int[]{totalLateness, totalSamples};
+          bestAtOuterByLatenessSamples.put(outerIteration, best);
+        }
+
         int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
         while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
+          VnsCheckpointRow row = new VnsCheckpointRow(
+              outerIteration,
+              nextCheckpoint,
+              maxShakes,
+              best[0],
+              best[1],
+              totalLateness,
+              totalSamples,
+              stage2ElapsedMs,
+              kind
+          );
+          vnsCheckpointRows.add(row);
           System.out.println(
               "VNS checkpoint: outerIter=" + outerIteration +
                   " vnsIter=" + nextCheckpoint + "/" + maxShakes +
-                  " totalLateness=" + totalLateness +
-                  " totalSamples=" + totalSamples +
+                  " bestTotalLateness=" + best[0] +
+                  " bestTotalSamples=" + best[1] +
+                  " currentTotalLateness=" + totalLateness +
+                  " currentTotalSamples=" + totalSamples +
                   " stage2ElapsedMs=" + stage2ElapsedMs +
                   " lastShake=" + kind
           );
@@ -354,11 +389,12 @@ public final class Main {
     if ((csvDir != null && !csvDir.isBlank()) || csvFlag) {
       if (csvDir == null || csvDir.isBlank()) csvDir = "csv_out";
       try {
-        int rows = exportCsv(best, Paths.get(csvDir));
+        int rows = exportCsv(best, Paths.get(csvDir), vnsCheckpointRows);
         System.out.println();
         System.out.println("CSV exported to: " + Paths.get(csvDir).toAbsolutePath());
         System.out.println("- schedule_by_project.csv");
         System.out.println("- schedule_by_station.csv");
+        System.out.println("- vns_checkpoints.csv");
         System.out.println("Rows written: " + rows);
       } catch (IOException e) {
         throw new RuntimeException("Failed to export CSV to dir=" + csvDir, e);
@@ -524,9 +560,10 @@ public final class Main {
     }
   }
  
-  private static int exportCsv(Solution sol, Path dir) throws IOException {
+  private static int exportCsv(Solution sol, Path dir, List<VnsCheckpointRow> vnsCheckpoints) throws IOException {
     Objects.requireNonNull(sol);
     Objects.requireNonNull(dir);
+    Objects.requireNonNull(vnsCheckpoints);
     Files.createDirectories(dir);
  
     Map<String, Project> projectById = new HashMap<>();
@@ -554,6 +591,33 @@ public final class Main {
               .thenComparing(j -> j.projectId)
               .thenComparing(j -> j.testId))
           .forEach(j -> writeRowStation(w, sol.iteration, j, projectById.get(j.projectId)));
+    }
+
+    Path vnsCheckpointsPath = dir.resolve("vns_checkpoints.csv");
+    try (BufferedWriter w = Files.newBufferedWriter(vnsCheckpointsPath)) {
+      w.write("outerIteration,checkpointVnsIteration,maxShakes,bestTotalLateness,bestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
+      w.newLine();
+      vnsCheckpoints.stream()
+          .sorted(Comparator.comparingInt((VnsCheckpointRow r) -> r.outerIteration)
+              .thenComparingInt(r -> r.checkpointVnsIteration))
+          .forEach(r -> {
+            try {
+              w.write(
+                  r.outerIteration + "," +
+                      r.checkpointVnsIteration + "," +
+                      r.maxShakes + "," +
+                      r.bestTotalLateness + "," +
+                      r.bestTotalSamples + "," +
+                      r.currentTotalLateness + "," +
+                      r.currentTotalSamples + "," +
+                      r.stage2ElapsedMs + "," +
+                      (r.lastShakeKind == null ? "" : r.lastShakeKind)
+              );
+              w.newLine();
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
     }
  
     return sol.schedule.size();
