@@ -17,6 +17,7 @@ import java.util.TreeSet;
  
 public final class Main {
   private static final int VNS_PROGRESS_STEP = 200;
+  private static final long DEFAULT_SEED = 42L;
   private record VnsCheckpointRow(
       int outerIteration,
       int checkpointVnsIteration,
@@ -31,7 +32,7 @@ public final class Main {
 
   public static void main(String[] args) {
     boolean verbose = false;
-    Long randomSeed = HeuristicSolver.DEFAULT_RANDOM_SEED;
+    Long randomSeed = DEFAULT_SEED;
     String dumpProjectId = null;
     boolean dumpFirst10 = false;
     String csvDir = null;
@@ -339,7 +340,7 @@ public final class Main {
       }
     };
 
-    HeuristicSolver solver = new HeuristicSolver(verbose, listener, randomSeed);
+    HeuristicSolver solver = buildSolver(verbose, listener, randomSeed);
     long solveT0 = System.currentTimeMillis();
     List<Solution> sols = solver.solve();
     long solveT1 = System.currentTimeMillis();
@@ -665,6 +666,21 @@ public final class Main {
       return Long.parseLong(v);
     } catch (NumberFormatException ignored) {
       return current;
+    }
+  }
+
+  private static HeuristicSolver buildSolver(
+      boolean verbose,
+      HeuristicSolver.ProgressListener listener,
+      Long randomSeed
+  ) {
+    try {
+      return HeuristicSolver.class
+          .getConstructor(boolean.class, HeuristicSolver.ProgressListener.class, Long.class)
+          .newInstance(verbose, listener, randomSeed);
+    } catch (ReflectiveOperationException ignored) {
+      // Backward compatibility: older solver versions only have (boolean, listener) constructor.
+      return new HeuristicSolver(verbose, listener);
     }
   }
  
