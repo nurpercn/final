@@ -32,6 +32,8 @@ import java.util.Objects;
  * - validate
  */
 public final class BatchRunner {
+  private static final int VNS_PROGRESS_STEP = 200;
+
   private BatchRunner() {}
  
   public static void run(Path instancesCsv, Path outCsv, boolean verbose) throws IOException {
@@ -89,6 +91,7 @@ public final class BatchRunner {
     BufferedWriter envW = null;
     BufferedWriter schedW = null;
     BufferedWriter vnsW = null;
+    BufferedWriter checkpointW = null;
     if (detailsDir != null) {
       Files.createDirectories(detailsDir);
       projW = Files.newBufferedWriter(detailsDir.resolve("batch_project_results.csv"));
@@ -97,6 +100,8 @@ public final class BatchRunner {
         schedW = Files.newBufferedWriter(detailsDir.resolve("batch_schedule.csv"));
       }
       vnsW = Files.newBufferedWriter(detailsDir.resolve("batch_vns_trace.csv"));
+      // Keep a non-batch-compatible filename too, so users can always find checkpoint CSV.
+      checkpointW = Files.newBufferedWriter(detailsDir.resolve("vns_checkpoints.csv"));
  
       projW.write("instanceId,iteration,projectId,dueDateDays,needsVolt,samples,completionDay,lateness");
       projW.newLine();
@@ -108,6 +113,8 @@ public final class BatchRunner {
       }
       vnsW.write("instanceId,iteration,vnsIteration,kind,totalLateness,totalSamples,stage2ElapsedMs");
       vnsW.newLine();
+      checkpointW.write("instanceId,outerIteration,checkpointVnsIteration,maxShakes,bestTotalLateness,bestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
+      checkpointW.newLine();
     }
  
     try (BufferedWriter w = Files.newBufferedWriter(outCsv)) {
@@ -134,6 +141,9 @@ public final class BatchRunner {
  
         long t0 = System.currentTimeMillis();
         final BufferedWriter traceWriter = vnsW;
+        final BufferedWriter checkpointsWriter = checkpointW;
+        final Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
+        final Map<Integer, int[]> bestAtOuterByLatenessSamples = new HashMap<>();
         HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
           @Override
           public void onStage1Done(int outerIteration, long stage1RuntimeMs) {
@@ -175,6 +185,47 @@ public final class BatchRunner {
                     totalLateness + "," + totalSamples + "," + stage2ElapsedMs);
                 traceWriter.newLine();
                 traceWriter.flush();
+              } catch (IOException ex) {
+                throw new RuntimeException(ex);
+              }
+            }
+
+            if (checkpointsWriter != null) {
+              int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
+              if (maxShakes < VNS_PROGRESS_STEP) return;
+
+              int[] best = bestAtOuterByLatenessSamples.get(outerIteration);
+              if (best == null ||
+                  totalLateness < best[0] ||
+                  (totalLateness == best[0] && totalSamples < best[1])) {
+                best = new int[]{totalLateness, totalSamples};
+                bestAtOuterByLatenessSamples.put(outerIteration, best);
+              }
+
+              int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
+              while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
+                try {
+                  checkpointsWriter.write(
+                      csv(instanceId) + "," +
+                          outerIteration + "," +
+                          nextCheckpoint + "," +
+                          maxShakes + "," +
+                          best[0] + "," +
+                          best[1] + "," +
+                          totalLateness + "," +
+                          totalSamples + "," +
+                          stage2ElapsedMs + "," +
+                          (kind == null ? "" : kind)
+                  );
+                  checkpointsWriter.newLine();
+                } catch (IOException ex) {
+                  throw new RuntimeException(ex);
+                }
+                nextCheckpoint += VNS_PROGRESS_STEP;
+              }
+              nextVnsCheckpointByOuter.put(outerIteration, nextCheckpoint);
+              try {
+                checkpointsWriter.flush();
               } catch (IOException ex) {
                 throw new RuntimeException(ex);
               }
@@ -288,6 +339,7 @@ public final class BatchRunner {
       if (envW != null) try { envW.close(); } catch (IOException ignored) {}
       if (schedW != null) try { schedW.close(); } catch (IOException ignored) {}
       if (vnsW != null) try { vnsW.close(); } catch (IOException ignored) {}
+      if (checkpointW != null) try { checkpointW.close(); } catch (IOException ignored) {}
       snap.restore();
     }
   }
