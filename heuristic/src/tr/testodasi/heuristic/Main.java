@@ -17,9 +17,22 @@ import java.util.TreeSet;
  
 public final class Main {
   private static final int VNS_PROGRESS_STEP = 200;
+  private static final long DEFAULT_SEED = 42L;
+  private record VnsCheckpointRow(
+      int outerIteration,
+      int checkpointVnsIteration,
+      int maxShakes,
+      int bestTotalLateness,
+      int bestTotalSamples,
+      int currentTotalLateness,
+      int currentTotalSamples,
+      long stage2ElapsedMs,
+      String lastShakeKind
+  ) {}
 
   public static void main(String[] args) {
     boolean verbose = false;
+    Long randomSeed = DEFAULT_SEED;
     String dumpProjectId = null;
     boolean dumpFirst10 = false;
     String csvDir = null;
@@ -142,10 +155,10 @@ public final class Main {
         Data.ROOM_LS_INCLUDE_SAMPLE_HEURISTIC = "1".equals(v) || "true".equalsIgnoreCase(v) || "yes".equalsIgnoreCase(v);
       }
       if (a != null && startsWithIgnoreCase(a, "--seed=")) {
-        applySeedArg(a.substring("--seed=".length()));
+        randomSeed = parseSeedArg(a.substring("--seed=".length()), randomSeed);
       } else if ("--seed".equalsIgnoreCase(a)) {
         if (idx + 1 < args.length) {
-          applySeedArg(args[idx + 1]);
+          randomSeed = parseSeedArg(args[idx + 1], randomSeed);
           idx++;
         }
       }
@@ -248,7 +261,7 @@ public final class Main {
       System.out.println("- SAMPLE_MAX=" + Data.SAMPLE_MAX + " SAMPLE_SEARCH_MAX_EVALS=" + Data.SAMPLE_SEARCH_MAX_EVALS);
       System.out.println("- SCHEDULING_MODE=" + Data.SCHEDULING_MODE + " JOB_DISPATCH_RULE=" + Data.JOB_DISPATCH_RULE);
       System.out.println("- ENABLE_ROOM_LOCAL_SEARCH=" + Data.ENABLE_ROOM_LOCAL_SEARCH);
-      System.out.println("- RANDOM_SEED=" + (Data.RANDOM_SEED == null ? "random" : Data.RANDOM_SEED));
+      System.out.println("- RANDOM_SEED=" + (randomSeed == null ? "random" : randomSeed));
     }
  
     if (batchPath != null && !batchPath.isBlank()) {
@@ -281,19 +294,43 @@ public final class Main {
     }
  
     Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
+    Map<Integer, int[]> bestAtOuterByLatenessSamples = new HashMap<>();
+    List<VnsCheckpointRow> vnsCheckpointRows = new ArrayList<>();
     HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
       @Override
       public void onVnsIteration(int outerIteration, int vnsIteration, String kind, int totalLateness, int totalSamples, long stage2ElapsedMs) {
         int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
         if (maxShakes < VNS_PROGRESS_STEP) return;
 
+        int[] best = bestAtOuterByLatenessSamples.get(outerIteration);
+        if (best == null ||
+            totalLateness < best[0] ||
+            (totalLateness == best[0] && totalSamples < best[1])) {
+          best = new int[]{totalLateness, totalSamples};
+          bestAtOuterByLatenessSamples.put(outerIteration, best);
+        }
+
         int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
         while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
+          VnsCheckpointRow row = new VnsCheckpointRow(
+              outerIteration,
+              nextCheckpoint,
+              maxShakes,
+              best[0],
+              best[1],
+              totalLateness,
+              totalSamples,
+              stage2ElapsedMs,
+              kind
+          );
+          vnsCheckpointRows.add(row);
           System.out.println(
               "VNS checkpoint: outerIter=" + outerIteration +
                   " vnsIter=" + nextCheckpoint + "/" + maxShakes +
-                  " totalLateness=" + totalLateness +
-                  " totalSamples=" + totalSamples +
+                  " bestTotalLateness=" + best[0] +
+                  " bestTotalSamples=" + best[1] +
+                  " currentTotalLateness=" + totalLateness +
+                  " currentTotalSamples=" + totalSamples +
                   " stage2ElapsedMs=" + stage2ElapsedMs +
                   " lastShake=" + kind
           );
@@ -303,7 +340,7 @@ public final class Main {
       }
     };
 
-    HeuristicSolver solver = new HeuristicSolver(verbose, listener);
+    HeuristicSolver solver = buildSolver(verbose, listener, randomSeed);
     long solveT0 = System.currentTimeMillis();
     List<Solution> sols = solver.solve();
     long solveT1 = System.currentTimeMillis();
@@ -353,11 +390,12 @@ public final class Main {
     if ((csvDir != null && !csvDir.isBlank()) || csvFlag) {
       if (csvDir == null || csvDir.isBlank()) csvDir = "csv_out";
       try {
-        int rows = exportCsv(best, Paths.get(csvDir));
+        int rows = exportCsv(best, Paths.get(csvDir), vnsCheckpointRows);
         System.out.println();
         System.out.println("CSV exported to: " + Paths.get(csvDir).toAbsolutePath());
         System.out.println("- schedule_by_project.csv");
         System.out.println("- schedule_by_station.csv");
+        System.out.println("- vns_checkpoints.csv");
         System.out.println("Rows written: " + rows);
       } catch (IOException e) {
         throw new RuntimeException("Failed to export CSV to dir=" + csvDir, e);
@@ -523,9 +561,10 @@ public final class Main {
     }
   }
  
-  private static int exportCsv(Solution sol, Path dir) throws IOException {
+  private static int exportCsv(Solution sol, Path dir, List<VnsCheckpointRow> vnsCheckpoints) throws IOException {
     Objects.requireNonNull(sol);
     Objects.requireNonNull(dir);
+    Objects.requireNonNull(vnsCheckpoints);
     Files.createDirectories(dir);
  
     Map<String, Project> projectById = new HashMap<>();
@@ -553,6 +592,33 @@ public final class Main {
               .thenComparing(j -> j.projectId)
               .thenComparing(j -> j.testId))
           .forEach(j -> writeRowStation(w, sol.iteration, j, projectById.get(j.projectId)));
+    }
+
+    Path vnsCheckpointsPath = dir.resolve("vns_checkpoints.csv");
+    try (BufferedWriter w = Files.newBufferedWriter(vnsCheckpointsPath)) {
+      w.write("outerIteration,checkpointVnsIteration,maxShakes,bestTotalLateness,bestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
+      w.newLine();
+      vnsCheckpoints.stream()
+          .sorted(Comparator.comparingInt((VnsCheckpointRow r) -> r.outerIteration)
+              .thenComparingInt(r -> r.checkpointVnsIteration))
+          .forEach(r -> {
+            try {
+              w.write(
+                  r.outerIteration + "," +
+                      r.checkpointVnsIteration + "," +
+                      r.maxShakes + "," +
+                      r.bestTotalLateness + "," +
+                      r.bestTotalSamples + "," +
+                      r.currentTotalLateness + "," +
+                      r.currentTotalSamples + "," +
+                      r.stage2ElapsedMs + "," +
+                      (r.lastShakeKind == null ? "" : r.lastShakeKind)
+              );
+              w.newLine();
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
     }
  
     return sol.schedule.size();
@@ -589,17 +655,33 @@ public final class Main {
     return s.regionMatches(true, 0, prefix, 0, prefix.length());
   }
 
-  private static void applySeedArg(String raw) {
-    if (raw == null) return;
+  private static Long parseSeedArg(String raw, Long current) {
+    if (raw == null) return current;
     String v = raw.trim();
-    if (v.isEmpty()) return;
+    if (v.isEmpty()) return current;
     if ("random".equalsIgnoreCase(v) || "none".equalsIgnoreCase(v) || "null".equalsIgnoreCase(v)) {
-      Data.RANDOM_SEED = null;
-      return;
+      return null;
     }
     try {
-      Data.RANDOM_SEED = Long.parseLong(v);
-    } catch (NumberFormatException ignored) {}
+      return Long.parseLong(v);
+    } catch (NumberFormatException ignored) {
+      return current;
+    }
+  }
+
+  private static HeuristicSolver buildSolver(
+      boolean verbose,
+      HeuristicSolver.ProgressListener listener,
+      Long randomSeed
+  ) {
+    try {
+      return HeuristicSolver.class
+          .getConstructor(boolean.class, HeuristicSolver.ProgressListener.class, Long.class)
+          .newInstance(verbose, listener, randomSeed);
+    } catch (ReflectiveOperationException ignored) {
+      // Backward compatibility: older solver versions only have (boolean, listener) constructor.
+      return new HeuristicSolver(verbose, listener);
+    }
   }
  
   private static void printDiagnostics(Solution best) {

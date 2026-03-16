@@ -14,9 +14,12 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 public final class HeuristicSolver {
+  public static final Long DEFAULT_RANDOM_SEED = 42L;
+
   private final Scheduler scheduler = new Scheduler();
   private final boolean verbose;
   private final ProgressListener listener;
+  private final Long randomSeed;
   private Random seededRandom;
 
   public HeuristicSolver() {
@@ -24,12 +27,17 @@ public final class HeuristicSolver {
   }
 
   public HeuristicSolver(boolean verbose) {
-    this(verbose, null);
+    this(verbose, null, DEFAULT_RANDOM_SEED);
   }
 
   public HeuristicSolver(boolean verbose, ProgressListener listener) {
+    this(verbose, listener, DEFAULT_RANDOM_SEED);
+  }
+
+  public HeuristicSolver(boolean verbose, ProgressListener listener, Long randomSeed) {
     this.verbose = verbose;
     this.listener = listener;
+    this.randomSeed = randomSeed;
   }
 
   public List<Solution> solve() {
@@ -42,7 +50,7 @@ public final class HeuristicSolver {
     Objects.requireNonNull(projects);
 
     scheduler.resetEvalCount();
-    seededRandom = Data.RANDOM_SEED != null ? new Random(Data.RANDOM_SEED) : null;
+    seededRandom = randomSeed != null ? new Random(randomSeed) : null;
     List<Solution> solutions = new ArrayList<>();
     Map<String, Env> prevRoom = null;
 
