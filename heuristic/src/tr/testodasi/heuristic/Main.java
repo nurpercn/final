@@ -446,7 +446,7 @@ public final class Main {
     System.out.println("  --sampleIncrease           Enable sample local-search (same as true)");
     System.out.println("  --sampleIncrease <bool>    Enable/disable sample local-search");
     System.out.println("  --sampleIncrease=<bool>    Enable/disable sample local-search");
-    System.out.println("  --vnsNoPlusMinusTwo=<bool> Disable +/-2 sample moves in Stage2");
+    System.out.println("  --vnsNoPlusMinusTwo=<bool> Disable +/-2 sample moves after VNS starts");
     System.out.println("  --lsRestrictByLateness=<bool>  Only increase late, decrease on-time");
     System.out.println("  --lsLateEarlyPairing=<bool>    Pair late/early projects in local search");
     System.out.println("  --lsLateEarlyPairCount=<n>     Max late/early pairs (default=10)");

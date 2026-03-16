@@ -77,7 +77,7 @@ public final class Data {
   
   public static int STAGE2_MAX_SHAKES = 100;
 
-  /** Stage2 local search: +/-2 sample denemelerini kapat. */
+  /** Stage2 local search: VNS sonrası (+/-2) sample denemelerini kapat. */
   public static boolean VNS_DISABLE_PLUS_MINUS_TWO = true;
 
   /** Stage2 local search: gecikmeyen projelerde sadece azaltma, gecikenlerde sadece arttırma. */

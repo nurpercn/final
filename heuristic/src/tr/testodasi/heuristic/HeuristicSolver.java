@@ -414,8 +414,11 @@ public final class HeuristicSolver {
           int bestSamples = curSamples;
           Scheduler.EvalResult bestEval = baseEval;
 
+          // Before first VNS shake, keep +/-2 neighborhood active.
+          // If configured, disable +/-2 after VNS is entered (post-shake phase).
+          boolean disablePlusMinusTwoNow = Data.VNS_DISABLE_PLUS_MINUS_TWO && capturedPreShake;
           int[] deltas;
-          if (Data.VNS_DISABLE_PLUS_MINUS_TWO) {
+          if (disablePlusMinusTwoNow) {
             deltas = (curSamples <= Data.MIN_SAMPLES)
                 ? new int[]{+1}
                 : new int[]{+1, -1};
