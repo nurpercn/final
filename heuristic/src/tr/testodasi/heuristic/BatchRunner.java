@@ -113,7 +113,7 @@ public final class BatchRunner {
       }
       vnsW.write("instanceId,iteration,vnsIteration,kind,totalLateness,totalSamples,stage2ElapsedMs");
       vnsW.newLine();
-      checkpointW.write("instanceId,outerIteration,checkpointVnsIteration,maxShakes,bestTotalLateness,bestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
+      checkpointW.write("instanceId,checkpointGlobalVnsIteration,globalVnsIterationAtEvent,outerIteration,outerVnsIteration,globalBestTotalLateness,globalBestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
       checkpointW.newLine();
     }
  
@@ -142,8 +142,10 @@ public final class BatchRunner {
         long t0 = System.currentTimeMillis();
         final BufferedWriter traceWriter = vnsW;
         final BufferedWriter checkpointsWriter = checkpointW;
-        final Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
-        final Map<Integer, int[]> bestAtOuterByLatenessSamples = new HashMap<>();
+        final Map<Integer, Integer> lastOuterVnsIteration = new HashMap<>();
+        final int[] globalVnsState = new int[] {0};
+        final int[] nextGlobalCheckpoint = new int[] {VNS_PROGRESS_STEP};
+        final int[] globalBest = new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE}; // lateness, samples
         HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
           @Override
           public void onStage1Done(int outerIteration, long stage1RuntimeMs) {
@@ -190,45 +192,43 @@ public final class BatchRunner {
               }
             }
 
-            if (checkpointsWriter != null) {
-              int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
-              if (maxShakes < VNS_PROGRESS_STEP) return;
+            if (checkpointsWriter == null) return;
 
-              int[] best = bestAtOuterByLatenessSamples.get(outerIteration);
-              if (best == null ||
-                  totalLateness < best[0] ||
-                  (totalLateness == best[0] && totalSamples < best[1])) {
-                best = new int[]{totalLateness, totalSamples};
-                bestAtOuterByLatenessSamples.put(outerIteration, best);
-              }
+            int prevOuterVns = lastOuterVnsIteration.getOrDefault(outerIteration, 0);
+            int delta = Math.max(0, vnsIteration - prevOuterVns);
+            lastOuterVnsIteration.put(outerIteration, vnsIteration);
+            globalVnsState[0] += delta;
 
-              int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
-              while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
-                try {
-                  checkpointsWriter.write(
-                      csv(instanceId) + "," +
-                          outerIteration + "," +
-                          nextCheckpoint + "," +
-                          maxShakes + "," +
-                          best[0] + "," +
-                          best[1] + "," +
-                          totalLateness + "," +
-                          totalSamples + "," +
-                          stage2ElapsedMs + "," +
-                          (kind == null ? "" : kind)
-                  );
-                  checkpointsWriter.newLine();
-                } catch (IOException ex) {
-                  throw new RuntimeException(ex);
-                }
-                nextCheckpoint += VNS_PROGRESS_STEP;
-              }
-              nextVnsCheckpointByOuter.put(outerIteration, nextCheckpoint);
+            if (totalLateness < globalBest[0] || (totalLateness == globalBest[0] && totalSamples < globalBest[1])) {
+              globalBest[0] = totalLateness;
+              globalBest[1] = totalSamples;
+            }
+
+            while (globalVnsState[0] >= nextGlobalCheckpoint[0]) {
               try {
-                checkpointsWriter.flush();
+                checkpointsWriter.write(
+                    csv(instanceId) + "," +
+                        nextGlobalCheckpoint[0] + "," +
+                        globalVnsState[0] + "," +
+                        outerIteration + "," +
+                        vnsIteration + "," +
+                        globalBest[0] + "," +
+                        globalBest[1] + "," +
+                        totalLateness + "," +
+                        totalSamples + "," +
+                        stage2ElapsedMs + "," +
+                        (kind == null ? "" : kind)
+                );
+                checkpointsWriter.newLine();
               } catch (IOException ex) {
                 throw new RuntimeException(ex);
               }
+              nextGlobalCheckpoint[0] += VNS_PROGRESS_STEP;
+            }
+            try {
+              checkpointsWriter.flush();
+            } catch (IOException ex) {
+              throw new RuntimeException(ex);
             }
           }
         };

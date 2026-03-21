@@ -19,11 +19,12 @@ public final class Main {
   private static final int VNS_PROGRESS_STEP = 200;
   private static final long DEFAULT_SEED = 42L;
   private record VnsCheckpointRow(
+      int checkpointGlobalVnsIteration,
+      int globalVnsIterationAtEvent,
       int outerIteration,
-      int checkpointVnsIteration,
-      int maxShakes,
-      int bestTotalLateness,
-      int bestTotalSamples,
+      int outerVnsIteration,
+      int globalBestTotalLateness,
+      int globalBestTotalSamples,
       int currentTotalLateness,
       int currentTotalSamples,
       long stage2ElapsedMs,
@@ -293,31 +294,32 @@ public final class Main {
       return;
     }
  
-    Map<Integer, Integer> nextVnsCheckpointByOuter = new HashMap<>();
-    Map<Integer, int[]> bestAtOuterByLatenessSamples = new HashMap<>();
+    Map<Integer, Integer> lastOuterVnsIteration = new HashMap<>();
+    int[] globalVnsState = new int[] {0}; // total VNS iterations across all outer iterations
+    int[] nextGlobalCheckpoint = new int[] {VNS_PROGRESS_STEP};
+    int[] globalBest = new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE}; // lateness, samples
     List<VnsCheckpointRow> vnsCheckpointRows = new ArrayList<>();
     HeuristicSolver.ProgressListener listener = new HeuristicSolver.ProgressListener() {
       @Override
       public void onVnsIteration(int outerIteration, int vnsIteration, String kind, int totalLateness, int totalSamples, long stage2ElapsedMs) {
-        int maxShakes = Math.max(0, Data.STAGE2_MAX_SHAKES);
-        if (maxShakes < VNS_PROGRESS_STEP) return;
+        int prevOuterVns = lastOuterVnsIteration.getOrDefault(outerIteration, 0);
+        int delta = Math.max(0, vnsIteration - prevOuterVns);
+        lastOuterVnsIteration.put(outerIteration, vnsIteration);
+        globalVnsState[0] += delta;
 
-        int[] best = bestAtOuterByLatenessSamples.get(outerIteration);
-        if (best == null ||
-            totalLateness < best[0] ||
-            (totalLateness == best[0] && totalSamples < best[1])) {
-          best = new int[]{totalLateness, totalSamples};
-          bestAtOuterByLatenessSamples.put(outerIteration, best);
+        if (totalLateness < globalBest[0] || (totalLateness == globalBest[0] && totalSamples < globalBest[1])) {
+          globalBest[0] = totalLateness;
+          globalBest[1] = totalSamples;
         }
 
-        int nextCheckpoint = nextVnsCheckpointByOuter.getOrDefault(outerIteration, VNS_PROGRESS_STEP);
-        while (vnsIteration >= nextCheckpoint && nextCheckpoint <= maxShakes) {
+        while (globalVnsState[0] >= nextGlobalCheckpoint[0]) {
           VnsCheckpointRow row = new VnsCheckpointRow(
+              nextGlobalCheckpoint[0],
+              globalVnsState[0],
               outerIteration,
-              nextCheckpoint,
-              maxShakes,
-              best[0],
-              best[1],
+              vnsIteration,
+              globalBest[0],
+              globalBest[1],
               totalLateness,
               totalSamples,
               stage2ElapsedMs,
@@ -325,18 +327,18 @@ public final class Main {
           );
           vnsCheckpointRows.add(row);
           System.out.println(
-              "VNS checkpoint: outerIter=" + outerIteration +
-                  " vnsIter=" + nextCheckpoint + "/" + maxShakes +
-                  " bestTotalLateness=" + best[0] +
-                  " bestTotalSamples=" + best[1] +
+              "VNS checkpoint(global): vnsIter=" + nextGlobalCheckpoint[0] +
+                  " globalBestTotalLateness=" + globalBest[0] +
+                  " globalBestTotalSamples=" + globalBest[1] +
+                  " outerIter=" + outerIteration +
+                  " outerVnsIter=" + vnsIteration +
                   " currentTotalLateness=" + totalLateness +
                   " currentTotalSamples=" + totalSamples +
                   " stage2ElapsedMs=" + stage2ElapsedMs +
                   " lastShake=" + kind
           );
-          nextCheckpoint += VNS_PROGRESS_STEP;
+          nextGlobalCheckpoint[0] += VNS_PROGRESS_STEP;
         }
-        nextVnsCheckpointByOuter.put(outerIteration, nextCheckpoint);
       }
     };
 
@@ -596,19 +598,19 @@ public final class Main {
 
     Path vnsCheckpointsPath = dir.resolve("vns_checkpoints.csv");
     try (BufferedWriter w = Files.newBufferedWriter(vnsCheckpointsPath)) {
-      w.write("outerIteration,checkpointVnsIteration,maxShakes,bestTotalLateness,bestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
+      w.write("checkpointGlobalVnsIteration,globalVnsIterationAtEvent,outerIteration,outerVnsIteration,globalBestTotalLateness,globalBestTotalSamples,currentTotalLateness,currentTotalSamples,stage2ElapsedMs,lastShakeKind");
       w.newLine();
       vnsCheckpoints.stream()
-          .sorted(Comparator.comparingInt((VnsCheckpointRow r) -> r.outerIteration)
-              .thenComparingInt(r -> r.checkpointVnsIteration))
+          .sorted(Comparator.comparingInt((VnsCheckpointRow r) -> r.checkpointGlobalVnsIteration))
           .forEach(r -> {
             try {
               w.write(
-                  r.outerIteration + "," +
-                      r.checkpointVnsIteration + "," +
-                      r.maxShakes + "," +
-                      r.bestTotalLateness + "," +
-                      r.bestTotalSamples + "," +
+                  r.checkpointGlobalVnsIteration + "," +
+                      r.globalVnsIterationAtEvent + "," +
+                      r.outerIteration + "," +
+                      r.outerVnsIteration + "," +
+                      r.globalBestTotalLateness + "," +
+                      r.globalBestTotalSamples + "," +
                       r.currentTotalLateness + "," +
                       r.currentTotalSamples + "," +
                       r.stage2ElapsedMs + "," +
