@@ -33,14 +33,14 @@ Table~\ref{tab:vns_ratio_comparison} compares alternative VNS perturbation-ratio
 &
 \shortstack{\textbf{0.30}\\\textbf{VNS (100)}}
 &
-\shortstack{\textbf{0.10--0.20--0.30}\\\textbf{VNS (100)}}
+\shortstack{\textbf{0.10--0.20}\\\textbf{--0.30}\\\textbf{VNS (100)}}
 &
-\shortstack{\textbf{0.20--0.30}\\\textbf{VNS (100)}} \\
+\shortstack{\textbf{0.20--0.30}\\\textbf{VNS}\\\textbf{(100)}} \\
 \hline
 Average gap (\%) & 29.62 & 18.11 & 23.44 & 22.06 & 14.93 \\
 Std. dev. (\%) & 44.09 & 31.52 & 30.10 & 33.25 & 27.35 \\
-Best-instance count & 25 & 27 & 18 & 38 & 36 \\
-Average runtime (min) & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
+\shortstack[l]{Best-instance\\count} & 25 & 27 & 18 & 38 & 36 \\
+\shortstack[l]{Average runtime\\(min)} & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
 \hline
 \end{tabular}
 \end{table}
@@ -62,14 +62,14 @@ After selecting the \(0.20\)--\(0.30\) fallback policy, the effect of the shake 
 \begin{tabular}{lccc}
 \hline
 \textbf{Measure}
-& \textbf{0.20--0.30 VNS (50)}
-& \textbf{0.20--0.30 VNS (100)}
-& \textbf{0.20--0.30 VNS (200)} \\
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (50)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (100)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (200)}} \\
 \hline
 Average gap (\%) & 13.79 & 5.65 & 0.31 \\
 Std. dev. (\%) & 29.07 & 20.06 & 1.65 \\
-Best-instance count & 18 & 47 & 82 \\
-Average runtime (min) & 32.6 & 49.7 & 85.1 \\
+\shortstack[l]{Best-instance\\count} & 18 & 47 & 82 \\
+\shortstack[l]{Average runtime\\(min)} & 32.6 & 49.7 & 85.1 \\
 \hline
 \end{tabular}
 \end{table}
@@ -93,15 +93,15 @@ The selected proposed configuration, defined by the adaptive \(0.20\)--\(0.30\) 
 \begin{tabular}{lcccc}
 \hline
 \textbf{Method}
-& \textbf{Average gap (\%)}
-& \textbf{Std. dev. (\%)}
-& \textbf{Best-instance count}
-& \textbf{Average runtime (min)} \\
+& \shortstack{\textbf{Average}\\\textbf{gap (\%)}}
+& \shortstack{\textbf{Std.}\\\textbf{dev. (\%)}}
+& \shortstack{\textbf{Best-instance}\\\textbf{count}}
+& \shortstack{\textbf{Average}\\\textbf{runtime (min)}} \\
 \hline
 Fixed sample & 361.93 & 198.43 & 0 & 0.1 \\
-No outer reconfiguration & 140.07 & 90.32 & 0 & 17.1 \\
-No VNS diversification & 178.67 & 113.52 & 0 & 0.5 \\
-Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\
+\shortstack[l]{No outer\\reconfiguration} & 140.07 & 90.32 & 0 & 17.1 \\
+\shortstack[l]{No VNS\\diversification} & 178.67 & 113.52 & 0 & 0.5 \\
+\shortstack[l]{Selected proposed\\configuration} & 0.00 & 0.00 & 90 & 85.1 \\
 \hline
 \end{tabular}
 \end{table}
@@ -118,9 +118,9 @@ Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\
 \hline
 Average gap (\%) & 361.93 & 0.00 \\
 Std. dev. (\%) & 198.43 & 0.00 \\
-Best-instance count & 0 & 90 \\
-Average runtime (min) & 0.1 & 85.1 \\
-Average sample count & 150 & 380 \\
+\shortstack[l]{Best-instance\\count} & 0 & 90 \\
+\shortstack[l]{Average runtime\\(min)} & 0.1 & 85.1 \\
+\shortstack[l]{Average sample\\count} & 150 & 380 \\
 \hline
 \end{tabular}
 \end{table}
