@@ -1,5 +1,7 @@
-\subsection{VNS Ratio Analysis}
-\label{subsec:vns_ratio_analysis}
+\subsection{Overall Performance Comparison}
+\label{subsec:overall_results}
+
+\paragraph{VNS ratio analysis.}
 
 This section first explains how the selected proposed configuration was determined and then compares it with the main benchmark variants. This ordering is important because the final benchmark comparison is meaningful only after the VNS perturbation policy and shake budget have been justified. The analysis therefore proceeds from parameter selection to overall benchmark evaluation, followed by managerial implications.
 
@@ -49,8 +51,7 @@ The adaptive fallback policies improve robustness by applying perturbations sequ
 
 Although the \(0.10\)--\(0.20\)--\(0.30\) policy achieved the highest number of best-instance results, its average gap and runtime were considerably worse. Since the objective of tactical planning is to obtain robust performance over the entire benchmark set rather than maximizing the number of isolated wins, average performance and variability were given higher priority than best-instance count. For this reason, the \(0.20\)--\(0.30\) fallback structure was selected as the preferred VNS ratio policy.
 
-\subsection{Shake Budget Analysis}
-\label{subsec:shake_budget_analysis}
+\paragraph{Shake budget analysis.}
 
 After selecting the \(0.20\)--\(0.30\) fallback policy, the effect of the shake budget was evaluated by comparing \(K_{\max}=50\), \(100\), and \(200\). The shake budget controls how much opportunity the VNS phase has to generate and evaluate alternative sample structures after local improvement stagnates. The results are summarized in Table~\ref{tab:vns_budget_comparison}.
 
@@ -79,8 +80,7 @@ The best overall performance is obtained with \(K_{\max}=200\). This setting red
 
 At the same time, the runtime results show that the choice of shake budget involves a clear quality--effort trade-off. The average runtime increases from \(32.6\) minutes for \(K_{\max}=50\) to \(49.7\) minutes for \(K_{\max}=100\), and to \(85.1\) minutes for \(K_{\max}=200\). Although solution quality continues to improve as the shake budget increases, the corresponding runtime growth is substantial. Therefore, the choice of \(K_{\max}\) ultimately depends on the desired balance between solution quality and computational effort. In this study, \(K_{\max}=200\) was selected because the planning context is tactical rather than real-time, and the additional computation produces a much more reliable configuration.
 
-\subsection{Overall Benchmark Results}
-\label{subsec:overall_benchmark_results}
+\paragraph{Overall benchmark results.}
 
 The selected proposed configuration, defined by the adaptive \(0.20\)--\(0.30\) VNS policy with \(K_{\max}=200\), was then compared with the principal benchmark variants. Table~\ref{tab:main_benchmark_comparison} reports the results for the fixed-sample policy, the sample-optimization variant without outer-loop reconfiguration, the variant without VNS diversification, and the selected proposed configuration. Table~\ref{tab:fixed_selected_sample_comparison} then provides a direct comparison between the fixed-sample policy and the selected proposed configuration, including the average sample count.
 
@@ -131,8 +131,7 @@ The no-outer-reconfiguration variant also performs substantially worse than the 
 
 The no-VNS-diversification variant has an average gap of \(178.67\%\), confirming the importance of diversification after local search and chamber reconfiguration have converged. Without VNS, the search can remain trapped in workload structures that cannot be improved through deterministic local moves alone. Its shorter runtime therefore reflects the absence of a critical improvement mechanism rather than an efficient path to high-quality solutions.
 
-\subsection{Managerial Insights}
-\label{subsec:managerial_insights}
+\paragraph{Managerial insights.}
 
 The benchmark results provide several managerial insights for tactical test planning. First, sample counts should be treated as decision variables rather than fixed operational inputs. The poor performance of the fixed-sample policy shows that a uniform sampling rule cannot respond effectively to heterogeneous due dates, test portfolios, voltage requirements, and chamber bottlenecks. Flexible sample-size decisions allow the planning system to allocate testing effort where it has the greatest impact on tardiness reduction.
 
