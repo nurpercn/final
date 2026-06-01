@@ -82,7 +82,7 @@ At the same time, the runtime results show that the choice of shake budget invol
 \subsection{Overall Benchmark Results}
 \label{subsec:overall_benchmark_results}
 
-The selected proposed configuration, defined by the adaptive \(0.20\)--\(0.30\) VNS policy with \(K_{\max}=200\), was then compared with the principal benchmark variants. Table~\ref{tab:main_benchmark_comparison} reports the results for the fixed-sample policy, the sample-optimization variant without outer-loop reconfiguration, the variant without VNS diversification, and the selected proposed configuration.
+The selected proposed configuration, defined by the adaptive \(0.20\)--\(0.30\) VNS policy with \(K_{\max}=200\), was then compared with the principal benchmark variants. Table~\ref{tab:main_benchmark_comparison} reports the results for the fixed-sample policy, the sample-optimization variant without outer-loop reconfiguration, the variant without VNS diversification, and the selected proposed configuration. Table~\ref{tab:fixed_selected_sample_comparison} then provides a direct comparison between the fixed-sample policy and the selected proposed configuration, including the average sample count.
 
 \begin{table}[H]
 \centering
@@ -104,9 +104,28 @@ Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\
 \end{tabular}
 \end{table}
 
+\begin{table}[H]
+\centering
+\caption{Direct comparison between the fixed-sample policy and the selected proposed configuration.}
+\label{tab:fixed_selected_sample_comparison}
+\begin{tabular}{lcc}
+\hline
+\textbf{Measure}
+& \textbf{Fixed sample}
+& \shortstack{\textbf{Selected proposed}\\\textbf{configuration}} \\
+\hline
+Average gap (\%) & 361.93 & 0.00 \\
+Std. dev. (\%) & 198.43 & 0.00 \\
+Best-instance count & 0 & 90 \\
+Average runtime (min) & 0.1 & 85.1 \\
+Average sample count & 150 & 380 \\
+\hline
+\end{tabular}
+\end{table}
+
 Most importantly, the selected proposed configuration achieved the best solution in all \(90\) benchmark scenarios. None of the competing benchmark variants obtained a single best-instance result. This indicates that the superiority of the proposed framework is systematic rather than instance-dependent.
 
-The fixed-sample policy performs worst, with an average gap of \(361.93\%\) and a standard deviation of \(198.43\%\). Although this policy is computationally very fast, its poor performance indicates that the industrial rule of assigning a fixed number of samples to every product is not robust under heterogeneous planning conditions. The fixed rule ignores the fact that the marginal value of an additional sample differs across products, test environments, and due-date settings. As a result, it may allocate testing effort to products for which additional samples provide little scheduling benefit while failing to relieve bottlenecks for more critical projects.
+The fixed-sample policy performs worst, with an average gap of \(361.93\%\) and a standard deviation of \(198.43\%\). Although this policy is computationally very fast and uses only 150 samples on average, its poor performance indicates that the industrial rule of assigning a fixed number of samples to every product is not robust under heterogeneous planning conditions. The selected proposed configuration uses 380 samples on average, but the improvement should not be interpreted simply as a uniform increase in prototype quantity. Rather, the benefit comes from deciding where additional samples are valuable and coordinating those decisions with chamber reconfiguration and VNS diversification. The fixed rule ignores the fact that the marginal value of an additional sample differs across products, test environments, and due-date settings. As a result, it may allocate testing effort to products for which additional samples provide little scheduling benefit while failing to relieve bottlenecks for more critical projects.
 
 The no-outer-reconfiguration variant also performs substantially worse than the selected proposed configuration, with an average gap of \(140.07\%\). This result demonstrates that sample-size optimization alone is insufficient when chamber settings are not repeatedly updated. Changes in the sample vector alter environment-specific workload distributions, voltage requirements, and chamber utilization patterns. If the chamber configuration remains fixed while the workload structure changes, the algorithm evaluates sample decisions under a resource structure that may no longer be appropriate.
 
