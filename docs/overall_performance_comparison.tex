@@ -1,0 +1,148 @@
+\subsection{Overall Performance Comparison}
+\label{subsec:overall_results}
+
+\paragraph{VNS ratio analysis.}
+
+This section first explains how the selected proposed configuration was determined and then compares it with the main benchmark variants. This ordering is important because the final benchmark comparison is meaningful only after the VNS perturbation policy and shake budget have been justified. The analysis therefore proceeds from parameter selection to overall benchmark evaluation, followed by managerial implications.
+
+The results are reported using average gaps, standard deviations, best-instance counts, and average runtimes. Since the objective function is lexicographic, \(Eval=(T^{tot}, S^{tot})\), the average-gap values were computed using the primary objective value \(T^{tot}\). For each benchmark instance \(i\), the relative gap of method \(m\) was computed with respect to the best primary objective value obtained among the methods included in the relevant comparison:
+
+\[
+Gap_{im} =
+\frac{T^{tot}_{im} - T^{tot,best}_{i}}
+     {T^{tot,best}_{i}}
+\times 100 .
+\]
+
+Here, \(T^{tot}_{im}\) denotes the total tardiness obtained by method \(m\) on instance \(i\), and \(T^{tot,best}_{i}\) is the lowest total tardiness observed for that instance. Average gap values correspond to the arithmetic mean of these instance-level gaps over the complete benchmark set. In the reported experiments, \(T^{tot,best}_{i}\) was strictly positive for the instances included in the gap calculations; therefore, no zero-denominator correction was required. If a future benchmark instance has zero total tardiness for all compared methods, it should be excluded from percentage-gap aggregation and reported separately. The standard deviation measures the variability of the instance-level gaps. Best-instance counts, on the other hand, are based on the lexicographic comparison of \((T^{tot}, S^{tot})\), so the secondary objective is still reflected when identifying which method produced the best solution for an instance.
+
+Table~\ref{tab:vns_ratio_comparison} compares alternative VNS perturbation-ratio policies under a fixed shake budget of \(K_{\max}=100\). This comparison isolates the effect of perturbation intensity on the balance between diversification and preservation of useful solution structure.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of VNS perturbation-ratio policies with \(K_{\max}=100\).}
+\label{tab:vns_ratio_comparison}
+\small
+\begin{tabular}{lccccc}
+\hline
+\textbf{Measure}
+&
+\shortstack{\textbf{0.10}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.20}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.30}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.10--0.20}\\\textbf{--0.30}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.20--0.30}\\\textbf{VNS}\\\textbf{(100)}} \\
+\hline
+Average gap (\%) & 29.62 & 18.11 & 23.44 & 22.06 & 14.93 \\
+Std. dev. (\%) & 44.09 & 31.52 & 30.10 & 33.25 & 27.35 \\
+\shortstack[l]{Best-instance\\count} & 25 & 27 & 18 & 38 & 36 \\
+\shortstack[l]{Average runtime\\(min)} & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
+\hline
+\end{tabular}
+\end{table}
+
+The results show that a single perturbation ratio is not sufficient to obtain consistently strong performance. The relationship between perturbation intensity and solution quality is non-monotonic. Increasing the perturbation ratio from \(0.10\) to \(0.20\) substantially improves performance, reducing the average gap from \(29.62\%\) to \(18.11\%\). However, a further increase to \(0.30\) deteriorates average solution quality, increasing the average gap to \(23.44\%\). This indicates the existence of an intermediate diversification level that balances exploration and preservation of high-quality workload structures. Very mild perturbations often fail to move the search out of the basin of attraction reached by the local improvement phase, whereas stronger perturbations may destroy useful sample-allocation and chamber-workload structures already constructed by the preceding search phases.
+
+The adaptive fallback policies improve robustness by applying perturbations sequentially instead of committing to a single disruption level. The \(0.20\)--\(0.30\) policy achieves the lowest average gap among the \(K_{\max}=100\) variants, with an average gap of \(14.93\%\), and also has the lowest standard deviation in this group. This behavior is consistent with the intended role of the fallback mechanism: the search first attempts to improve the solution through a moderate perturbation, and only escalates to a stronger move when the moderate shake is insufficient.
+
+Although the \(0.10\)--\(0.20\)--\(0.30\) policy achieved the highest number of best-instance results, its average gap and runtime were considerably worse. Since the objective of tactical planning is to obtain robust performance over the entire benchmark set rather than maximizing the number of isolated wins, average performance and variability were given higher priority than best-instance count. For this reason, the \(0.20\)--\(0.30\) fallback structure was selected as the preferred VNS ratio policy.
+
+\paragraph{Shake budget analysis.}
+
+After selecting the \(0.20\)--\(0.30\) fallback policy, the effect of the shake budget was evaluated by comparing \(K_{\max}=50\), \(100\), and \(200\). The shake budget controls how much opportunity the VNS phase has to generate and evaluate alternative sample structures after local improvement stagnates. The results are summarized in Table~\ref{tab:vns_budget_comparison}.
+
+\begin{table}[H]
+\centering
+\caption{Effect of shake budget for the \(0.20\)--\(0.30\) VNS policy.}
+\label{tab:vns_budget_comparison}
+\begin{tabular}{lccc}
+\hline
+\textbf{Measure}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (50)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (100)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (200)}} \\
+\hline
+Average gap (\%) & 13.79 & 5.65 & 0.31 \\
+Std. dev. (\%) & 29.07 & 20.06 & 1.65 \\
+\shortstack[l]{Best-instance\\count} & 18 & 47 & 82 \\
+\shortstack[l]{Average runtime\\(min)} & 32.6 & 49.7 & 85.1 \\
+\hline
+\end{tabular}
+\end{table}
+
+Increasing the shake budget clearly improves both average performance and robustness. With \(K_{\max}=50\), the average gap is \(13.79\%\), indicating that the diversification phase is often terminated before sufficient alternative workload structures are explored. Increasing the budget to \(100\) reduces the average gap to \(5.65\%\) and increases the number of best-instance results from \(18\) to \(47\). The improvement is not limited to a few favorable cases: the standard deviation decreases from \(29.07\%\) to \(20.06\%\), showing that the additional shake attempts also reduce performance variability.
+
+The best overall performance is obtained with \(K_{\max}=200\). This setting reduces the average gap to \(0.31\%\), decreases the standard deviation to \(1.65\%\), and achieves the best result in \(82\) out of \(90\) scenario combinations within the shake-budget comparison. The increase from \(K_{\max}=100\) to \(K_{\max}=200\) reduced the average gap from \(5.65\%\) to \(0.31\%\) and increased the best-instance count from \(47\) to \(82\). These improvements provide strong evidence for selecting \(K_{\max}=200\) when solution quality is the primary concern.
+
+The improvement obtained by increasing the shake budget from \(100\) to \(200\) is considerably larger than the improvement obtained by changing perturbation ratios alone. This indicates that the ability to explore a larger number of alternative workload structures is more influential than the precise choice of perturbation ratio once an appropriate diversification policy has been selected.
+
+At the same time, the runtime results show that the choice of shake budget involves a clear quality--effort trade-off. The average runtime increases from \(32.6\) minutes for \(K_{\max}=50\) to \(49.7\) minutes for \(K_{\max}=100\), and to \(85.1\) minutes for \(K_{\max}=200\). Although solution quality continues to improve as the shake budget increases, the corresponding runtime growth is substantial. Therefore, the choice of \(K_{\max}\) ultimately depends on the desired balance between solution quality and computational effort. In this study, \(K_{\max}=200\) was selected because the planning context is tactical rather than real-time, and the additional computation produces a much more reliable configuration.
+
+\paragraph{Overall benchmark results.}
+
+The selected proposed configuration, defined by the adaptive \(0.20\)--\(0.30\) VNS policy with \(K_{\max}=200\), was then compared with the principal benchmark variants. Table~\ref{tab:main_benchmark_comparison} reports the results for the fixed-sample policy, the sample-optimization variant without outer-loop reconfiguration, the variant without VNS diversification, and the selected proposed configuration. Table~\ref{tab:fixed_selected_sample_comparison} then provides a direct comparison between the fixed-sample policy and the selected proposed configuration, including the average sample count.
+
+\begin{table}[H]
+\centering
+\caption{Overall comparison of the selected proposed configuration and the main benchmark variants.}
+\label{tab:main_benchmark_comparison}
+\begin{tabular}{lcccc}
+\hline
+\textbf{Method}
+& \shortstack{\textbf{Average}\\\textbf{gap (\%)}}
+& \shortstack{\textbf{Std.}\\\textbf{dev. (\%)}}
+& \shortstack{\textbf{Best-instance}\\\textbf{count}}
+& \shortstack{\textbf{Average}\\\textbf{runtime (min)}} \\
+\hline
+Fixed sample & 361.93 & 198.43 & 0 & 0.1 \\
+\shortstack[l]{No outer\\reconfiguration} & 140.07 & 90.32 & 0 & 17.1 \\
+\shortstack[l]{No VNS\\diversification} & 178.67 & 113.52 & 0 & 0.5 \\
+\shortstack[l]{Selected proposed\\configuration} & 0.00 & 0.00 & 90 & 85.1 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Direct comparison between the fixed-sample policy and the selected proposed configuration.}
+\label{tab:fixed_selected_sample_comparison}
+\begin{tabular}{lcc}
+\hline
+\textbf{Measure}
+& \textbf{Fixed sample}
+& \shortstack{\textbf{Selected proposed}\\\textbf{configuration}} \\
+\hline
+Average gap (\%) & 361.93 & 0.00 \\
+Std. dev. (\%) & 198.43 & 0.00 \\
+\shortstack[l]{Best-instance\\count} & 0 & 90 \\
+\shortstack[l]{Average runtime\\(min)} & 0.1 & 85.1 \\
+\shortstack[l]{Average sample\\count} & 150 & 380 \\
+\hline
+\end{tabular}
+\end{table}
+
+Most importantly, the selected proposed configuration achieved the best solution in all \(90\) benchmark scenarios. None of the competing benchmark variants obtained a single best-instance result. This demonstrates that the superiority of the proposed framework is systematic rather than instance-dependent.
+
+The fixed-sample policy performs worst, with an average gap of \(361.93\%\) and a standard deviation of \(198.43\%\). Although this policy is computationally very fast and uses only 150 samples on average, its poor performance indicates that the industrial rule of assigning a fixed number of samples to every product is not robust under heterogeneous planning conditions. The selected proposed configuration uses 380 samples on average, and this metric is reported because sample size is itself a planning decision in the proposed framework. The purpose is to shorten completion times by allowing additional parallelism when it reduces tardiness, not to apply a uniform expansion of prototypes. Instead, additional samples are allocated selectively to products for which increased parallelism yields the largest reduction in tardiness, and these sample decisions are coordinated with chamber reconfiguration and VNS diversification. The fixed rule ignores the fact that the marginal value of an additional sample differs across products, test environments, and due-date settings. As a result, it may allocate testing effort to products for which additional samples provide little scheduling benefit while failing to relieve bottlenecks for more critical projects.
+
+The no-outer-reconfiguration variant also performs substantially worse than the selected proposed configuration, with an average gap of \(140.07\%\). This result demonstrates that sample-size optimization alone is insufficient when chamber settings are not repeatedly updated. Changes in the sample vector alter environment-specific workload distributions, voltage requirements, and chamber utilization patterns. If the chamber configuration remains fixed while the workload structure changes, the algorithm evaluates sample decisions under a resource structure that may no longer be appropriate.
+
+The no-VNS-diversification variant has an average gap of \(178.67\%\), confirming the importance of diversification after local search and chamber reconfiguration have converged. Without VNS, the search can remain trapped in workload structures that cannot be improved through deterministic local moves alone. Its shorter runtime therefore reflects the absence of a critical improvement mechanism rather than an efficient path to high-quality solutions.
+
+Interestingly, the no-outer-reconfiguration variant performs better than the no-VNS-diversification variant, with an average gap of \(140.07\%\) compared with \(178.67\%\). This suggests that diversification becomes most effective when combined with iterative chamber reconfiguration. Although both mechanisms are essential, the results indicate that diversification alone cannot compensate for the absence of assignment--scheduling feedback.
+
+\paragraph{Managerial insights.}
+
+The benchmark results provide several managerial insights for tactical test planning. First, sample counts should be treated as decision variables rather than fixed operational inputs. The poor performance of the fixed-sample policy shows that a uniform sampling rule cannot respond effectively to heterogeneous due dates, test portfolios, voltage requirements, and chamber bottlenecks. Flexible sample-size decisions allow the planning system to allocate testing effort where it has the greatest impact on tardiness reduction.
+
+Second, sample-size optimization and chamber reconfiguration should be treated as coupled decisions. The no-outer-reconfiguration variant demonstrates that improving sample counts without updating chamber settings leaves a large performance gap. In practical terms, this means that a change in project-level sample decisions should trigger a reassessment of the chamber configuration, because the revised workload may shift demand across environments and voltage categories.
+
+Third, diversification is essential even after local improvement has converged. The no-VNS-diversification variant is faster, but it does not produce a best solution in any benchmark scenario. This indicates that deterministic local moves alone are not sufficient for the complex workload structures generated by the test-planning problem. Controlled VNS perturbations provide a mechanism for escaping stagnant regions while preserving useful structure from high-quality incumbent solutions.
+
+From a managerial perspective, the results suggest that testing capacity shortages should not necessarily be addressed by uniformly increasing the number of prototypes. Instead, selectively increasing sample counts for bottleneck products and reallocating chamber configurations can produce substantially larger tardiness reductions with lower resource consumption. This is particularly relevant in R\&D test environments, where chamber availability, voltage compatibility, and due-date pressure interact in ways that make uniform rules inefficient.
+
+Overall, the selected proposed configuration reflects a deliberate quality--runtime trade-off. The adaptive \(0.20\)--\(0.30\) VNS policy avoids both insufficient and excessive perturbation, while \(K_{\max}=200\) provides enough diversification effort to make the results stable across the benchmark set. The evidence supports the main premise of the study: effective tactical test planning requires joint optimization of sample counts, chamber configuration, and diversification strategy rather than treating these decisions independently.
