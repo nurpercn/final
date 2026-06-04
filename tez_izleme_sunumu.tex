@@ -403,7 +403,7 @@
     ]
       \node[box] (inc) {İncumbent numune vektörü $S^{inc}$};
       \node[box,below=of inc] (ratio) {Oran seçimi: $0.20 \rightarrow 0.30$};
-      \node[box,below=of ratio] (shake) {Shake: seçilen ürünleri\\$s_{\min}$ veya $s_{\max VNS}$ değerine çek};
+      \node[box,below=of ratio] (shake) {Shake: seçilen ürünleri\\$s_{\min}$ veya $s_{\max}^{\mathrm{VNS}}$ değerine çek};
       \node[box,below=of shake] (ls) {Tam numune yerel araması};
       \node[box,below=of ls] (accept) {İlk iyileşmede kabul};
       \draw[arrow] (inc) -- (ratio);
@@ -484,7 +484,7 @@
       \midrule
       $s_p^{(0)}$ & Başlangıç numune politikası & 3 \\
       $s_{\min}$ & Minimum numune sayısı & 3 \\
-      $s_{\max VNS}$ & VNS UP hareketi üst değeri & 8 \\
+      $s_{\max}^{\mathrm{VNS}}$ & VNS UP hareketi üst değeri & 8 \\
       $s_{\max}$ & Maksimum numune sayısı & 11 \\
       $\Delta_p$ & Yerel arama komşuluğu & $\{-2,-1,+1,+2\}$ \\
       $R_{\mathrm{VNS}}$ & VNS fallback oranları & $[0.20,0.30]$ \\
