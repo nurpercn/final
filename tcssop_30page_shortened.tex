@@ -7,7 +7,7 @@
   \usepackage{algorithm}
 }{%
   \newcounter{algorithm}
-  \newenvironment{algorithm}[1][H]{%
+  \newenvironment{algorithm}[1][htbp]{%
     \par\refstepcounter{algorithm}\noindent\begin{minipage}{\textwidth}
     \hrule\smallskip
     \renewcommand{\caption}[1]{\textbf{Algorithm \thealgorithm. ##1}\par\smallskip}
@@ -35,7 +35,6 @@
 % --- Encoding and layout ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{float}
 \usepackage{graphicx}
 
 \pagestyle{plain}
@@ -136,21 +135,21 @@ The facility contains a set of chambers \(\mathcal{C}\). Chamber \(c\) has \(M_c
 
 The set of products is denoted by \(\mathcal{P}\). Each product \(p\) has a due date \(d_p\), a voltage requirement indicator \(\nu_p\), and a product-specific required test set \(\mathcal{T}_p \subseteq \mathcal{T}\). Test requirements are determined by target market, climatic class, energy-efficiency regulation, and electrical specification. Table~\ref{tab:test_attributes_short} summarizes the test catalog used in the study.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \caption{Test catalog and environmental requirements.}
 \label{tab:test_attributes_short}
 \centering
 \footnotesize
-\setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{|c|c|l|c|c|c|c|}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{|c|c|p{1.8in}|p{1.05in}|p{0.8in}|c|c|}
 \hline
-\textbf{Stage} & \textbf{No.} & \textbf{Test name} & \textbf{Temp.} & \textbf{Humidity} & \textbf{Samples} & \textbf{Days} \\ \hline
-1 & 1 & Gas Amount Determination & 43/38/32~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10 \\ \hline
-2 & 2 & Pull-down & 43/38/32~\(^{\circ}\mathrm{C}\) & Ambient & All & 5 \\ \hline
-3 & 3--5 & Energy Efficiency & 16/25/32~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 15 \\ \hline
-3 & 6--11 & Performance & 10/16/25/32/38/43~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10 \\ \hline
-4 & 12--13 & Freezing Capacity / Temperature Rise & 25~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10/5 \\ \hline
-5 & 14--16 & Consumer Usage & 10/25/32~\(^{\circ}\mathrm{C}\) & Ambient or 85\% RH & 1 & 15 \\ \hline
+\textbf{Stage} & \textbf{No.} & \textbf{Test name} & \textbf{Temp.} & \textbf{Humidity} & \textbf{Samp.} & \textbf{Days} \\ \hline
+1 & 1 & Gas Amount Determination & 43/38/32 C & Ambient & 1 & 10 \\ \hline
+2 & 2 & Pull-down & 43/38/32 C & Ambient & All & 5 \\ \hline
+3 & 3--5 & Energy Efficiency & 16/25/32 C & Ambient & 1 & 15 \\ \hline
+3 & 6--11 & Performance & 10/16/25/32/38/43 C & Ambient & 1 & 10 \\ \hline
+4 & 12--13 & Freezing Capacity / Temperature Rise & 25 C & Ambient & 1 & 10/5 \\ \hline
+5 & 14--16 & Consumer Usage & 10/25/32 C & Ambient or 85 percent RH & 1 & 15 \\ \hline
 \end{tabular}
 \vspace{1mm}
 
@@ -162,7 +161,7 @@ Some energy and performance variants are alternatives selected according to clim
 
 The chamber system includes 28 chambers and 240 stations. Chamber capacities range from 6 to 12 stations. Humidity and voltage capabilities are heterogeneous, so the effective capacity available for a given environment may be much smaller than the total station count. Figure~\ref{fig:chamber_3d_short} illustrates the chamber-station structure.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \safechamberfigure
 \caption{Test chambers consist of multiple stations operating under a shared chamber-level environment.}
@@ -171,33 +170,43 @@ The chamber system includes 28 chambers and 240 stations. Chamber capacities ran
 
 Table~\ref{tab:chamber_capabilities_short} reports the chamber capacities and adjustment capabilities used in the computational study. Temperature adjustment is available in all chambers, whereas humidity and voltage adjustment are available only in selected chambers. This heterogeneity is important because a chamber with many stations may still be unusable for a product if the required humidity or voltage capability is absent.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Chamber capacities and technical adjustment capabilities.}
 \label{tab:chamber_capabilities_short}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.05}
-\begin{tabular}{lcccc@{\qquad}lcccc}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} &
-\textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} \\
-\hline
-T001 & 8  & 1 & 0 & 0 & T015 & 6  & 1 & 1 & 0 \\
-T002 & 8  & 1 & 1 & 1 & T016 & 6  & 1 & 0 & 1 \\
-T003 & 8  & 1 & 1 & 1 & T017 & 6  & 1 & 0 & 1 \\
-T004 & 8  & 1 & 1 & 1 & T018 & 6  & 1 & 0 & 1 \\
-T005 & 8  & 1 & 1 & 1 & T019 & 6  & 1 & 0 & 1 \\
-T006 & 8  & 1 & 0 & 0 & T020 & 6  & 1 & 0 & 1 \\
-T007 & 8  & 1 & 0 & 0 & T021 & 6  & 1 & 0 & 1 \\
-T008 & 12 & 1 & 0 & 1 & T022 & 6  & 1 & 0 & 1 \\
-T009 & 12 & 1 & 0 & 0 & T023 & 6  & 1 & 0 & 1 \\
-T010 & 12 & 1 & 1 & 0 & T024 & 8  & 1 & 1 & 0 \\
-T011 & 12 & 1 & 1 & 0 & T025 & 8  & 1 & 1 & 1 \\
-T012 & 12 & 1 & 1 & 0 & T026 & 12 & 1 & 0 & 1 \\
-T013 & 12 & 1 & 1 & 0 & T027 & 12 & 1 & 0 & 1 \\
-T014 & 6  & 1 & 1 & 0 & T028 & 12 & 1 & 0 & 1 \\
-\hline
+\textbf{Chamber} & \textbf{Stations} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} \\ \hline
+T001 & 8  & 1 & 0 & 0 \\ \hline
+T002 & 8  & 1 & 1 & 1 \\ \hline
+T003 & 8  & 1 & 1 & 1 \\ \hline
+T004 & 8  & 1 & 1 & 1 \\ \hline
+T005 & 8  & 1 & 1 & 1 \\ \hline
+T006 & 8  & 1 & 0 & 0 \\ \hline
+T007 & 8  & 1 & 0 & 0 \\ \hline
+T008 & 12 & 1 & 0 & 1 \\ \hline
+T009 & 12 & 1 & 0 & 0 \\ \hline
+T010 & 12 & 1 & 1 & 0 \\ \hline
+T011 & 12 & 1 & 1 & 0 \\ \hline
+T012 & 12 & 1 & 1 & 0 \\ \hline
+T013 & 12 & 1 & 1 & 0 \\ \hline
+T014 & 6  & 1 & 1 & 0 \\ \hline
+T015 & 6  & 1 & 1 & 0 \\ \hline
+T016 & 6  & 1 & 0 & 1 \\ \hline
+T017 & 6  & 1 & 0 & 1 \\ \hline
+T018 & 6  & 1 & 0 & 1 \\ \hline
+T019 & 6  & 1 & 0 & 1 \\ \hline
+T020 & 6  & 1 & 0 & 1 \\ \hline
+T021 & 6  & 1 & 0 & 1 \\ \hline
+T022 & 6  & 1 & 0 & 1 \\ \hline
+T023 & 6  & 1 & 0 & 1 \\ \hline
+T024 & 8  & 1 & 1 & 0 \\ \hline
+T025 & 8  & 1 & 1 & 1 \\ \hline
+T026 & 12 & 1 & 0 & 1 \\ \hline
+T027 & 12 & 1 & 0 & 1 \\ \hline
+T028 & 12 & 1 & 0 & 1 \\ \hline
 \end{tabular}
 \end{table}
 
@@ -272,24 +281,23 @@ S^{tot}=\sum_{p\in\mathcal{P}}s_p
 \]
 is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under lexicographic ordering.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Main notation.}
 \label{tab:notation_short}
 \small
-\begin{tabular}{ll}
+\begin{tabular}{|p{1.65in}|p{4.25in}|}
 \hline
 \textbf{Symbol} & \textbf{Definition} \\
 \hline
-\(\mathcal{P},\mathcal{C},\mathcal{T},\mathcal{E}\) & Products, chambers, tests, and environments \\
-\(M_c,h_c,v_c\) & Stations, humidity capability, and voltage capability of chamber \(c\) \\
-\(\mathcal{T}_p,d_p,\nu_p\) & Required tests, due date, and voltage requirement of product \(p\) \\
-\(s_p,S,s_{\min},s_{\max}\) & Sample count, sample vector, and sample bounds \\
-\(e(t),\tau_t,m_{pt}(s_p)\) & Test environment, duration, and induced multiplicity \\
-\(X_c,X\) & Environment assigned to chamber \(c\), and assignment vector \\
-\(W_e(S),W_e^V(S)\) & Total and voltage-sensitive workload in environment \(e\) \\
-\(C_p,T_p,T^{tot},S^{tot}\) & Completion time, tardiness, total tardiness, and total samples \\
-\hline
+\(\mathcal{P},\mathcal{C},\mathcal{T},\mathcal{E}\) & Products, chambers, tests, and environments \\ \hline
+\(M_c,h_c,v_c\) & Stations, humidity capability, and voltage capability of chamber \(c\) \\ \hline
+\(\mathcal{T}_p,d_p,\nu_p\) & Required tests, due date, and voltage requirement of product \(p\) \\ \hline
+\(s_p,S,s_{\min},s_{\max}\) & Sample count, sample vector, and sample bounds \\ \hline
+\(e(t),\tau_t,m_{pt}(s_p)\) & Test environment, duration, and induced multiplicity \\ \hline
+\(X_c,X\) & Environment assigned to chamber \(c\), and assignment vector \\ \hline
+\(W_e(S),W_e^V(S)\) & Total and voltage-sensitive workload in environment \(e\) \\ \hline
+\(C_p,T_p,T^{tot},S^{tot}\) & Completion time, tardiness, total tardiness, and total samples \\ \hline
 \end{tabular}
 \end{table}
 
@@ -301,7 +309,7 @@ is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under
 
 The proposed solution framework coordinates three decision layers: chamber-environment assignment, sample-size optimization, and feasible scheduling. The method starts from the fixed three-sample policy. At each outer iteration, chamber settings are selected for the current sample vector, sample counts are improved under the fixed chamber assignment, and the resulting solution is evaluated by a constructive scheduler. If local improvement stagnates, a VNS diversification phase perturbs sample sizes and re-applies local improvement.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Integrated TCSSOP heuristic}
 \label{alg:integrated_short}
 \begin{algorithmic}[1]
@@ -356,7 +364,7 @@ Let \(x_{ce}=1\) if chamber \(c\) is assigned to environment \(e\), and let \(\m
 \end{align}
 The resulting assignment is then refined by swap and move neighborhoods. A candidate is retained only if it preserves environment coverage and capability feasibility. Feasible candidates are evaluated with a fast schedule-aware scoring function, and a first-improvement rule is used.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Chamber assignment with local refinement}
 \label{alg:chamber_assignment_short}
 \begin{algorithmic}[1]
@@ -393,7 +401,7 @@ subject to sample bounds. Candidate vectors are first screened by fast schedule-
 
 A Late--Early Rebalance operator is also used. Products with positive tardiness are paired with products having earliness slack. For each pair, one sample is added to the late product and one sample is removed from the early product, subject to bounds. The paired move is accepted if total tardiness does not worsen and, under equal tardiness, total sample usage does not increase.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Sample-size local search}
 \label{alg:sample_ls_short}
 \begin{algorithmic}[1]
@@ -430,7 +438,7 @@ Each selected job is assigned to the earliest compatible chamber station. Compat
 
 After construction, the schedule is validated independently. The validation checks required-test multiplicity, chamber-environment compatibility, humidity and voltage feasibility, station non-overlap, sample non-overlap, stage-state logic, and completion-time calculation. This layer is essential because infeasible schedules are operationally unusable regardless of objective value.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{EDD-based schedule construction}
 \label{alg:scheduler_short}
 \begin{algorithmic}[1]
@@ -467,7 +475,7 @@ For each ratio, up to \(K_{\max}\) shake attempts are performed. A shake selects
 
 This design changes the workload structure rather than only the sequence of existing operations. As a result, VNS can escape local optima created by the current balance between pull-down workload, downstream parallelism, and chamber eligibility.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{VNS with fixed fallback ratios}
 \label{alg:vns_short}
 \begin{algorithmic}[1]
@@ -536,87 +544,68 @@ where \(T^{tot,best}_{i}\) is the best total tardiness observed for that instanc
 
 Table~\ref{tab:vns_ratio_comparison_short} compares VNS perturbation policies with \(K_{\max}=100\). The \(0.20\)--\(0.30\) fallback policy produces the lowest average gap and standard deviation among these variants, showing that moderate perturbation followed by stronger fallback is more robust than a single fixed ratio.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Comparison of VNS perturbation policies with \(K_{\max}=100\).}
 \label{tab:vns_ratio_comparison_short}
 \small
-\begin{tabular}{lccccc}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Measure} &
-\shortstack{\textbf{0.10}\\\textbf{VNS}} &
-\shortstack{\textbf{0.20}\\\textbf{VNS}} &
-\shortstack{\textbf{0.30}\\\textbf{VNS}} &
-\shortstack{\textbf{0.10--0.20--}\\\textbf{0.30 VNS}} &
-\shortstack{\textbf{0.20--0.30}\\\textbf{VNS}} \\
-\hline
-Average gap (\%) & 29.62 & 18.11 & 23.44 & 22.06 & 14.93 \\
-Std. dev. (\%) & 44.09 & 31.52 & 30.10 & 33.25 & 27.35 \\
-Best-instance count & 25 & 27 & 18 & 38 & 36 \\
-Average runtime (min) & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
-\hline
+\textbf{Policy} & \textbf{Avg. gap} & \textbf{Std. dev.} & \textbf{Best count} & \textbf{Runtime} \\ \hline
+0.10 VNS & 29.62 & 44.09 & 25 & 41.3 \\ \hline
+0.20 VNS & 18.11 & 31.52 & 27 & 32.1 \\ \hline
+0.30 VNS & 23.44 & 30.10 & 18 & 30.4 \\ \hline
+0.10--0.20--0.30 VNS & 22.06 & 33.25 & 38 & 66.0 \\ \hline
+0.20--0.30 VNS & 14.93 & 27.35 & 36 & 49.7 \\ \hline
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:vns_budget_comparison_short} evaluates the shake budget for the selected \(0.20\)--\(0.30\) policy. Increasing \(K_{\max}\) improves both average performance and robustness. With \(K_{\max}=200\), the average gap is only \(0.31\%\), the standard deviation is \(1.65\%\), and the method obtains the best result in 82 of 90 scenarios within this comparison. The improvement comes at higher runtime, which is acceptable for tactical planning.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Effect of shake budget for the \(0.20\)--\(0.30\) VNS policy.}
 \label{tab:vns_budget_comparison_short}
-\begin{tabular}{lccc}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Measure} &
-\shortstack{\textbf{VNS}\\\textbf{(50)}} &
-\shortstack{\textbf{VNS}\\\textbf{(100)}} &
-\shortstack{\textbf{VNS}\\\textbf{(200)}} \\
-\hline
-Average gap (\%) & 13.79 & 5.65 & 0.31 \\
-Std. dev. (\%) & 29.07 & 20.06 & 1.65 \\
-Best-instance count & 18 & 47 & 82 \\
-Average runtime (min) & 32.6 & 49.7 & 85.1 \\
-\hline
+\textbf{Budget} & \textbf{Avg. gap} & \textbf{Std. dev.} & \textbf{Best count} & \textbf{Runtime} \\ \hline
+50 & 13.79 & 29.07 & 18 & 32.6 \\ \hline
+100 & 5.65 & 20.06 & 47 & 49.7 \\ \hline
+200 & 0.31 & 1.65 & 82 & 85.1 \\ \hline
 \end{tabular}
 \end{table}
 
 The selected proposed configuration is then compared with the main benchmark variants in Table~\ref{tab:main_benchmark_comparison_short}. It obtains the best solution in all 90 scenarios. The fixed-sample policy has the largest average gap, confirming that a uniform sample rule is not robust under heterogeneous due dates, environmental requirements, and chamber-capability constraints. The no-outer and no-VNS variants also remain far from the selected configuration, showing that both assignment--scheduling feedback and diversification are necessary.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Overall comparison of the selected proposed configuration and benchmark variants.}
 \label{tab:main_benchmark_comparison_short}
-\begin{tabular}{lcccc}
+\small
+\begin{tabular}{|p{2.2in}|c|c|c|c|}
 \hline
-\textbf{Method} &
-\shortstack{\textbf{Average}\\\textbf{gap (\%)}} &
-\shortstack{\textbf{Std. dev.}\\\textbf{(\%)}} &
-\shortstack{\textbf{Best-instance}\\\textbf{count}} &
-\shortstack{\textbf{Average runtime}\\\textbf{(min)}} \\
-\hline
-Fixed sample & 361.93 & 198.43 & 0 & 0.1 \\
-No outer reconfiguration & 140.07 & 90.32 & 0 & 17.1 \\
-No VNS diversification & 178.67 & 113.52 & 0 & 0.5 \\
-Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\
-\hline
+\textbf{Method} & \textbf{Avg. gap} & \textbf{Std. dev.} & \textbf{Best count} & \textbf{Runtime} \\ \hline
+Fixed sample & 361.93 & 198.43 & 0 & 0.1 \\ \hline
+No outer reconfiguration & 140.07 & 90.32 & 0 & 17.1 \\ \hline
+No VNS diversification & 178.67 & 113.52 & 0 & 0.5 \\ \hline
+Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\ \hline
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:fixed_selected_sample_comparison_short} provides a direct comparison between the fixed policy and the selected configuration. The selected configuration uses more samples on average, but it allocates them selectively to products for which additional parallelism reduces tardiness. The goal is therefore not uniform prototype expansion, but coordinated sample allocation and chamber reconfiguration.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Direct comparison between fixed samples and the selected proposed configuration.}
 \label{tab:fixed_selected_sample_comparison_short}
-\begin{tabular}{lcc}
+\begin{tabular}{|l|c|c|}
 \hline
-\textbf{Measure} & \textbf{Fixed sample} & \shortstack{\textbf{Selected proposed}\\\textbf{configuration}} \\
-\hline
-Average gap (\%) & 361.93 & 0.00 \\
-Std. dev. (\%) & 198.43 & 0.00 \\
-Best-instance count & 0 & 90 \\
-Average runtime (min) & 0.1 & 85.1 \\
-Average sample count & 150 & 380 \\
-\hline
+\textbf{Measure} & \textbf{Fixed sample} & \textbf{Proposed} \\ \hline
+Average gap & 361.93 & 0.00 \\ \hline
+Std. dev. & 198.43 & 0.00 \\ \hline
+Best-instance count & 0 & 90 \\ \hline
+Average runtime & 0.1 & 85.1 \\ \hline
+Average sample count & 150 & 380 \\ \hline
 \end{tabular}
 \end{table}
 
