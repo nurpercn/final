@@ -3,26 +3,41 @@
 % --- Math and algorithms ---
 \usepackage{amsmath, amssymb, amsthm, amsfonts}
 \usepackage{mathrsfs}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
+\IfFileExists{algorithm.sty}{%
+  \usepackage{algorithm}
+}{%
+  \newcounter{algorithm}
+  \newenvironment{algorithm}[1][H]{%
+    \par\refstepcounter{algorithm}\noindent\begin{minipage}{\textwidth}
+    \hrule\smallskip
+    \renewcommand{\caption}[1]{\textbf{Algorithm \thealgorithm. ##1}\par\smallskip}
+  }{%
+    \smallskip\hrule\end{minipage}\par
+  }
+}
+\IfFileExists{algpseudocode.sty}{%
+  \usepackage{algpseudocode}
+}{%
+  \newenvironment{algorithmic}[1][]{\begin{enumerate}}{\end{enumerate}}
+  \newcommand{\State}{\item}
+  \newcommand{\For}[1]{\item \textbf{for} #1 \textbf{do}}
+  \newcommand{\EndFor}{\item \textbf{end for}}
+  \newcommand{\If}[1]{\item \textbf{if} #1 \textbf{then}}
+  \newcommand{\Else}{\item \textbf{else}}
+  \newcommand{\EndIf}{\item \textbf{end if}}
+  \newcommand{\Repeat}{\item \textbf{repeat}}
+  \newcommand{\Until}[1]{\item \textbf{until} #1}
+  \newcommand{\While}[1]{\item \textbf{while} #1 \textbf{do}}
+  \newcommand{\EndWhile}{\item \textbf{end while}}
+  \newcommand{\Return}{\item \textbf{return} }
+}
 
 % --- Encoding and layout ---
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{setspace}
 \usepackage{float}
 \usepackage{graphicx}
-\usepackage[table]{xcolor}
-\usepackage{booktabs}
-\usepackage{array}
-\usepackage{tabularx}
-\usepackage{multirow}
-\usepackage{makecell}
-\usepackage{ragged2e}
-\usepackage{siunitx}
-\usepackage[authoryear]{natbib}
 
-\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
 \pagestyle{plain}
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0in}
@@ -40,19 +55,24 @@
 \newtheorem{remark}{Remark}
 \newtheorem{definition}{Definition}
 
-% Compile safely even when figures are not in the same folder.
-\newcommand{\safeincludegraphics}[2][]{%
-\IfFileExists{#2}{%
-\includegraphics[#1]{#2}%
-}{%
-\fbox{\begin{minipage}{0.78\textwidth}
-\centering
-\vspace{8mm}
-Figure file not found: \texttt{#2}\\
-Place the file in the same folder to display the figure.
-\vspace{8mm}
-\end{minipage}}%
-}%
+% Simple citation compatibility. These keep the manuscript usable even
+% without natbib.
+\newcommand{\citep}[1]{\cite{#1}}
+\newcommand{\citet}[1]{\cite{#1}}
+
+% Compile safely even when the chamber figure is not in the same folder.
+\newcommand{\safechamberfigure}{%
+  \IfFileExists{chamber_structure.png}{%
+    \includegraphics[width=0.88\textwidth]{chamber_structure.png}%
+  }{%
+    \fbox{\begin{minipage}{0.78\textwidth}
+    \centering
+    \vspace{8mm}
+    Chamber structure figure placeholder.\\
+    Place \texttt{chamber\_structure.png} in the same folder to display the figure.
+    \vspace{8mm}
+    \end{minipage}}%
+  }%
 }
 
 \begin{document}
@@ -125,12 +145,12 @@ The set of products is denoted by \(\mathcal{P}\). Each product \(p\) has a due 
 \begin{tabular}{|c|c|l|c|c|c|c|}
 \hline
 \textbf{Stage} & \textbf{No.} & \textbf{Test name} & \textbf{Temp.} & \textbf{Humidity} & \textbf{Samples} & \textbf{Days} \\ \hline
-1 & 1 & Gas Amount Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-2 & 2 & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All & 5 \\ \hline
-3 & 3--5 & Energy Efficiency & 16/25/32~\si{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-3 & 6--11 & Performance & 10/16/25/32/38/43~\si{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-4 & 12--13 & Freezing Capacity / Temperature Rise & 25~\si{\degreeCelsius} & Ambient & 1 & 10/5 \\ \hline
-5 & 14--16 & Consumer Usage & 10/25/32~\si{\degreeCelsius} & Ambient or 85\% RH & 1 & 15 \\ \hline
+1 & 1 & Gas Amount Determination & 43/38/32~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10 \\ \hline
+2 & 2 & Pull-down & 43/38/32~\(^{\circ}\mathrm{C}\) & Ambient & All & 5 \\ \hline
+3 & 3--5 & Energy Efficiency & 16/25/32~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 15 \\ \hline
+3 & 6--11 & Performance & 10/16/25/32/38/43~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10 \\ \hline
+4 & 12--13 & Freezing Capacity / Temperature Rise & 25~\(^{\circ}\mathrm{C}\) & Ambient & 1 & 10/5 \\ \hline
+5 & 14--16 & Consumer Usage & 10/25/32~\(^{\circ}\mathrm{C}\) & Ambient or 85\% RH & 1 & 15 \\ \hline
 \end{tabular}
 \vspace{1mm}
 
@@ -144,7 +164,7 @@ The chamber system includes 28 chambers and 240 stations. Chamber capacities ran
 
 \begin{figure}[H]
 \centering
-\safeincludegraphics[width=0.88\textwidth]{chamber_structure.png}
+\safechamberfigure
 \caption{Test chambers consist of multiple stations operating under a shared chamber-level environment.}
 \label{fig:chamber_3d_short}
 \end{figure}
@@ -159,10 +179,10 @@ Table~\ref{tab:chamber_capabilities_short} reports the chamber capacities and ad
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.05}
 \begin{tabular}{lcccc@{\qquad}lcccc}
-\toprule
+\hline
 \textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} &
 \textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} \\
-\midrule
+\hline
 T001 & 8  & 1 & 0 & 0 & T015 & 6  & 1 & 1 & 0 \\
 T002 & 8  & 1 & 1 & 1 & T016 & 6  & 1 & 0 & 1 \\
 T003 & 8  & 1 & 1 & 1 & T017 & 6  & 1 & 0 & 1 \\
@@ -177,7 +197,7 @@ T011 & 12 & 1 & 1 & 0 & T025 & 8  & 1 & 1 & 1 \\
 T012 & 12 & 1 & 1 & 0 & T026 & 12 & 1 & 0 & 1 \\
 T013 & 12 & 1 & 1 & 0 & T027 & 12 & 1 & 0 & 1 \\
 T014 & 6  & 1 & 1 & 0 & T028 & 12 & 1 & 0 & 1 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -258,9 +278,9 @@ is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under
 \label{tab:notation_short}
 \small
 \begin{tabular}{ll}
-\toprule
+\hline
 \textbf{Symbol} & \textbf{Definition} \\
-\midrule
+\hline
 \(\mathcal{P},\mathcal{C},\mathcal{T},\mathcal{E}\) & Products, chambers, tests, and environments \\
 \(M_c,h_c,v_c\) & Stations, humidity capability, and voltage capability of chamber \(c\) \\
 \(\mathcal{T}_p,d_p,\nu_p\) & Required tests, due date, and voltage requirement of product \(p\) \\
@@ -269,7 +289,7 @@ is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under
 \(X_c,X\) & Environment assigned to chamber \(c\), and assignment vector \\
 \(W_e(S),W_e^V(S)\) & Total and voltage-sensitive workload in environment \(e\) \\
 \(C_p,T_p,T^{tot},S^{tot}\) & Completion time, tardiness, total tardiness, and total samples \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -481,21 +501,11 @@ The fallback structure avoids committing the search to a single perturbation int
 
 The benchmark set contains 90 scenario combinations formed by \(10\) test matrices, \(3\) due-date scenarios, and \(3\) voltage scenarios. The instances are synthetically generated using ranges and structural rules calibrated from industrial practice, allowing controlled experiments without relying on proprietary raw data.
 
-Due-date scenarios represent tight, moderate, and loose planning regimes with different dispersion levels. Voltage scenarios define low, medium, and high proportions of voltage-sensitive products; higher voltage intensity reduces the eligible chamber set and increases competition for voltage-capable resources. Test matrices represent different product portfolios and required-test combinations. They mainly affect workload distribution across environments because gas and pull-down tests concentrate upstream demand, while energy, performance, freezing, temperature-rise, and consumer-usage tests distribute downstream workload across several temperatures.
+Due-date scenarios represent tight, moderate, and loose planning regimes with different dispersion levels. The first due-date setting concentrates project deadlines in a relatively narrow range, creating direct competition among products with similar urgency. The second setting introduces stronger dispersion, which creates priority conflicts between near-term and later projects. The third setting shifts due dates to a more relaxed region while preserving heterogeneity; this case is useful for testing whether the algorithm still benefits from sample optimization when the system is less deadline constrained.
 
-\begin{figure}[H]
-\centering
-\safeincludegraphics[width=0.72\textwidth]{duedate_senaryo.png}
-\caption{Due-date distributions across scenarios.}
-\label{fig:due_date_spread_short}
-\end{figure}
+Voltage scenarios define low, medium, and high proportions of voltage-sensitive products. In the low-intensity setting, only a small subset of projects requires voltage-compatible chambers, so voltage capability is rarely the binding resource. In the medium setting, voltage-sensitive projects become frequent enough to create localized competition for voltage-capable stations. In the high-intensity setting, a large share of projects must be processed on voltage-compatible chambers, which sharply reduces assignment flexibility and makes the voltage-capable subset a potential bottleneck.
 
-\begin{figure}[H]
-\centering
-\safeincludegraphics[width=0.66\textwidth]{voltage_senaryo.png}
-\caption{Voltage requirement intensity across scenarios.}
-\label{fig:voltage_intensity_short}
-\end{figure}
+Test matrices represent different product portfolios and required-test combinations. They mainly affect workload distribution across environments because gas and pull-down tests concentrate upstream demand, while energy, performance, freezing, temperature-rise, and consumer-usage tests distribute downstream workload across several temperatures. Therefore, the 90-scenario benchmark combines deadline tightness, resource eligibility pressure, and environment-dependent workload imbalance without relying on external graphics.
 
 \subsection{Compared methods and parameters}
 \label{subsec:methods_params}
@@ -532,19 +542,19 @@ Table~\ref{tab:vns_ratio_comparison_short} compares VNS perturbation policies wi
 \label{tab:vns_ratio_comparison_short}
 \small
 \begin{tabular}{lccccc}
-\toprule
+\hline
 \textbf{Measure} &
-\makecell{\textbf{0.10}\\\textbf{VNS}} &
-\makecell{\textbf{0.20}\\\textbf{VNS}} &
-\makecell{\textbf{0.30}\\\textbf{VNS}} &
-\makecell{\textbf{0.10--0.20--}\\\textbf{0.30 VNS}} &
-\makecell{\textbf{0.20--0.30}\\\textbf{VNS}} \\
-\midrule
+\shortstack{\textbf{0.10}\\\textbf{VNS}} &
+\shortstack{\textbf{0.20}\\\textbf{VNS}} &
+\shortstack{\textbf{0.30}\\\textbf{VNS}} &
+\shortstack{\textbf{0.10--0.20--}\\\textbf{0.30 VNS}} &
+\shortstack{\textbf{0.20--0.30}\\\textbf{VNS}} \\
+\hline
 Average gap (\%) & 29.62 & 18.11 & 23.44 & 22.06 & 14.93 \\
 Std. dev. (\%) & 44.09 & 31.52 & 30.10 & 33.25 & 27.35 \\
 Best-instance count & 25 & 27 & 18 & 38 & 36 \\
 Average runtime (min) & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -555,17 +565,17 @@ Table~\ref{tab:vns_budget_comparison_short} evaluates the shake budget for the s
 \caption{Effect of shake budget for the \(0.20\)--\(0.30\) VNS policy.}
 \label{tab:vns_budget_comparison_short}
 \begin{tabular}{lccc}
-\toprule
+\hline
 \textbf{Measure} &
-\makecell{\textbf{VNS}\\\textbf{(50)}} &
-\makecell{\textbf{VNS}\\\textbf{(100)}} &
-\makecell{\textbf{VNS}\\\textbf{(200)}} \\
-\midrule
+\shortstack{\textbf{VNS}\\\textbf{(50)}} &
+\shortstack{\textbf{VNS}\\\textbf{(100)}} &
+\shortstack{\textbf{VNS}\\\textbf{(200)}} \\
+\hline
 Average gap (\%) & 13.79 & 5.65 & 0.31 \\
 Std. dev. (\%) & 29.07 & 20.06 & 1.65 \\
 Best-instance count & 18 & 47 & 82 \\
 Average runtime (min) & 32.6 & 49.7 & 85.1 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -576,18 +586,18 @@ The selected proposed configuration is then compared with the main benchmark var
 \caption{Overall comparison of the selected proposed configuration and benchmark variants.}
 \label{tab:main_benchmark_comparison_short}
 \begin{tabular}{lcccc}
-\toprule
+\hline
 \textbf{Method} &
-\makecell{\textbf{Average}\\\textbf{gap (\%)}} &
-\makecell{\textbf{Std. dev.}\\\textbf{(\%)}} &
-\makecell{\textbf{Best-instance}\\\textbf{count}} &
-\makecell{\textbf{Average runtime}\\\textbf{(min)}} \\
-\midrule
+\shortstack{\textbf{Average}\\\textbf{gap (\%)}} &
+\shortstack{\textbf{Std. dev.}\\\textbf{(\%)}} &
+\shortstack{\textbf{Best-instance}\\\textbf{count}} &
+\shortstack{\textbf{Average runtime}\\\textbf{(min)}} \\
+\hline
 Fixed sample & 361.93 & 198.43 & 0 & 0.1 \\
 No outer reconfiguration & 140.07 & 90.32 & 0 & 17.1 \\
 No VNS diversification & 178.67 & 113.52 & 0 & 0.5 \\
 Selected proposed configuration & 0.00 & 0.00 & 90 & 85.1 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -598,15 +608,15 @@ Table~\ref{tab:fixed_selected_sample_comparison_short} provides a direct compari
 \caption{Direct comparison between fixed samples and the selected proposed configuration.}
 \label{tab:fixed_selected_sample_comparison_short}
 \begin{tabular}{lcc}
-\toprule
-\textbf{Measure} & \textbf{Fixed sample} & \makecell{\textbf{Selected proposed}\\\textbf{configuration}} \\
-\midrule
+\hline
+\textbf{Measure} & \textbf{Fixed sample} & \shortstack{\textbf{Selected proposed}\\\textbf{configuration}} \\
+\hline
 Average gap (\%) & 361.93 & 0.00 \\
 Std. dev. (\%) & 198.43 & 0.00 \\
 Best-instance count & 0 & 90 \\
 Average runtime (min) & 0.1 & 85.1 \\
 Average sample count & 150 & 380 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -627,7 +637,7 @@ Computational experiments on 90 benchmark scenarios show that the selected propo
 The main practical conclusion is that prototype sample allocation should be treated as a tactical planning variable. Samples should be increased selectively where additional parallelism reduces tardiness, and chamber configurations should be reassessed after sample decisions change. Future work may incorporate uncertain test durations, test failures and retesting, chamber setup times, energy and labor objectives, and rolling-horizon project arrivals.
 
 \IfFileExists{References.bib}{%
-\bibliographystyle{plainnat}
+\bibliographystyle{plain}
 \bibliography{References}
 }{%
 \begin{thebibliography}{99}
