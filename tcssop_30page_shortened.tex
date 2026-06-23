@@ -32,13 +32,28 @@
 \setlength{\headheight}{0in}
 \setlength{\headsep}{0in}
 \setlength{\footskip}{.4in}
-\renewcommand{\baselinestretch}{1.25}
+\renewcommand{\baselinestretch}{1.5}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{obs}{Observation}
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
 \newtheorem{definition}{Definition}
+
+% Compile safely even when figures are not in the same folder.
+\newcommand{\safeincludegraphics}[2][]{%
+\IfFileExists{#2}{%
+\includegraphics[#1]{#2}%
+}{%
+\fbox{\begin{minipage}{0.78\textwidth}
+\centering
+\vspace{8mm}
+Figure file not found: \texttt{#2}\\
+Place the file in the same folder to display the figure.
+\vspace{8mm}
+\end{minipage}}%
+}%
+}
 
 \begin{document}
 
@@ -87,6 +102,10 @@ Integrated decision-making models such as order acceptance and scheduling combin
 
 Methodologically, VNS and related neighborhood-based metaheuristics have performed well in complex scheduling settings because they combine local improvement with systematic diversification \citep{MejiaYuraszeck2020}. The diversification mechanism proposed here differs from conventional VNS designs by perturbing sample-size decisions. Thus, the search explores alternative workload structures, which then induce different chamber-utilization and scheduling regimes.
 
+The gap addressed in this paper is therefore not only the presence of additional constraints, but the endogenous nature of the workload itself. In classical scheduling, processing requirements are typically known before the schedule is constructed. In the present system, however, the number of physical samples selected for each product changes the number of pull-down operations and also changes how downstream tests can be distributed across samples. A fixed-job representation would miss this trade-off and would evaluate schedules under an artificially rigid workload. TCSSOP explicitly connects the test-planning decision and the resource-constrained scheduling decision within the same framework.
+
+This distinction is important from both methodological and managerial perspectives. Methodologically, it creates a search space in which a move can improve the schedule even if it increases total processing time, because the same move may increase feasible parallelism. Managerially, it challenges the common rule that fewer samples always mean lower burden. In congested multi-stage testing systems, a carefully placed additional sample can reduce the completion time of a critical project enough to offset the extra pull-down effort. The proposed framework is designed to identify such cases.
+
 \section{Problem Definition}
 \label{sec:pd}
 
@@ -125,10 +144,53 @@ The chamber system includes 28 chambers and 240 stations. Chamber capacities ran
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{chamber_structure.png}
+\safeincludegraphics[width=0.88\textwidth]{chamber_structure.png}
 \caption{Test chambers consist of multiple stations operating under a shared chamber-level environment.}
 \label{fig:chamber_3d_short}
 \end{figure}
+
+Table~\ref{tab:chamber_capabilities_short} reports the chamber capacities and adjustment capabilities used in the computational study. Temperature adjustment is available in all chambers, whereas humidity and voltage adjustment are available only in selected chambers. This heterogeneity is important because a chamber with many stations may still be unusable for a product if the required humidity or voltage capability is absent.
+
+\begin{table}[H]
+\centering
+\caption{Chamber capacities and technical adjustment capabilities.}
+\label{tab:chamber_capabilities_short}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{lcccc@{\qquad}lcccc}
+\toprule
+\textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} &
+\textbf{Ch.} & \textbf{St.} & \textbf{Temp.} & \textbf{Hum.} & \textbf{Volt.} \\
+\midrule
+T001 & 8  & 1 & 0 & 0 & T015 & 6  & 1 & 1 & 0 \\
+T002 & 8  & 1 & 1 & 1 & T016 & 6  & 1 & 0 & 1 \\
+T003 & 8  & 1 & 1 & 1 & T017 & 6  & 1 & 0 & 1 \\
+T004 & 8  & 1 & 1 & 1 & T018 & 6  & 1 & 0 & 1 \\
+T005 & 8  & 1 & 1 & 1 & T019 & 6  & 1 & 0 & 1 \\
+T006 & 8  & 1 & 0 & 0 & T020 & 6  & 1 & 0 & 1 \\
+T007 & 8  & 1 & 0 & 0 & T021 & 6  & 1 & 0 & 1 \\
+T008 & 12 & 1 & 0 & 1 & T022 & 6  & 1 & 0 & 1 \\
+T009 & 12 & 1 & 0 & 0 & T023 & 6  & 1 & 0 & 1 \\
+T010 & 12 & 1 & 1 & 0 & T024 & 8  & 1 & 1 & 0 \\
+T011 & 12 & 1 & 1 & 0 & T025 & 8  & 1 & 1 & 1 \\
+T012 & 12 & 1 & 1 & 0 & T026 & 12 & 1 & 0 & 1 \\
+T013 & 12 & 1 & 1 & 0 & T027 & 12 & 1 & 0 & 1 \\
+T014 & 6  & 1 & 1 & 0 & T028 & 12 & 1 & 0 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The chamber table also highlights why TCSSOP cannot be reduced to a simple capacity-balancing problem. A workload peak at an ambient-temperature environment may be served by many chambers, but a workload peak involving humidity or voltage may be restricted to a much smaller subset. Therefore, the planning model must track both total station capacity and capability-specific station capacity.
+
+\subsection{Test requirement generation}
+\label{subsec:req_generation}
+
+Product-specific test sets are generated from climatic class, energy regulation, optional engineering decisions, and voltage specification. Climatic class determines which performance-temperature alternatives are required. Energy-efficiency regulation determines whether a product requires a single-point or multi-point energy test. Optional tests such as freezing capacity and temperature rise are included only when specified by the product engineer. Thus, two products may share the same due-date region and voltage requirement but still impose different workload profiles on the chamber system.
+
+The environmental requirement of a test is represented by \(e(t)\). Ambient-humidity tests can be assigned to any chamber whose temperature setting matches \(e(t)\), whereas controlled-humidity tests also require humidity capability. Voltage is modeled at the product level rather than the test level because the electrical configuration follows the product's target market. If a product requires voltage-compatible execution, all of its operations must be processed on voltage-capable chambers. This one-sided condition reflects practice: a voltage-capable chamber can process a product without voltage requirements, but the reverse is not feasible.
+
+The test catalog contains several alternative variants. For example, energy-efficiency tests may be performed at \(16^\circ\mathrm{C}\), \(25^\circ\mathrm{C}\), or \(32^\circ\mathrm{C}\), while performance tests can be required at different temperatures according to climatic class. These alternatives prevent the workload from being uniformly distributed over environments. In many instances, early-stage tests concentrate at high-temperature environments, while consumer-usage and optional tests create additional demand at \(25^\circ\mathrm{C}\) and humidity-controlled environments. This uneven distribution is a main source of bottlenecks.
 
 \subsection{Decision-dependent workload}
 \label{subsec:workload}
@@ -151,6 +213,15 @@ m_{pt}(s_p)\tau_t,
 where \(\tau_t\) is the processing time of test \(t\). Voltage-sensitive workload \(W_e^V(S)\) is defined similarly by summing only products with \(\nu_p=1\).
 
 This formulation captures the central trade-off. Increasing \(s_p\) increases pull-down workload but may reduce tardiness by enabling downstream parallelism. Reducing \(s_p\) saves workload but may serialize downstream testing on too few physical units.
+
+\subsection{Stage-state logic and sample feasibility}
+\label{subsec:stage_logic}
+
+The scheduling logic is governed by stages rather than by a single static predecessor list. Gas amount determination is executed once for each product and prepares the product for the pull-down phase. Pull-down is executed once for each sample and acts as the main release condition for downstream tests. After the pull-down phase has ended, the required energy, performance, freezing, and temperature-rise tests may be processed according to their environmental requirements. Consumer-usage tests are released only after the relevant downstream-stage conditions are satisfied.
+
+This logic affects scheduling in two ways. First, the ready set changes dynamically as samples complete their current operations and product-stage states are updated. Second, operations belonging to the same product may be eligible at the same time but may still conflict because they require the same physical sample. For this reason, feasibility cannot be checked only at the product or station level; sample-level non-overlap must also be enforced.
+
+Sample availability is the mechanism through which additional samples create parallelism. If a product has only the minimum number of samples, several downstream tests may need to wait for the same units even when compatible chamber stations are idle. If additional samples are available, downstream tests can be distributed over more physical units after release. The benefit depends on the timing of release, due-date urgency, and whether compatible chambers are available in the required environments. This is why sample optimization is integrated with chamber assignment and scheduling rather than solved as an isolated planning calculation.
 
 \subsection{Feasibility conditions and objective}
 \label{subsec:objective}
@@ -265,6 +336,32 @@ Let \(x_{ce}=1\) if chamber \(c\) is assigned to environment \(e\), and let \(\m
 \end{align}
 The resulting assignment is then refined by swap and move neighborhoods. A candidate is retained only if it preserves environment coverage and capability feasibility. Feasible candidates are evaluated with a fast schedule-aware scoring function, and a first-improvement rule is used.
 
+\begin{algorithm}[H]
+\caption{Chamber assignment with local refinement}
+\label{alg:chamber_assignment_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Sample vector \(S\)
+\State Compute \(W_e(S)\), \(W_e^V(S)\), \(\phi_e\), \(\phi_e^V\), \(T_e\), and \(T_e^V\).
+\State Solve the exact chamber-environment assignment model.
+\State Set the exact solution as \(X^{best}\).
+\State Evaluate \(X^{best}\) using the fast schedule-aware scoring function.
+\Repeat
+    \State Generate swap and move neighbors of \(X^{best}\).
+    \For{each candidate assignment \(X^{cand}\)}
+        \If{\(X^{cand}\) satisfies coverage, humidity, and voltage feasibility}
+            \State Evaluate \(X^{cand}\) using the fast scoring function.
+            \If{\(X^{cand}\) improves the current assignment}
+                \State \(X^{best}\leftarrow X^{cand}\) and restart the neighborhood scan.
+            \EndIf
+        \EndIf
+    \EndFor
+\Until{no improving feasible neighbor is found}
+\State \Return \(X^{best}\)
+\end{algorithmic}
+\end{algorithm}
+
+The exact model provides a balanced starting point, while the local refinement step incorporates scheduling-aware information that is not represented in the aggregate workload objective. In particular, two assignments with similar environment-level capacity deviations can produce different completion times because the detailed scheduler also sees due dates, release times, and sample conflicts. The local phase therefore acts as a bridge between aggregate chamber planning and detailed operational scheduling.
+
 \subsection{Sample-size local search}
 \label{subsec:sample_optimization}
 
@@ -276,6 +373,34 @@ subject to sample bounds. Candidate vectors are first screened by fast schedule-
 
 A Late--Early Rebalance operator is also used. Products with positive tardiness are paired with products having earliness slack. For each pair, one sample is added to the late product and one sample is removed from the early product, subject to bounds. The paired move is accepted if total tardiness does not worsen and, under equal tardiness, total sample usage does not increase.
 
+\begin{algorithm}[H]
+\caption{Sample-size local search}
+\label{alg:sample_ls_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Chamber assignment \(X\), sample vector \(S\)
+\State Clamp all sample values to \([s_{\min},s_{\max}]\).
+\State Construct an initial schedule \(\Pi\) and evaluation \(Eval\).
+\Repeat
+    \State \(improved\leftarrow false\)
+    \For{each product \(p\in\mathcal{P}\)}
+        \State Define feasible moves \(\Delta_p\subseteq\{-2,-1,+1,+2\}\).
+        \State Screen all \(s_p+\delta\), \(\delta\in\Delta_p\), using fast evaluation.
+        \If{the best screened move improves the incumbent}
+            \State Apply the move, construct the full schedule, and update \(Eval\).
+            \State \(improved\leftarrow true\)
+        \EndIf
+    \EndFor
+    \State Apply the Late--Early Rebalance operator.
+    \If{the rebalance solution is accepted}
+        \State Update \(S\), \(\Pi\), and \(Eval\); set \(improved\leftarrow true\).
+    \EndIf
+\Until{\(improved=false\) or the pass limit is reached}
+\State \Return \((S,\Pi,Eval)\)
+\end{algorithmic}
+\end{algorithm}
+
+The fast evaluation is used only for screening. Accepted solutions are always re-evaluated by the full scheduler, which prevents the local search from accepting solutions that look attractive under an aggregate proxy but are infeasible or weak under detailed station and sample constraints. This two-level evaluation structure reduces computational effort while preserving consistency in final objective comparisons.
+
 \subsection{Scheduling and feasibility validation}
 \label{subsec:scheduling}
 
@@ -284,6 +409,32 @@ For fixed \(X\) and \(S\), schedules are constructed using an earliest-due-date 
 Each selected job is assigned to the earliest compatible chamber station. Compatibility requires matching environment, humidity capability when needed, and voltage capability for voltage-sensitive products. Sample availability is updated after every assignment to prevent overlap on the same physical unit.
 
 After construction, the schedule is validated independently. The validation checks required-test multiplicity, chamber-environment compatibility, humidity and voltage feasibility, station non-overlap, sample non-overlap, stage-state logic, and completion-time calculation. This layer is essential because infeasible schedules are operationally unusable regardless of objective value.
+
+\begin{algorithm}[H]
+\caption{EDD-based schedule construction}
+\label{alg:scheduler_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Chamber assignment \(X\), sample vector \(S\)
+\State Initialize station availability, sample availability, product states, and schedule \(\Pi\).
+\While{at least one product has an executable operation}
+    \State Create an empty candidate pool.
+    \For{each product \(p\in\mathcal{P}\)}
+        \State Identify the best ready operation of \(p\) using stage state, compatible chambers, and sample availability.
+        \If{a ready operation exists}
+            \State Add it to the candidate pool.
+        \EndIf
+    \EndFor
+    \State Select the next operation by earliest due date; break ties by earliest feasible start.
+    \State Assign the operation to the earliest feasible compatible station and sample.
+    \State Update station, sample, and product-stage states.
+\EndWhile
+\State Compute \(C_p\), \(T_p\), \(T^{tot}\), and \(S^{tot}\).
+\State Validate all feasibility conditions.
+\State \Return \((\Pi,(T^{tot},S^{tot}))\)
+\end{algorithmic}
+\end{algorithm}
+
+The scheduler is deterministic under fixed inputs and tie-breaking rules. This determinism is useful in the computational study because performance differences can be attributed to algorithmic design rather than random variation. It also makes the local-search and VNS phases easier to compare, since the same sample vector and chamber assignment always decode into the same schedule.
 
 \subsection{VNS diversification}
 \label{subsec:vns}
@@ -295,6 +446,32 @@ R^{VNS}=[0.20,0.30].
 For each ratio, up to \(K_{\max}\) shake attempts are performed. A shake selects the corresponding fraction of products and alternates between two directions: \textsc{DOWN}, which resets selected samples to \(s_{\min}\), and \textsc{UP}, which resets selected samples to the VNS upper level. The perturbed vector is then improved by the same sample-size local search. The first locally improved candidate that improves the incumbent is accepted.
 
 This design changes the workload structure rather than only the sequence of existing operations. As a result, VNS can escape local optima created by the current balance between pull-down workload, downstream parallelism, and chamber eligibility.
+
+\begin{algorithm}[H]
+\caption{VNS with fixed fallback ratios}
+\label{alg:vns_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} Chamber assignment \(X\), incumbent \((S^{inc},\Pi^{inc},Eval^{inc})\)
+\State Set \(R^{VNS}=[0.20,0.30]\).
+\For{each ratio \(r\in R^{VNS}\)}
+    \For{\(k=1,\ldots,K_{\max}\)}
+        \State \(S^{cand}\leftarrow S^{inc}\).
+        \If{\(k\) is odd}
+            \State Reset the selected \(r\)-fraction of products to \(s_{\min}\).
+        \Else
+            \State Reset the selected \(r\)-fraction of products to \(s_{\max VNS}\).
+        \EndIf
+        \State Apply sample-size local search to \(S^{cand}\) under \(X\).
+        \If{the locally improved candidate improves \(Eval^{inc}\)}
+            \State \Return the candidate and set \(improved=true\).
+        \EndIf
+    \EndFor
+\EndFor
+\State \Return the incumbent and set \(improved=false\).
+\end{algorithmic}
+\end{algorithm}
+
+The fallback structure avoids committing the search to a single perturbation intensity. A \(0.20\) perturbation often preserves useful sample-allocation structure while moving the search outside the immediate local basin. If this is insufficient, the \(0.30\) perturbation provides a stronger change. Larger perturbations were not selected for the final configuration because preliminary tests indicated that they often destroyed beneficial workload patterns generated by the local search.
 
 \section{Computational Study}
 \label{sec:computational_study}
@@ -308,14 +485,14 @@ Due-date scenarios represent tight, moderate, and loose planning regimes with di
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.72\textwidth]{duedate_senaryo.png}
+\safeincludegraphics[width=0.72\textwidth]{duedate_senaryo.png}
 \caption{Due-date distributions across scenarios.}
 \label{fig:due_date_spread_short}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.66\textwidth]{voltage_senaryo.png}
+\safeincludegraphics[width=0.66\textwidth]{voltage_senaryo.png}
 \caption{Voltage requirement intensity across scenarios.}
 \label{fig:voltage_intensity_short}
 \end{figure}
@@ -449,7 +626,90 @@ Computational experiments on 90 benchmark scenarios show that the selected propo
 
 The main practical conclusion is that prototype sample allocation should be treated as a tactical planning variable. Samples should be increased selectively where additional parallelism reduces tardiness, and chamber configurations should be reassessed after sample decisions change. Future work may incorporate uncertain test durations, test failures and retesting, chamber setup times, energy and labor objectives, and rolling-horizon project arrivals.
 
+\IfFileExists{References.bib}{%
 \bibliographystyle{plainnat}
 \bibliography{References}
+}{%
+\begin{thebibliography}{99}
+\bibitem[Allahverdi(2015)]{Allahverdi2015}
+Allahverdi, A. (2015).
+The third comprehensive survey on scheduling problems with setup times/costs.
+\emph{European Journal of Operational Research}.
+
+\bibitem[Fernandez(2022)]{Fernandez2022}
+Fernandez, A. (2022).
+Optimization approaches for reliability demonstration test planning.
+\emph{Reliability Engineering and System Safety}.
+
+\bibitem[Gomez-Sanchez et~al.(2023)]{GomezSanchezLallaRuizFernandezGilCastroVoss2023}
+Gomez-Sanchez, A., Lalla-Ruiz, E., Fernandez-Gil, A., Castro, C., and Voss, S. (2023).
+Resource-constrained multi-project scheduling: Recent extensions and solution methods.
+\emph{European Journal of Operational Research}.
+
+\bibitem[Hartmann and Briskorn(2022)]{HartmannBriskorn2022}
+Hartmann, S. and Briskorn, D. (2022).
+An updated survey of variants and extensions of the resource-constrained project scheduling problem.
+\emph{European Journal of Operational Research}.
+
+\bibitem[IEC(2010)]{IEC60335-1}
+IEC (2010).
+\emph{IEC 60335-1: Household and similar electrical appliances -- Safety -- Part 1}.
+
+\bibitem[IEC(2010)]{IEC60335-2-24}
+IEC (2010).
+\emph{IEC 60335-2-24: Household and similar electrical appliances -- Particular requirements for refrigerating appliances}.
+
+\bibitem[IEC(2015)]{IEC62552}
+IEC (2015).
+\emph{IEC 62552: Household refrigerating appliances -- Characteristics and test methods}.
+
+\bibitem[IEA(2021)]{IEA2021}
+International Energy Agency (2021).
+\emph{Energy efficiency and appliance standards reports}.
+
+\bibitem[Koren et~al.(1999)]{Koren1999}
+Koren, Y., Heisel, U., Jovane, F., Moriwaki, T., Pritschow, G., Ulsoy, G., and Van Brussel, H. (1999).
+Reconfigurable manufacturing systems.
+\emph{CIRP Annals}.
+
+\bibitem[Maecker et~al.(2023)]{MaeckerShenMonch2023}
+Maecker, S., Shen, L., and Moench, L. (2023).
+Heuristic approaches for unrelated parallel machine scheduling with eligibility and due-date considerations.
+\emph{Computers and Operations Research}.
+
+\bibitem[Mehrabi et~al.(2000)]{MehrabiUlsoyKoren2000}
+Mehrabi, M. G., Ulsoy, A. G., and Koren, Y. (2000).
+Reconfigurable manufacturing systems: Key to future manufacturing.
+\emph{Journal of Intelligent Manufacturing}.
+
+\bibitem[Mejia and Yuraszeck(2020)]{MejiaYuraszeck2020}
+Mejia, G. and Yuraszeck, F. (2020).
+Variable neighborhood search approaches for complex scheduling problems.
+\emph{International Journal of Production Research}.
+
+\bibitem[OECD(2024)]{OECD_MSTI2024}
+OECD (2024).
+\emph{Main Science and Technology Indicators}.
+
+\bibitem[OECD(2025)]{OECD_MSTI2025}
+OECD (2025).
+\emph{Main Science and Technology Indicators}.
+
+\bibitem[Slotnick(2011)]{Slotnick2011}
+Slotnick, S. A. (2011).
+Order acceptance and scheduling: A taxonomy and review.
+\emph{European Journal of Operational Research}.
+
+\bibitem[Ulaga et~al.(2022)]{UlagaDurasevicJakobovic2022}
+Ulaga, M., Durasevic, M., and Jakobovic, D. (2022).
+Local search methods for unrelated parallel machine scheduling under tardiness objectives.
+\emph{Applied Soft Computing}.
+
+\bibitem[Wang and Ye(2019)]{WangYe2019}
+Wang, X. and Ye, B. (2019).
+Order acceptance and scheduling with due-date-related performance measures.
+\emph{Computers and Industrial Engineering}.
+\end{thebibliography}
+}
 
 \end{document}
