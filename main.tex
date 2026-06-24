@@ -373,6 +373,99 @@ is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under
 \end{tabular}
 \end{table}
 
+\subsection{Mathematical formulation}
+\label{subsec:math_formulation}
+
+The following expanded mixed-integer formulation defines TCSSOP formally. It is not used as the computational solution method for the large benchmark instances; instead, it clarifies the complete decision structure that the heuristic approximates. The expansion uses the maximum sample index set \(\mathcal{J}=\{1,\ldots,s_{\max}\}\), so the operation set is fixed before optimization and sample-size decisions activate only the required subset of sample-specific operations.
+
+Let \(r_{pt}\) be 1 if product \(p\) requires test \(t\), and 0 otherwise. Let \(g\) denote gas amount determination and \(pd\) denote pull-down. Let \(\mathcal{T}^{D}\) be the set of downstream non-consumer tests and \(\mathcal{T}^{U}\) be the set of consumer-usage tests. Candidate operations are defined as \(G_p\) for gas amount determination, \(PD_{pj}\) for pull-down of sample \(j\), and \(O_{ptj}\) for assigning downstream or consumer test \(t\) of product \(p\) to sample \(j\). The set of all candidate operations is denoted by \(\mathcal{O}^{\max}\). For each operation \(o\in\mathcal{O}^{\max}\), let \(p(o)\), \(e(o)\), and \(\tau_o\) denote its product, required environment, and processing time. The binary variable \(a_{pj}\) activates sample \(j\) of product \(p\), \(b_o\) activates operation \(o\), \(x_{ce}\) assigns chamber \(c\) to environment \(e\), and \(y_{ocr}\) assigns operation \(o\) to station \(r\) of chamber \(c\), where \(r\in\mathcal{R}_c\). Start and completion times are \(S_o\) and \(C_o\). Product completion and tardiness are \(C_p\) and \(T_p\). A sufficiently large constant is denoted by \(B\).
+
+Sample activation and sample-size bounds are
+\begin{align}
+& s_{\min}\le \sum_{j\in\mathcal{J}}a_{pj}\le s_{\max} && \forall p\in\mathcal{P},\\
+& a_{pj}\le a_{p,j-1} && \forall p\in\mathcal{P},\ j=2,\ldots,s_{\max}.
+\end{align}
+The second constraint activates samples consecutively and removes symmetric sample labels.
+
+The operation-activation constraints are
+\begin{align}
+& b_{G_p}=r_{pg} && \forall p\in\mathcal{P},\\
+& b_{PD_{pj}}=r_{p,pd}a_{pj} && \forall p\in\mathcal{P},\ j\in\mathcal{J},\\
+& \sum_{j\in\mathcal{J}} b_{O_{ptj}}=r_{pt} && \forall p\in\mathcal{P},\ t\in\mathcal{T}^{D}\cup\mathcal{T}^{U},\\
+& b_{O_{ptj}}\le a_{pj} && \forall p\in\mathcal{P},\ t\in\mathcal{T}^{D}\cup\mathcal{T}^{U},\ j\in\mathcal{J}.
+\end{align}
+Thus, pull-down is generated once for every active sample, whereas each required downstream or consumer test is performed once and assigned to one active sample.
+
+Chamber-environment assignment and operation assignment are enforced by
+\begin{align}
+& \sum_{e\in\mathcal{E}}x_{ce}=1 && \forall c\in\mathcal{C},\\
+& \sum_{c\in\mathcal{C}}\sum_{r\in\mathcal{R}_c}y_{ocr}=b_o && \forall o\in\mathcal{O}^{\max},\\
+& y_{ocr}\le x_{c,e(o)} && \forall o\in\mathcal{O}^{\max},\ c\in\mathcal{C},\ r\in\mathcal{R}_c,\\
+& y_{ocr}\le h_c && \forall o:e(o)\in\mathcal{E}^{H},\ c\in\mathcal{C},\ r\in\mathcal{R}_c,\\
+& y_{ocr}\le v_c && \forall o:\nu_{p(o)}=1,\ c\in\mathcal{C},\ r\in\mathcal{R}_c.
+\end{align}
+These constraints ensure that every active operation is assigned to exactly one compatible station, with humidity and voltage restrictions enforced at the chamber level.
+
+Processing times are represented as
+\begin{align}
+& 0\le S_o\le Bb_o,\qquad 0\le C_o\le Bb_o && \forall o\in\mathcal{O}^{\max},\\
+& C_o\ge S_o+\tau_o-B(1-b_o) && \forall o\in\mathcal{O}^{\max},\\
+& C_o\le S_o+\tau_o+B(1-b_o) && \forall o\in\mathcal{O}^{\max}.
+\end{align}
+
+Station non-overlap is modeled with binary sequencing variables \(\delta_{oo'cr}\), where \(o<o'\):
+\begin{align}
+& S_{o'}\ge C_o-B(3-y_{ocr}-y_{o'cr}-\delta_{oo'cr})
+&& \forall o<o',\ c\in\mathcal{C},\ r\in\mathcal{R}_c,\\
+& S_o\ge C_{o'}-B(2-y_{ocr}-y_{o'cr}+\delta_{oo'cr})
+&& \forall o<o',\ c\in\mathcal{C},\ r\in\mathcal{R}_c.
+\end{align}
+Sample non-overlap is enforced similarly. Let \(\mathcal{O}^{\max}_{pj}\) be the candidate operations of product \(p\) that use physical sample \(j\). For \(o<o'\) in \(\mathcal{O}^{\max}_{pj}\), binary variable \(\gamma_{oo'}\) determines their order:
+\begin{align}
+& S_{o'}\ge C_o-B(3-b_o-b_{o'}-\gamma_{oo'})
+&& \forall p,\ j,\ o<o'\in\mathcal{O}^{\max}_{pj},\\
+& S_o\ge C_{o'}-B(2-b_o-b_{o'}+\gamma_{oo'})
+&& \forall p,\ j,\ o<o'\in\mathcal{O}^{\max}_{pj}.
+\end{align}
+
+Stage-state logic is imposed as follows. Let \(F_p^{PD}\) denote the completion time of the pull-down phase and let \(A_p^D\) denote the latest start time among required downstream non-consumer tests:
+\begin{align}
+& S_{PD_{pj}}\ge C_{G_p}-B(1-b_{PD_{pj}})
+&& \forall p\in\mathcal{P},\ j\in\mathcal{J},\\
+& F_p^{PD}\ge C_{PD_{pj}}
+&& \forall p\in\mathcal{P},\ j\in\mathcal{J},\\
+& S_{O_{ptj}}\ge F_p^{PD}-B(1-b_{O_{ptj}})
+&& \forall p,\ t\in\mathcal{T}^{D},\ j\in\mathcal{J},\\
+& A_p^D\ge S_{O_{ptj}}-B(1-b_{O_{ptj}})
+&& \forall p,\ t\in\mathcal{T}^{D},\ j\in\mathcal{J},\\
+& S_{O_{ptj}}\ge F_p^{PD}-B(1-b_{O_{ptj}})
+&& \forall p,\ t\in\mathcal{T}^{U},\ j\in\mathcal{J},\\
+& S_{O_{ptj}}\ge A_p^D-B(1-b_{O_{ptj}})
+&& \forall p,\ t\in\mathcal{T}^{U},\ j\in\mathcal{J}.
+\end{align}
+These constraints reproduce the implemented logic: gas precedes pull-down, downstream non-consumer tests wait for all pull-down operations to finish, and consumer-usage tests wait for pull-down completion and for all downstream non-consumer tests to have started.
+
+Completion and tardiness are defined by
+\begin{align}
+& C_p\ge C_o && \forall p\in\mathcal{P},\ o\in\mathcal{O}^{\max}:p(o)=p,\\
+& T_p\ge C_p-d_p,\qquad T_p\ge 0 && \forall p\in\mathcal{P}.
+\end{align}
+The variable domains are
+\[
+a_{pj},b_o,x_{ce},y_{ocr},\delta_{oo'cr},\gamma_{oo'}\in\{0,1\},
+\qquad
+S_o,C_o,F_p^{PD},A_p^D,C_p,T_p\ge 0.
+\]
+The lexicographic objective is
+\[
+\min_{\mathrm{lex}}
+\left(
+\sum_{p\in\mathcal{P}}T_p,
+\sum_{p\in\mathcal{P}}\sum_{j\in\mathcal{J}}a_{pj}
+\right).
+\]
+The first component minimizes total tardiness, while the second selects the smaller total sample count among equal-tardiness schedules.
+
 \section{Solution Methodology}
 \label{sec:solution}
 
