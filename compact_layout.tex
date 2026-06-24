@@ -1,0 +1,72 @@
+% Compact table and pseudocode spacing for the TCSSOP manuscript.
+%
+% Usage: load this file in the manuscript preamble after the table and
+% algorithm packages:
+%
+%   \usepackage{algorithm}
+%   \usepackage{algpseudocode}
+%   \usepackage{tabularx}
+%   \input{compact_layout}
+%
+% The defaults below make table rows and pseudocode lines visibly tighter
+% while keeping the text readable in an 11pt article.
+
+\RequirePackage{etoolbox}
+
+% --- Tables ---------------------------------------------------------------
+% Tune these values if a specific table still needs more or less compression.
+\newcommand{\TCSSOPCompactTableFont}{\footnotesize}
+\newcommand{\TCSSOPTableArrayStretch}{0.88}
+\newcommand{\TCSSOPTableColSep}{3pt}
+
+\newcommand{\TCSSOPCompactTableSetup}{%
+  \TCSSOPCompactTableFont
+  \setlength{\tabcolsep}{\TCSSOPTableColSep}%
+  \renewcommand{\arraystretch}{\TCSSOPTableArrayStretch}%
+}
+
+\AtBeginEnvironment{tabular}{\TCSSOPCompactTableSetup}
+\AtBeginEnvironment{tabularx}{\TCSSOPCompactTableSetup}
+
+% For especially large tables, wrap the tabular content with this environment:
+%
+%   \begin{TCSSOPTightTable}
+%   \begin{tabular}{...}
+%   ...
+%   \end{tabular}
+%   \end{TCSSOPTightTable}
+\newenvironment{TCSSOPTightTable}{%
+  \begingroup
+  \scriptsize
+  \setlength{\tabcolsep}{2.25pt}%
+  \renewcommand{\arraystretch}{0.82}%
+}{%
+  \endgroup
+}
+
+% --- Algorithms / pseudocode ---------------------------------------------
+\newcommand{\TCSSOPAlgorithmLineStretch}{0.95}
+\newcommand{\TCSSOPAlgorithmFont}{\footnotesize}
+\newcommand{\TCSSOPAlgorithmIndent}{1.0em}
+
+\AtBeginEnvironment{algorithm}{%
+  \TCSSOPAlgorithmFont
+  \renewcommand{\baselinestretch}{\TCSSOPAlgorithmLineStretch}\selectfont
+  \setlength{\abovecaptionskip}{3pt}%
+  \setlength{\belowcaptionskip}{2pt}%
+}
+
+\AtBeginEnvironment{algorithmic}{%
+  \setlength{\itemsep}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\topsep}{1pt}%
+  \setlength{\partopsep}{0pt}%
+}
+
+\makeatletter
+\AtBeginDocument{%
+  \@ifundefined{algorithmicindent}{}{%
+    \setlength{\algorithmicindent}{\TCSSOPAlgorithmIndent}%
+  }%
+}
+\makeatother
