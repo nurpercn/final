@@ -1,0 +1,66 @@
+% Drop-in LaTeX corrections for the TCSSOP manuscript.
+% These blocks align the chamber-assignment formulation with the implementation:
+% voltage-sensitive target capacity is scaled by voltage-capable station capacity,
+% not by total laboratory station capacity.
+
+% ---------------------------------------------------------------------------
+% 1) Replace the voltage workload-share definition in Section 4.2
+% ---------------------------------------------------------------------------
+
+The workload shares are
+\[
+\phi_e=\frac{W_e(S)}{W^{tot}(S)}.
+\]
+For voltage-sensitive workload, if \(W^{V,tot}(S)>0\),
+\[
+\phi_e^V=\frac{W_e^V(S)}{W^{V,tot}(S)}.
+\]
+Otherwise, \(\phi_e^V=0\) for all \(e\in\mathcal{E}\).
+
+Let
+\[
+M^{tot}=\sum_{c\in\mathcal{C}}M_c,
+\qquad
+M^{V,tot}=\sum_{c\in\mathcal{C}}M_cv_c
+\]
+denote the total station capacity and the station capacity located in
+voltage-capable chambers, respectively. Total workload targets are scaled by
+\(M^{tot}\), whereas voltage-sensitive workload targets are scaled only by
+\(M^{V,tot}\), since voltage-sensitive products can be processed only in
+voltage-capable chambers. Therefore,
+\[
+T_e=\phi_e M^{tot},
+\qquad
+T_e^V=\phi_e^V M^{V,tot}.
+\]
+
+Let
+\[
+\mathcal{E}^V(S)=\{e\in\mathcal{E}: W_e^V(S)>0\}
+\]
+be the set of environments with positive voltage-sensitive workload.
+
+% ---------------------------------------------------------------------------
+% 2) Use this corrected assignment model in Section 4.2
+% ---------------------------------------------------------------------------
+
+\begin{align}
+\min\quad & \sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V \\
+\text{s.t.}\quad
+& \sum_{e\in\mathcal{E}}x_{ce}=1 && \forall c\in\mathcal{C},\\
+& \sum_{c\in\mathcal{C}}x_{ce}\ge 1 && \forall e\in\mathcal{E},\\
+& \sum_{c\in\mathcal{C}}v_cx_{ce}\ge 1 && \forall e\in\mathcal{E}^V(S),\\
+& x_{ce}\le h_c && \forall c\in\mathcal{C},\ e\in\mathcal{E}^H,\\
+& z_e\ge \sum_{c\in\mathcal{C}}M_cx_{ce}-T_e && \forall e\in\mathcal{E},\\
+& z_e\ge T_e-\sum_{c\in\mathcal{C}}M_cx_{ce} && \forall e\in\mathcal{E},\\
+& z_e^V\ge \sum_{c\in\mathcal{C}}M_cv_cx_{ce}-T_e^V && \forall e\in\mathcal{E},\\
+& z_e^V\ge T_e^V-\sum_{c\in\mathcal{C}}M_cv_cx_{ce} && \forall e\in\mathcal{E},\\
+& x_{ce}\in\{0,1\},\quad z_e,z_e^V\ge 0 && \forall c,e.
+\end{align}
+
+% ---------------------------------------------------------------------------
+% 3) Add this notation row after the \(M^{tot}\) row in Table 2
+% ---------------------------------------------------------------------------
+
+\(M^{V,tot}\) & Total station capacity in voltage-capable chambers,
+\(M^{V,tot}=\sum_{c\in\mathcal{C}}M_cv_c\) \\ \hline
