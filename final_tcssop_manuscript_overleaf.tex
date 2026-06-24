@@ -676,7 +676,7 @@ Gap_{im}=
 \]
 where \(T^{tot,best}_{i}\) is the best total tardiness observed for that instance in the relevant comparison. In the reported experiments, all denominators are positive. Best-instance counts are based on the lexicographic objective, so total sample usage breaks ties when total tardiness is equal.
 
-Runtime is reported as a separate performance indicator rather than being included in the objective. This is appropriate because the primary planning objective is tactical schedule quality, while runtime reflects computational effort. The selected configuration is therefore not expected to be the fastest method; it is intended to provide the best tardiness performance under a reasonable offline planning setting.
+Runtime is reported as a separate performance indicator rather than being included in the objective. This is appropriate because the primary planning objective is tactical schedule quality, while runtime reflects computational effort. The selected configuration is therefore not expected to be the fastest method; it is intended to provide the best tardiness performance under a reasonable offline planning setting. All experiments were run under the same computational environment and deterministic algorithmic settings; therefore, runtimes should be interpreted primarily as comparative indicators among the tested variants.
 
 \subsection{Results}
 \label{subsec:results}
@@ -783,7 +783,7 @@ Std. dev. (\%) & 198.43 & 0.00 \\
 \end{tabular}
 \end{table}
 
-The sample increase observed in the selected configuration should be interpreted within the objective definition. Total tardiness is the primary tactical objective, and total sample usage is used as a secondary lexicographic criterion. Therefore, the method accepts additional samples only when they improve total tardiness or when equal-tardiness alternatives can be distinguished by lower sample usage. In settings where prototype cost or sample availability is a binding managerial constraint, the framework can be extended by adding an explicit sample budget \(\sum_p s_p\le B\) or by using a weighted multi-objective formulation.
+The sample increase observed in the selected configuration should be interpreted within the objective definition. Total tardiness is the primary tactical objective, and total sample usage is used as a secondary lexicographic criterion. Therefore, the method accepts additional samples only when they improve total tardiness or when equal-tardiness alternatives can be distinguished by lower sample usage. The selected configuration intentionally prioritizes tardiness reduction over prototype economy; when prototype availability is limited, the same framework can be run with an explicit sample budget. Formally, this can be represented by adding a constraint \(\sum_p s_p\le B\) or by using a weighted multi-objective formulation.
 
 \subsection{Managerial implications}
 \label{subsec:managerial}
