@@ -1,0 +1,57 @@
+% Drop-in LaTeX corrections for the TCSSOP manuscript.
+% These blocks define the "fast schedule-aware scoring" step according to the
+% Java implementation.
+
+% ---------------------------------------------------------------------------
+% 1) Replace vague references to "fast schedule-aware scoring function"
+% ---------------------------------------------------------------------------
+
+The fast schedule-aware scoring step is not an aggregate workload proxy and it
+does not use a different dispatching rule from the final scheduler. It is a
+lightweight execution mode of the same EDD-based constructive scheduler. For a
+fixed chamber assignment \(X\) and sample vector \(S\), the scheduler constructs
+the same ready-set sequence, applies the same chamber, humidity, voltage,
+station, sample, and stage-state feasibility rules, and returns the resulting
+total tardiness value. The computational saving comes from suppressing outputs
+that are not needed during neighborhood screening: the fast mode does not build
+the detailed operation-level schedule list or, when project-level lateness
+information is not needed, the project-result list.
+
+More specifically, a candidate move is scored as follows. First, chamber
+instances are indexed by their assigned environment and by voltage capability.
+Second, the job-based EDD scheduler repeatedly selects the best ready operation
+from the project-level candidate pool. Third, each selected operation is placed
+on the earliest feasible compatible station and sample. Finally, product
+completion times and total tardiness are computed from the constructed state.
+The returned score is therefore
+\[
+Score(X,S)=\sum_{p\in\mathcal{P}}\max(0,C_p(X,S)-d_p),
+\]
+where \(C_p(X,S)\) is obtained from the same deterministic scheduler used for
+the final evaluation.
+
+Two lightweight evaluation modes are used. The first mode returns only total
+tardiness and is used when screening room-assignment moves, single-product
+sample-size moves, and VNS shake candidates. The second mode returns total
+tardiness and project-level completion/lateness values, but still skips the
+operation-level schedule list; this mode is used when the Late--Early Rebalance
+operator requires project-level lateness and earliness information. Accepted
+outer-loop solutions are then re-evaluated in the schedule-building mode, which
+constructs the full operation-level schedule and enables the independent
+feasibility validation checks.
+
+Thus, the term "fast" refers only to reduced output construction and, in some
+calls, avoided defensive copying. It does not mean that the method evaluates a
+candidate by an approximate capacity formula. All objective comparisons are
+based on the same deterministic EDD schedule decoder, with the lexicographic
+ordering \((T^{tot},S^{tot})\) applied after total tardiness is obtained.
+
+% ---------------------------------------------------------------------------
+% 2) Suggested replacement sentence for the local-search sections
+% ---------------------------------------------------------------------------
+
+% Suggested replacement sentence:
+Candidate sample and chamber-assignment moves are screened by a lightweight
+mode of the same EDD scheduler; this mode returns total tardiness without
+building detailed schedule-output tables, and accepted outer-loop solutions are
+redecoded with full schedule construction and validation.

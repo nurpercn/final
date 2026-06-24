@@ -1,0 +1,55 @@
+% Drop-in LaTeX corrections for the TCSSOP manuscript.
+% These blocks improve the reproducibility of the computational study without
+% adding the scenario graphics.
+
+% ---------------------------------------------------------------------------
+% 1) Replace the opening paragraph of Section 5.1, Experimental design
+% ---------------------------------------------------------------------------
+
+The benchmark set contains 90 scenario combinations generated from
+\(10\) test matrices, \(3\) due-date scenarios, and \(3\) voltage scenarios.
+Each test matrix contains 50 product projects. Hence, each benchmark instance
+contains 50 projects, and the full experimental design is
+\[
+10 \times 3 \times 3 = 90
+\]
+instances. The test matrices define the binary required-test vector of each
+project over the catalog in Table~\ref{tab:test_attributes_short}. The
+due-date and voltage scenarios are then crossed with these test matrices to
+separate the effects of portfolio composition, deadline pressure, and
+voltage-compatibility intensity.
+
+The due-date scenarios differ in both location and dispersion. Scenario~1 is a
+relatively concentrated deadline setting, with due dates ranging from 42 to
+57 days and a median of 50 days; its first and third quartiles are 46 and
+54 days, respectively. Scenario~2 introduces a wider spread and earlier
+deadlines, with due dates ranging from 30 to 69 days, a median of 49.5 days,
+and first and third quartiles of 40 and 59 days. Scenario~3 represents a more
+relaxed but still heterogeneous deadline setting, with due dates ranging from
+34 to 69 days, a median of 53 days, and first and third quartiles of 43 and
+63 days.
+
+The voltage scenarios control the proportion of projects requiring
+voltage-compatible execution. Scenario~1 corresponds to low voltage intensity,
+where approximately 15\% of projects require voltage-compatible chambers.
+Scenario~2 represents medium voltage intensity with a 30\% voltage-requiring
+share, and Scenario~3 represents high voltage intensity with a 45\%
+voltage-requiring share. These settings create progressively stronger
+competition for voltage-capable chambers.
+
+The instances are provided to the Java implementation as a structured input
+table with one row per project. Each row specifies the instance identifier,
+project identifier, test-matrix scenario, due-date scenario, voltage scenario,
+due date, voltage requirement indicator, and the binary required-test columns.
+The implementation was developed and executed in Java using the Eclipse IDE.
+
+% ---------------------------------------------------------------------------
+% 2) Replace the implementation/parameter paragraph of Section 5.2 if desired
+% ---------------------------------------------------------------------------
+
+All algorithmic variants were implemented in Java and executed from the
+Eclipse IDE under the same parameter settings. The chamber-environment
+assignment model was solved by an in-house exact branch-and-bound routine over
+chamber types, and the resulting chamber assignments were evaluated by the
+constructive scheduler described in Section~\ref{subsec:scheduling}. No
+instance-specific parameter tuning was applied.
