@@ -19,48 +19,23 @@ due-date and voltage scenarios are then crossed with these test matrices to
 separate the effects of portfolio composition, deadline pressure, and
 voltage-compatibility intensity.
 
-The due-date scenarios differ in both location and dispersion. Table~\ref{tab:due_scenarios}
-summarizes their five-number distributions. Scenario~1 represents a relatively
-concentrated due-date setting, Scenario~2 introduces a wider spread with earlier
-deadlines, and Scenario~3 represents a more relaxed but still heterogeneous
-deadline setting.
-
-\begin{table}[H]
-\centering
-\caption{Due-date scenario summaries used in the benchmark instances}
-\label{tab:due_scenarios}
-\small
-\begin{tabular}{lccccc}
-\hline
-\textbf{Due-date scenario} & \textbf{Minimum} & \textbf{Q1} & \textbf{Median} & \textbf{Q3} & \textbf{Maximum} \\
-\hline
-Scenario 1 & 42 & 46 & 50 & 54 & 57 \\
-Scenario 2 & 30 & 40 & 49.5 & 59 & 69 \\
-Scenario 3 & 34 & 43 & 53 & 63 & 69 \\
-\hline
-\end{tabular}
-\end{table}
+The due-date scenarios differ in both location and dispersion. Scenario~1 is a
+relatively concentrated deadline setting, with due dates ranging from 42 to
+57 days and a median of 50 days; its first and third quartiles are 46 and
+54 days, respectively. Scenario~2 introduces a wider spread and earlier
+deadlines, with due dates ranging from 30 to 69 days, a median of 49.5 days,
+and first and third quartiles of 40 and 59 days. Scenario~3 represents a more
+relaxed but still heterogeneous deadline setting, with due dates ranging from
+34 to 69 days, a median of 53 days, and first and third quartiles of 43 and
+63 days.
 
 The voltage scenarios control the proportion of projects requiring
-voltage-compatible execution. The target proportions are shown in
-Table~\ref{tab:voltage_scenarios}. These settings create low, medium, and high
+voltage-compatible execution. Scenario~1 corresponds to low voltage intensity,
+where approximately 15\% of projects require voltage-compatible chambers.
+Scenario~2 represents medium voltage intensity with a 30\% voltage-requiring
+share, and Scenario~3 represents high voltage intensity with a 45\%
+voltage-requiring share. These settings create progressively stronger
 competition for voltage-capable chambers.
-
-\begin{table}[H]
-\centering
-\caption{Voltage requirement intensity by scenario}
-\label{tab:voltage_scenarios}
-\small
-\begin{tabular}{lcc}
-\hline
-\textbf{Voltage scenario} & \textbf{Description} & \textbf{Proportion of projects requiring voltage} \\
-\hline
-Scenario 1 & Low voltage intensity & 0.15 \\
-Scenario 2 & Medium voltage intensity & 0.30 \\
-Scenario 3 & High voltage intensity & 0.45 \\
-\hline
-\end{tabular}
-\end{table}
 
 The instances are provided to the Java implementation as a structured input
 table with one row per project. Each row specifies the instance identifier,
