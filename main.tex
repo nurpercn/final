@@ -318,17 +318,7 @@ Sample availability is the mechanism through which additional samples create par
 \subsection{Feasibility conditions and objective}
 \label{subsec:objective}
 
-A feasible schedule must satisfy the following conditions:
-\begin{enumerate}
-    \item all and only required tests are scheduled with the multiplicities induced by \(S\);
-    \item each operation is assigned to a chamber whose environment matches the test requirement;
-    \item humidity-controlled tests are assigned only to chambers with \(h_c=1\);
-    \item if \(\nu_p=1\), operations of product \(p\) are assigned only to chambers with \(v_c=1\);
-    \item each station processes at most one operation at a time;
-    \item each physical sample is used by at most one operation at a time;
-    \item stage-state logic is satisfied;
-    \item product completion time is the finish time of its last required operation.
-\end{enumerate}
+A feasible schedule must include all and only the required tests with the multiplicities induced by \(S\). Each operation must be assigned to a chamber whose environment matches the test requirement; humidity-controlled tests can be assigned only to chambers with \(h_c=1\), and if \(\nu_p=1\), all operations of product \(p\) must be assigned only to chambers with \(v_c=1\). In addition, each station can process at most one operation at a time, each physical sample can be used by at most one operation at a time, stage-state logic must be satisfied, and the completion time of each product is defined as the finish time of its last required operation.
 
 Let \(C_p\) be the completion time of product \(p\). Product tardiness is
 \[
