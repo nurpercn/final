@@ -1,0 +1,84 @@
+% Drop-in LaTeX corrections for the TCSSOP manuscript.
+% These blocks align the stage-state and sample-feasibility description with
+% the Java scheduler implementation.
+
+% ---------------------------------------------------------------------------
+% 1) Replace or expand Section 3.4, Stage-state logic and sample feasibility
+% ---------------------------------------------------------------------------
+
+The scheduling logic is implemented through four job categories: gas amount
+determination, pull-down, other downstream tests, and consumer-usage tests. Gas
+amount determination is executed at most once for each product when it is
+required by the product's test matrix. If it is required, it is the first
+operation of the product and is released at time zero. If it is not required,
+the product is treated as already released for the pull-down/downstream logic.
+
+Pull-down is executed once for each physical sample of a product. For product
+\(p\) with \(s_p\) samples, the pull-down phase therefore generates \(s_p\)
+sample-specific operations. Each pull-down operation can start only after the
+gas amount determination operation of the same product has finished. Different
+pull-down operations of the same product may run in parallel on different
+samples and compatible stations, subject to station availability and
+sample-level non-overlap.
+
+The downstream non-consumer tests consist of the required energy-efficiency,
+performance, freezing-capacity, and temperature-rise tests. In the implemented
+configuration, these tests are released only after the full pull-down phase of
+the product has been completed, that is, after all sample-level pull-down
+operations have finished. Each required downstream non-consumer test is
+scheduled once per product and may be assigned to any available sample of that
+product after this release time.
+
+Consumer-usage tests are modeled as the final category. A required
+consumer-usage test is released only after the pull-down phase has been
+completed and after all required downstream non-consumer tests of the same
+product have been started. Thus, the release time for consumer-usage tests is
+the maximum of the pull-down phase completion time and the latest start time
+among the required downstream non-consumer tests. If a product has no required
+downstream non-consumer tests, the consumer-usage release is determined by the
+pull-down phase completion time, or by the gas completion time when pull-down
+is not required.
+
+This stage logic can be summarized as follows. Let \(G_p\) be the gas operation
+of product \(p\), \(PD_{pj}\) be the pull-down operation of sample \(j\), and
+\(\mathcal{O}_p\) and \(\mathcal{U}_p\) be the sets of required downstream
+non-consumer and consumer-usage tests, respectively. If gas and pull-down are
+required, then
+\[
+G_p \prec PD_{pj} \qquad \forall j=1,\ldots,s_p.
+\]
+The implemented downstream release rule is
+\[
+\max_{j=1,\ldots,s_p} C_{PD_{pj}} \le S_o
+\qquad \forall o\in\mathcal{O}_p,
+\]
+where \(S_o\) denotes the start time of downstream non-consumer test \(o\). For
+each consumer-usage test \(u\in\mathcal{U}_p\),
+\[
+S_u \ge
+\max\left\{
+\max_{j=1,\ldots,s_p} C_{PD_{pj}},
+\max_{o\in\mathcal{O}_p} S_o
+\right\}.
+\]
+The second term is based on the start times of the downstream non-consumer
+tests, not their completion times. This reflects the implemented stage-state
+rule that consumer-usage testing can be released once all relevant downstream
+tests have been initiated and the pull-down phase has ended.
+
+Sample feasibility is enforced independently from product-stage feasibility.
+At any time, a physical sample can process at most one operation. Therefore,
+even when multiple tests of a product are released simultaneously, they can
+run in parallel only if they are assigned to different samples and compatible
+stations. The scheduler updates sample availability after every operation and
+uses this availability when selecting the earliest feasible station/sample
+assignment.
+
+% ---------------------------------------------------------------------------
+% 2) Replace vague references to "relevant downstream-stage conditions"
+% ---------------------------------------------------------------------------
+
+% Suggested replacement sentence:
+Consumer-usage tests are released after the product's pull-down phase is
+complete and after all required downstream non-consumer tests have started;
+they do not wait for those downstream non-consumer tests to finish.
