@@ -49,13 +49,7 @@
   \setlength{\topsep}{1pt}%
   \setlength{\partopsep}{0pt}%
 }
-\makeatletter
-\AtBeginDocument{%
-  \@ifundefined{algorithmicindent}{}{%
-    \setlength{\algorithmicindent}{1.0em}%
-  }%
-}
-\makeatother
+\algrenewcommand\algorithmicindent{1.0em}
 
 % --- Bibliography ---
 \usepackage[authoryear]{natbib}
