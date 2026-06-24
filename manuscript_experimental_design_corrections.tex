@@ -1,0 +1,80 @@
+% Drop-in LaTeX corrections for the TCSSOP manuscript.
+% These blocks improve the reproducibility of the computational study without
+% adding the scenario graphics.
+
+% ---------------------------------------------------------------------------
+% 1) Replace the opening paragraph of Section 5.1, Experimental design
+% ---------------------------------------------------------------------------
+
+The benchmark set contains 90 scenario combinations generated from
+\(10\) test matrices, \(3\) due-date scenarios, and \(3\) voltage scenarios.
+Each test matrix contains 50 product projects. Hence, each benchmark instance
+contains 50 projects, and the full experimental design is
+\[
+10 \times 3 \times 3 = 90
+\]
+instances. The test matrices define the binary required-test vector of each
+project over the catalog in Table~\ref{tab:test_attributes_short}. The
+due-date and voltage scenarios are then crossed with these test matrices to
+separate the effects of portfolio composition, deadline pressure, and
+voltage-compatibility intensity.
+
+The due-date scenarios differ in both location and dispersion. Table~\ref{tab:due_scenarios}
+summarizes their five-number distributions. Scenario~1 represents a relatively
+concentrated due-date setting, Scenario~2 introduces a wider spread with earlier
+deadlines, and Scenario~3 represents a more relaxed but still heterogeneous
+deadline setting.
+
+\begin{table}[H]
+\centering
+\caption{Due-date scenario summaries used in the benchmark instances}
+\label{tab:due_scenarios}
+\small
+\begin{tabular}{lccccc}
+\hline
+\textbf{Due-date scenario} & \textbf{Minimum} & \textbf{Q1} & \textbf{Median} & \textbf{Q3} & \textbf{Maximum} \\
+\hline
+Scenario 1 & 42 & 46 & 50 & 54 & 57 \\
+Scenario 2 & 30 & 40 & 49.5 & 59 & 69 \\
+Scenario 3 & 34 & 43 & 53 & 63 & 69 \\
+\hline
+\end{tabular}
+\end{table}
+
+The voltage scenarios control the proportion of projects requiring
+voltage-compatible execution. The target proportions are shown in
+Table~\ref{tab:voltage_scenarios}. These settings create low, medium, and high
+competition for voltage-capable chambers.
+
+\begin{table}[H]
+\centering
+\caption{Voltage requirement intensity by scenario}
+\label{tab:voltage_scenarios}
+\small
+\begin{tabular}{lcc}
+\hline
+\textbf{Voltage scenario} & \textbf{Description} & \textbf{Proportion of projects requiring voltage} \\
+\hline
+Scenario 1 & Low voltage intensity & 0.15 \\
+Scenario 2 & Medium voltage intensity & 0.30 \\
+Scenario 3 & High voltage intensity & 0.45 \\
+\hline
+\end{tabular}
+\end{table}
+
+The instances are provided to the Java implementation as a structured input
+table with one row per project. Each row specifies the instance identifier,
+project identifier, test-matrix scenario, due-date scenario, voltage scenario,
+due date, voltage requirement indicator, and the binary required-test columns.
+The implementation was developed and executed in Java using the Eclipse IDE.
+
+% ---------------------------------------------------------------------------
+% 2) Replace the implementation/parameter paragraph of Section 5.2 if desired
+% ---------------------------------------------------------------------------
+
+All algorithmic variants were implemented in Java and executed from the
+Eclipse IDE under the same parameter settings. The chamber-environment
+assignment model was solved by an in-house exact branch-and-bound routine over
+chamber types, and the resulting chamber assignments were evaluated by the
+constructive scheduler described in Section~\ref{subsec:scheduling}. No
+instance-specific parameter tuning was applied.
