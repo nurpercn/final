@@ -236,10 +236,10 @@ Product due dates represent market launch deadlines or internal project mileston
 \begin{tabular}{|c|c|l|c|c|c|c|}
 \hline
 \textbf{Stage} & \textbf{Test No.} & \textbf{Test Name} & \textbf{Temperature} & \textbf{Ambient Humidity} & \textbf{Samples} & \textbf{Duration (days)} \\ \hline
-1 & 1 & Gas Amount Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-2 & 2  & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All samples & 5 \\ \hline
+1 & 1 & Gas Amount Determination & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+2 & 2  & Pull-down & \SI{43}{\degreeCelsius} & Ambient & All samples & 5 \\ \hline
 3 & 3  & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-3 & 4  & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
+3 & 4  & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 16 \\ \hline
 3 & 5  & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
 3 & 6$^*$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
 3 & 7$^*$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
@@ -433,10 +433,11 @@ is preferred. The evaluation tuple is therefore \(Eval=(T^{tot},S^{tot})\) under
 \(W_e^V(S)\) & Voltage-sensitive workload assigned to environment \(e\) \\ \hline
 \(\phi_e,\phi_e^V\) & Total and voltage-sensitive workload shares of environment \(e\) \\ \hline
 \(T_e,T_e^V\) & Total and voltage-sensitive target station capacities \\ \hline
-\(z_e,z_e^V\) & Capacity-deviation variables in the assignment model \\ \hline
+\(\omega^V\) & Weight assigned to voltage-capacity deviation in chamber assignment \\ \hline
 \(\Pi\) & Feasible schedule \\ \hline
 \(Eval\) & Lexicographic objective tuple \((T^{tot},S^{tot})\) \\ \hline
-\(I_{\max},K_{\max}\) & Outer-iteration and VNS shake-budget limits \\ \hline
+\(I_{\max},I_{\max}^{(2)},K_{\max}\) & Outer-loop, sample local-search, and VNS shake-budget limits \\ \hline
+\(K_{\mathrm{reb}}\) & Maximum number of Late--Early Rebalance pairs \\ \hline
 \end{tabular}
 \end{table}
 
@@ -606,21 +607,22 @@ Let
 \]
 be the set of environments with positive voltage-sensitive workload.
 
-The assignment model uses proportional workload targets rather than absolute horizon-based capacity requirements. Let \(x_{ce}=1\) if chamber \(c\) is assigned to environment \(e\), and let \(\mathcal{E}^H\) be the set of humidity-controlled environments. The exact assignment model minimizes absolute deviations from workload-based target capacities:
+The assignment model uses proportional workload targets rather than absolute horizon-based capacity requirements. In implementation, it is solved over the demanded environment set induced by \(S\), denoted here by \(\mathcal{E}(S)=\{e\in\mathcal{E}:W_e(S)>0\}\). Let \(x_{ce}=1\) if chamber \(c\) is assigned to environment \(e\), and let \(\mathcal{E}^H\) be the set of humidity-controlled environments. Consistent with the implementation, the exact assignment model minimizes weighted squared deviations from workload-based target capacities. The voltage term is weighted by \(\omega^V=2.0\) in the computational study:
 \begin{align}
-\min\quad & \sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V \\
+\min\quad &
+\sum_{e\in\mathcal{E}(S)}
+\left(\sum_{c\in\mathcal{C}}M_cx_{ce}-T_e\right)^2
++\omega^V
+\sum_{e\in\mathcal{E}(S)}
+\left(\sum_{c\in\mathcal{C}}M_cv_cx_{ce}-T_e^V\right)^2 \\
 \text{s.t.}\quad
-& \sum_{e\in\mathcal{E}}x_{ce}=1 && \forall c\in\mathcal{C},\\
-& \sum_{c\in\mathcal{C}}x_{ce}\ge 1 && \forall e\in\mathcal{E},\\
+& \sum_{e\in\mathcal{E}(S)}x_{ce}=1 && \forall c\in\mathcal{C},\\
+& \sum_{c\in\mathcal{C}}x_{ce}\ge 1 && \forall e\in\mathcal{E}(S),\\
 & \sum_{c\in\mathcal{C}}v_cx_{ce}\ge 1 && \forall e\in\mathcal{E}^V(S),\\
-& x_{ce}\le h_c && \forall c\in\mathcal{C},\ e\in\mathcal{E}^H,\\
-& z_e\ge \sum_{c\in\mathcal{C}}M_cx_{ce}-T_e && \forall e\in\mathcal{E},\\
-& z_e\ge T_e-\sum_{c\in\mathcal{C}}M_cx_{ce} && \forall e\in\mathcal{E},\\
-& z_e^V\ge \sum_{c\in\mathcal{C}}M_cv_cx_{ce}-T_e^V && \forall e\in\mathcal{E},\\
-& z_e^V\ge T_e^V-\sum_{c\in\mathcal{C}}M_cv_cx_{ce} && \forall e\in\mathcal{E},\\
-& x_{ce}\in\{0,1\},\quad z_e,z_e^V\ge 0 && \forall c,e.
+& x_{ce}\le h_c && \forall c\in\mathcal{C},\ e\in\mathcal{E}(S)\cap\mathcal{E}^H,\\
+& x_{ce}\in\{0,1\} && \forall c\in\mathcal{C},\ e\in\mathcal{E}(S).
 \end{align}
-The resulting assignment is then refined by swap and move neighborhoods. A candidate is retained only if it preserves environment coverage, humidity feasibility, and voltage feasibility. Feasible candidates are evaluated with the lightweight EDD evaluation mode described in Section~\ref{subsec:scheduling}, and a first-improvement rule is used.
+The branch-and-bound implementation solves this model over chamber types with identical station count, humidity capability, and voltage capability to remove symmetry while preserving exactness. The resulting assignment is then refined by swap and move neighborhoods. A candidate is retained only if it preserves environment coverage, humidity feasibility, and voltage feasibility. Feasible candidates are evaluated with the lightweight EDD evaluation mode described in Section~\ref{subsec:scheduling}, and a first-improvement rule is used.
 
 The exact assignment model alone cannot represent all detailed scheduling interactions. For example, two chambers may have the same number of stations but different voltage or humidity capabilities. Similarly, the same aggregate capacity in an environment can perform differently depending on which physical chambers provide that capacity. The local refinement phase addresses these effects by exploring nearby chamber-environment mappings after the exact model produces a balanced initial configuration.
 
@@ -637,7 +639,7 @@ subject to sample bounds. Candidate vectors are screened by the lightweight mode
 
 Both increasing and decreasing sample counts are considered. Increasing a sample count may improve a tardy product by enabling more downstream parallelism. Decreasing a sample count may reduce congestion caused by pull-down operations and may also reduce the secondary objective when tardiness is unchanged.
 
-A Late--Early Rebalance operator is also used. Products with positive tardiness are paired with products having earliness slack. For each pair, one sample is added to the late product and one sample is removed from the early product, subject to bounds. The paired move is accepted if total tardiness does not worsen and, under equal tardiness, total sample usage does not increase.
+A Late--Early Rebalance operator is also used. Products with positive tardiness are paired with products having earliness slack. For each pair, one sample is added to the late product and one sample is removed from the early product, subject to bounds. The paired move is accepted if total tardiness does not worsen and, under equal tardiness, total sample usage does not exceed the sample usage at the entry of the current local-search call.
 
 The rebalance operator is designed to capture coordinated moves that a single-product neighborhood may miss. A late product may need one additional sample, but adding that sample alone increases total pull-down workload. Pairing it with a reduction on an early product can preserve or reduce total sample usage while redistributing parallelization potential toward more urgent projects.
 
@@ -725,7 +727,7 @@ For each ratio, up to \(K_{\max}\) shake attempts are performed. A shake selects
 
 This design changes the workload structure rather than only the sequence of existing operations. As a result, VNS can escape local optima created by the current balance between pull-down workload, downstream parallelism, and chamber eligibility.
 
-The VNS procedure starts each ratio phase from the incumbent rather than from the previous failed shake. This prevents the search from drifting too far from the best known solution through a sequence of non-improving perturbations.
+Each fallback ratio phase starts from the incumbent supplied by the outer framework. Within a ratio phase, each shake starts from the current VNS-best baseline, so an improving shake can become the baseline for later shakes in the same phase. This prevents drift through a chain of non-improving perturbations while still allowing improvement inside a phase to be exploited.
 
 \begin{algorithm}[H]
 \caption{VNS with fixed fallback ratios}
@@ -734,14 +736,18 @@ The VNS procedure starts each ratio phase from the incumbent rather than from th
 \State \textbf{Input:} Chamber assignment \(X\), incumbent \((S^{inc},\Pi^{inc},Eval^{inc})\)
 \State Set \(R^{VNS}=[0.20,0.30]\).
 \For{each ratio \(r\in R^{VNS}\)}
+    \State \(S^{vbest}\leftarrow S^{inc}\), \(Eval^{vbest}\leftarrow Eval^{inc}\).
     \For{\(k=1,\ldots,K_{\max}\)}
-        \State \(S^{cand}\leftarrow S^{inc}\).
+        \State \(S^{cand}\leftarrow S^{vbest}\).
         \If{\(k\) is odd}
             \State Reset a uniformly selected \(r\)-fraction of eligible products to \(s_{\min}\).
         \Else
             \State Reset a uniformly selected \(r\)-fraction of eligible products to \(s_{\max VNS}\).
         \EndIf
         \State Apply sample-size local search to \(S^{cand}\) under \(X\).
+        \If{the locally improved candidate improves \(Eval^{vbest}\)}
+            \State Update \(S^{vbest}\) and \(Eval^{vbest}\).
+        \EndIf
         \If{the locally improved candidate improves \(Eval^{inc}\)}
             \State \Return the candidate and set \(improved=true\).
         \EndIf
@@ -820,7 +826,7 @@ All algorithmic variants were implemented in Java and executed from the Eclipse 
 
 To ensure a fair, reproducible, and unbiased comparison across all solution variants, a common parameterization protocol was adopted. Parameter values were calibrated only once during preliminary pilot runs and subsequently fixed for the entire computational study. No instance-specific tuning was performed. Consequently, performance differences among the competing methods can be attributed to algorithmic design rather than parameter adjustment.
 
-All parameters are fixed across instances. The initial sample count is \(s_p^{(0)}=3\), \(s_{\min}=3\), \(s_{\max}=11\), and the VNS \textsc{UP} level is \(s_{\max VNS}=8\). The sample neighborhood is \(\{-2,-1,+1,+2\}\), the VNS fallback ratios are \([0.20,0.30]\), \(I_{\max}=100\), and \(K_{\max}=200\) for the selected configuration. The objective is evaluated lexicographically as \((T^{tot},S^{tot})\).
+All parameters are fixed across instances. The initial sample count is \(s_p^{(0)}=3\), \(s_{\min}=3\), \(s_{\max}=11\), and the VNS \textsc{UP} level is \(s_{\max VNS}=8\). The sample neighborhood is \(\{-2,-1,+1,+2\}\), the VNS fallback ratios are \([0.20,0.30]\), \(I_{\max}=100\), \(K_{\max}=200\), the sample local-search pass limit is \(50\), and the Late--Early Rebalance pair limit is \(10\) for the selected configuration. The objective is evaluated lexicographically as \((T^{tot},S^{tot})\).
 
 The lower sample bound corresponds to the industrial baseline and prevents the optimization procedure from selecting sample counts below the minimum accepted engineering policy. The upper bounds allow the search to explore additional parallelism but prevent unrealistic prototype expansion. The separate \(s_{\max VNS}\) parameter limits the intensity of upward VNS perturbations while still allowing local search to refine sample counts within the broader feasible range.
 
@@ -841,8 +847,14 @@ The neighborhood \(\{-2,-1,+1,+2\}\) balances intensification and exploration. U
 \(s_{\max}\) & Maximum feasible sample count & 11 \\
 \(\Delta_p\) & Sample-size neighborhood & \(\{-2,-1,+1,+2\}\) \\
 \(R_{\mathrm{VNS}}\) & VNS fallback perturbation ratios & \([0.20,0.30]\) \\
+\(\mathrm{mode}_{\mathrm{VNS}}\) & VNS direction mode & Alternating DOWN/UP \\
+\(\omega^V\) & Voltage-deviation weight in chamber assignment & 2.0 \\
+\(B_{\mathrm{room}}\) & Room local-search evaluation budget & 200 \\
 \(I_{\max}\) & Maximum outer-loop iterations & 100 \\
+\(I_{\max}^{(2)}\) & Maximum sample local-search passes & 50 \\
+\(K_{\mathrm{reb}}\) & Maximum Late--Early Rebalance pairs & 10 \\
 \(K_{\max}\) & Maximum shakes per VNS ratio phase & 200 \\
+\(\rho\) & Random seed used by VNS shake selection & 42 \\
 \hline
 \end{tabular}
 \end{table}
