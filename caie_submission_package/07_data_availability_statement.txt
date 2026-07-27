@@ -1,0 +1,14 @@
+Data availability statement
+(Required for CAIE – Research data Option C. Paste into the submission system and keep consistent with the manuscript.)
+
+RECOMMENDED VERSION (if you will share instances/code on acceptance or upon request):
+
+The synthetic benchmark instances used in this study were generated according to the parameter ranges and structural rules described in the Computational Study section. Instance data and generation details are available from the corresponding author upon reasonable request. Because the motivating industrial project portfolios are proprietary, real firm-level project data cannot be shared.
+
+STRONGER OPEN-SCIENCE VERSION (preferred if feasible before/at submission):
+
+The synthetic benchmark instances supporting the findings of this study are available in [Mendeley Data / Zenodo / GitHub] at [DOI or URL], [dataset], v1. The industrial project data motivating the problem setting are proprietary and cannot be shared.
+
+If neither sharing nor request-based access is possible, use:
+
+The research data cannot be shared because they contain confidential industrial information related to proprietary product-development projects. The synthetic instance-generation rules are fully described in the paper to support reproducibility of the experimental design.

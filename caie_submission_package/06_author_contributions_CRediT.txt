@@ -1,0 +1,8 @@
+CRediT authorship contribution statement
+(Enter in the submission system and/or keep on the Title Page. Do NOT put author names in the anonymized manuscript.)
+
+Nur Perçin: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Visualization.
+
+Ali Ekici: Conceptualization, Methodology, Validation, Writing – review & editing, Supervision, Project administration.
+
+Please revise roles if needed so they accurately reflect each author's contributions.
