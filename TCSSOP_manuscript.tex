@@ -177,11 +177,11 @@ As a result, product-specific test definitions generate heterogeneous workload p
 \subsection{Chamber structure and capability constraints}
 \label{subsec:chamber_structure}
 
-The testing facility consists of a heterogeneous set of chambers \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), with capacity \(M_c=|\mathcal{K}_c|\). The industrial system considered in this study includes 28 environmental chambers and 240 testing stations. Chamber capacities range from 6 to 12 stations. Figure~\ref{fig:chamber_structure} illustrates the chamber--station structure.
+The testing facility consists of a heterogeneous set of chambers \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), with capacity \(M_c=|\mathcal{K}_c|\). The industrial system considered in this study includes 28 environmental chambers and 240 testing stations. Chamber capacities range from 6 to 12 stations. Figure~\ref{fig:chamber_structure} illustrates the chamber--station structure: each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ across the facility.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.88\textwidth]{chamber_structure.png}
+\includegraphics[width=1\textwidth]{chamber_structure.png}
 \caption{Schematic representation of test chambers and station allocation. Each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ.}
 \label{fig:chamber_structure}
 \end{figure}
@@ -224,7 +224,7 @@ X_c=e(t).
 \]
 In addition, tests requiring controlled humidity, such as 85\% relative humidity, can only be assigned to chambers with \(h_c=1\). If product \(p\) requires voltage-compatible execution \((\nu_p=1)\), all operations of that product must be assigned to chambers with \(v_c=1\). Products without voltage requirements can be processed in any environmentally compatible chamber.
 
-Because chamber capacities and capabilities are not uniformly distributed, the effective capacity available for a specific environment may be much smaller than the total station capacity. Thus, bottlenecks may arise not only from workload concentration but also from limited humidity- or voltage-capable resources. Feasible schedules must therefore jointly satisfy environmental compatibility, humidity feasibility, voltage feasibility, station-capacity constraints, and sample-dependent workload requirements.
+Because chamber capacities and capabilities are not uniformly distributed, the effective capacity available for a specific environment may be much smaller than the total station capacity. Thus, bottlenecks may arise not only from workload concentration but also from limited humidity- or voltage-capable resources. Moreover, although chambers can be reconfigured, frequent environment changes are operationally undesirable due to stabilization delays and disruption of ongoing tests; chamber environments are therefore treated as planning decisions that remain fixed over the scheduling horizon. Feasible schedules must therefore jointly satisfy environmental compatibility, humidity feasibility, voltage feasibility, station-capacity constraints, and sample-dependent workload requirements.
 
 \subsection{Test flow, stage logic, and workload generation}
 \label{subsec:test_flow}
