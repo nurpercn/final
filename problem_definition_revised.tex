@@ -1,0 +1,180 @@
+\section{Problem Definition and Notation}
+\label{sec:pd}
+
+\subsection{Industrial problem setting}
+\label{subsec:industrial_setting}
+
+This study is motivated by a refrigerator R\&D testing environment in which newly designed products must complete standardized laboratory tests before market release. Tests are conducted in a facility composed of climate-controlled chambers, each containing multiple parallel stations. The set of chambers is denoted by \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), and all stations in the same chamber operate under a common chamber-level environmental setting.
+
+A set of products \(\mathcal{P}\) must be processed. Each product \(p\in\mathcal{P}\) represents a development project with due date \(d_p\). The completion time \(C_p\) is defined as the finish time of the last required test of product \(p\). Required tests are product-dependent: each product has a subset \(\mathcal{T}_p\subseteq\mathcal{T}\), determined by climatic class, target-market energy regulations, electrical specifications, and optional engineering decisions.
+
+Test execution is constrained by chamber compatibility. Each test requires a specific temperature-humidity environment, and some products require voltage-compatible execution. Since a chamber can operate under only one environmental configuration at a time and chamber capabilities are heterogeneous, not every test can be processed in every chamber. Humidity-controlled tests require humidity-capable chambers, and voltage-sensitive products can only be assigned to voltage-capable chambers.
+
+The testing process follows multi-stage stage-based precedence logic. Gas amount determination precedes pull-down testing, pull-down acts as a release condition for downstream tests, and final consumer-usage tests are released according to downstream-stage conditions. Thus, readiness is governed by product-stage states rather than by a simple fixed predecessor list.
+
+A central feature of the problem is the use of physical samples. Each product is represented by a sample count \(s_p\). Pull-down tests are executed once per sample, whereas most downstream tests are executed once per product and can be assigned to available samples after release. Therefore, increasing \(s_p\) raises upstream workload but may improve downstream parallelism; reducing \(s_p\) decreases workload but may restrict parallel execution. In industrial practice, sample counts are often set uniformly across projects (e.g., three prototypes per product) because such rules are easy to administer. This uniform policy ignores heterogeneity in due dates, required test mixes, and chamber eligibility. Moreover, two sample vectors with the same total consumption may induce very different workload profiles when pull-down operations are concentrated on late or environment-constrained projects. This decision-dependent workload structure differentiates TCSSOP from classical scheduling problems with fixed job sets.
+
+Overall, TCSSOP combines three coupled elements: heterogeneous chamber resources, product-dependent test requirements, and sample-size-dependent workload generation. The planner must jointly determine chamber configurations, project-level sample sizes, and feasible schedules under environmental, voltage, station-capacity, sample-availability, stage-based precedence, and due-date constraints.
+
+\subsection{Test requirements driven by climatic class and target market}
+\label{subsec:test_requirements}
+
+Test requirements are product-dependent and are determined by the target market, climatic class, energy regulation, electrical specification, and optional engineering decisions. Therefore, each product may require a different subset of tests and a different set of chamber environments. Table~\ref{tab:test_attributes} summarizes the industrial test catalog, including stage membership, temperature and humidity conditions, sample usage, and typical durations.
+
+\begin{table}[H]
+\caption{List of tests and their environmental conditions}
+\label{tab:test_attributes}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{|c|c|l|c|c|c|c|}
+\hline
+\textbf{Stage} & \textbf{Test No.} & \textbf{Test Name} & \textbf{Temperature} & \textbf{Ambient Humidity} & \textbf{Samples} & \textbf{Duration (days)} \\ \hline
+1 & 1 & Gas Amount Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+2 & 2  & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All samples & 5 \\ \hline
+3 & 3  & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
+3 & 4  & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
+3 & 5  & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
+3 & 6$^*$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+3 & 7$^*$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+3 & 8  & Performance & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+3 & 9$^{**}$ & Performance & \SI{32}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+3 & 10$^{**}$ & Performance & \SI{38}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+3 & 11$^{**}$ & Performance & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+4 & 12$^{***}$ & Freezing Capacity & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
+4 & 13$^{***}$ & Temperature Rise & \SI{25}{\degreeCelsius} & Ambient & 1 & 5 \\ \hline
+5 & 14 & Consumer Usage & \SI{10}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
+5 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\ \hline
+5 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\ \hline
+\end{tabular}
+
+\vspace{1mm}
+\begin{minipage}{0.95\textwidth}
+\footnotesize
+$^*$ One of these tests is selected based on target market climatic class requirements.\\
+$^{**}$ One of these tests is selected based on target market climatic class requirements.\\
+$^{***}$ Optional tests decided by the product engineer.
+\end{minipage}
+\end{table}
+
+Climatic class determines the ambient temperature conditions for performance testing. The considered classes are Tropical (\(43^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), Subtropical (\(38^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), Normal (\(32^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), and Subnormal (\(32^\circ\mathrm{C}\)--\(10^\circ\mathrm{C}\)). Energy-efficiency requirements are determined by market-specific regulations and may require either dual-point measurements, such as \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or single-point measurements at \(25^\circ\mathrm{C}\) or \(32^\circ\mathrm{C}\).
+
+Electrical requirements also vary by region. Typical configurations include 230V--50Hz for Europe, 120V--60Hz for the USA/Canada, and 230V--60Hz for markets such as Saudi Arabia and Brazil. Voltage compatibility is modeled at the product level. If product \(p\) requires voltage-compatible execution, all operations of that product must be assigned to voltage-capable chambers; otherwise, the product can be processed in any environmentally compatible chamber.
+
+Each test type \(t\in\mathcal{T}\) is associated with an environmental requirement \(e(t)\), specifying its temperature and humidity condition. Not all test variants are required simultaneously: several test groups represent alternative operating conditions, and only the regulation-consistent variant is selected for each product. For example, performance tests at different temperatures correspond to alternative climatic-class requirements.
+
+As a result, product-specific test definitions generate heterogeneous workload patterns across environments and voltage-capable resources. This heterogeneity affects both feasibility and scheduling efficiency, since workload may concentrate in specific temperature-humidity environments while voltage-sensitive products compete for a restricted subset of chambers. Because required test subsets differ across products, the marginal value of an additional sample also differs across projects, reinforcing the need for project-specific rather than uniform sample decisions.
+
+\subsection{Chamber structure and capability constraints}
+\label{subsec:chamber_capabilities}
+
+The testing facility consists of a heterogeneous set of chambers \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), with capacity \(M_c=|\mathcal{K}_c|\). The industrial system considered in this study includes 28 environmental chambers and 240 testing stations. Chamber capacities range from 6 to 12 stations. Figure~\ref{fig:chamber_3d} illustrates the chamber--station structure: each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ across the facility.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{chamber_structure.png}
+\caption{Schematic representation of test chambers and station allocation. Each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ.}
+\label{fig:chamber_3d}
+\end{figure}
+
+All stations within a chamber operate under a common chamber-level environment. Therefore, environmental compatibility is enforced at the chamber level rather than independently for each station. Detailed chamber capacities and technical adjustment capabilities are summarized in Table~\ref{tab:chamber_capabilities}.
+
+\begin{table}[H]
+\centering
+\caption{Chamber capacities and technical adjustment capabilities}
+\label{tab:chamber_capabilities}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{0.9}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Chambers} &
+\shortstack{\textbf{No. of}\\\textbf{Chambers}} &
+\shortstack{\textbf{Stations}\\\textbf{per Chamber}} &
+\shortstack{\textbf{Temperature}\\\textbf{Adjustment}} &
+\shortstack{\textbf{Humidity}\\\textbf{Adjustment}} &
+\shortstack{\textbf{Voltage}\\\textbf{Adjustment}} \\
+\hline
+T001, T006--T007 & 3 & 8  & 1 & 0 & 0 \\
+T002--T005, T025 & 5 & 8  & 1 & 1 & 1 \\
+T008, T026--T028 & 4 & 12 & 1 & 0 & 1 \\
+T009 & 1 & 12 & 1 & 0 & 0 \\
+T010--T013 & 4 & 12 & 1 & 1 & 0 \\
+T014--T015 & 2 & 6  & 1 & 1 & 0 \\
+T016--T023 & 8 & 6  & 1 & 0 & 1 \\
+T024 & 1 & 8  & 1 & 1 & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+The indicators in Table~\ref{tab:chamber_capabilities} show whether a chamber group supports temperature, humidity, and voltage adjustment. Temperature adjustment is available in all chambers, whereas humidity and voltage adjustment are available only in selected chambers. Let \(h_c\in\{0,1\}\) and \(v_c\in\{0,1\}\) denote the humidity and voltage capability indicators of chamber \(c\), respectively.
+
+Let \(\mathcal{E}\) denote the set of feasible environment configurations, where each environment corresponds to a temperature--humidity combination. For each chamber \(c\), a single environment \(X_c\in\mathcal{E}\) is selected. A test operation \(t\) can be assigned to chamber \(c\) only if the chamber environment matches the required environment:
+\[
+X_c=e(t).
+\]
+In addition, tests requiring controlled humidity, such as \(85\%\) relative humidity, can only be assigned to chambers with \(h_c=1\). If product \(p\) requires voltage-compatible execution \((\nu_p=1)\), all operations of that product must be assigned to chambers with \(v_c=1\). Products without voltage requirements can be processed in any environmentally compatible chamber.
+
+Because chamber capacities and capabilities are not uniformly distributed, the effective capacity available for a specific environment may be much smaller than the total station capacity. Thus, bottlenecks may arise not only from workload concentration but also from limited humidity- or voltage-capable resources. Moreover, although chambers can be reconfigured, frequent environment changes are operationally undesirable due to stabilization delays and disruption of ongoing tests; chamber environments are therefore treated as planning decisions that remain fixed over the scheduling horizon. Feasible schedules must therefore jointly satisfy environmental compatibility, humidity feasibility, voltage feasibility, station-capacity constraints, and sample-dependent workload requirements.
+
+\subsection{Test flow, stage logic, and workload generation}
+\label{subsec:test_logic}
+
+The test process follows a structured multi-stage flow:
+\[
+\text{Gas Amount Determination}
+\rightarrow
+\text{Pull-down}
+\rightarrow
+\text{Other Required Tests}
+\rightarrow
+\text{Consumer Usage}.
+\]
+Stage progression is controlled by stage-based precedence rules rather than by a simple fixed predecessor list. Gas amount determination, when required, precedes pull-down testing. Pull-down acts as the release condition for downstream tests. Other required tests can start only after the pull-down phase is completed, while consumer-usage tests are released after pull-down completion and after all required downstream tests have been initiated.
+
+The required test set is product-specific. For each product \(p\), the set \(\mathcal{T}_p\subseteq\mathcal{T}\) is determined by climatic class, electrical specifications, target-market energy regulations, and optional engineering decisions. Since several test groups represent alternative operating conditions, only the regulation-consistent variants are selected for each product.
+
+A central feature of TCSSOP is decision-dependent workload generation through sample counts. Each product \(p\) has a sample-size decision \(s_p\). Pull-down tests are executed once per sample, whereas other required tests are executed once per product. The multiplicity of test \(t\) for product \(p\) is therefore
+\[
+m_{pt}(s_p)=
+\left\{
+\begin{array}{ll}
+s_p, & \text{if } t \text{ is a pull-down test,}\\
+1,   & \text{otherwise.}
+\end{array}
+\right.\]
+For environment \(e\), the induced workload is
+\[
+W_e(S)=
+\sum_{p\in\mathcal{P}}
+\sum_{\substack{t\in\mathcal{T}_p \\ e(t)=e}}
+m_{pt}(s_p)\tau_t.
+\]
+
+This structure creates the main trade-off of the problem. Increasing \(s_p\) increases upstream pull-down workload and may create congestion in specific environments, but it can also enable downstream tests to run in parallel on different physical samples. Reducing \(s_p\) lowers workload but may restrict downstream parallelism. Hence, the effect of sample size on tardiness is non-monotone and depends on chamber assignment, sample availability, due dates, and stage-based precedence release conditions.
+
+Unlike classical scheduling problems with a fixed job set, the number and distribution of operations in TCSSOP are induced by both the required test set \(\mathcal{T}_p\) and the sample vector \(S=\{s_p\}_{p\in\mathcal{P}}\). This decision-dependent workload generation is the main source of complexity and motivates the integrated solution framework.
+
+\subsection{Objective and feasibility conditions}
+\label{subsec:objective_feasibility}
+
+The objective is to determine feasible test plans that complete products on time while using limited testing resources effectively. For each product \(p\in\mathcal{P}\), let \(C_p\) denote its completion time, defined as the finish time of its last required test operation. Given due date \(d_p\), product tardiness is
+\[
+T_p=\max(0,C_p-d_p).
+\]
+The primary objective is to minimize total tardiness:
+\[
+\min \; T^{tot}=\sum_{p\in\mathcal{P}}T_p.
+\]
+
+Sample usage is considered as a secondary criterion. Let \(s_p\) be the number of samples assigned to product \(p\). Total sample usage is
+\[
+S^{tot}=\sum_{p\in\mathcal{P}}s_p.
+\]
+Solutions are evaluated lexicographically: total tardiness is minimized first, and among solutions with equal total tardiness, the solution with the smaller total sample usage is preferred.
+
+A feasible solution must satisfy all operational, environmental, and stage-based requirements of the testing system. For each product \(p\), all tests in \(\mathcal{T}_p\) must be scheduled with the correct multiplicities: pull-down tests generate \(s_p\) operations, while other required tests generate one operation per product, and no non-required tests are scheduled. Each operation must be assigned to a chamber whose environment matches its test requirement \(e(t)\). Tests requiring controlled humidity can only be assigned to chambers with humidity capability \((h_c=1)\). If product \(p\) requires voltage-compatible execution \((\nu_p=1)\), all of its operations must be assigned to voltage-capable chambers \((v_c=1)\); otherwise, the product may be assigned to any environmentally compatible chamber.
+
+Feasibility also requires temporal and resource consistency. Each station can process at most one operation at a time, and each physical sample can participate in at most one operation at a time. Stage-based precedence rules must be respected: downstream tests can start only after the pull-down phase is completed, and consumer-usage tests require both completion of the pull-down phase and initiation of all required downstream tests. Sample counts must satisfy \(s_{\min}\le s_p\le s_{\max}\) for all \(p\in\mathcal{P}\). Finally, the completion time \(C_p\) of each product is the maximum completion time among all its required operations.
+
+These conditions define feasibility at both structural and temporal levels. Structurally, test selection, sample counts, and chamber assignments must be compatible with environmental and capability requirements. Temporally, the generated operations must admit a schedule that satisfies station capacity, sample exclusivity, and stage-based precedence constraints.
