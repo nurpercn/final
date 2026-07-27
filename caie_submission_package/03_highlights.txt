@@ -1,0 +1,9 @@
+Highlights
+(Submit as a separate editable file; filename must include the word "highlights".
+Each bullet must be ≤ 85 characters including spaces. Current counts are shown.)
+
+• TCSSOP jointly optimizes sample sizes, chamber settings, and schedules (77)
+• Sample decisions create decision-dependent pull-down and parallelism trade-offs (80)
+• Iterative framework combines chamber assignment, sample search, and EDD scheduling (83)
+• Equal-budget FS(6) remains far worse, proving allocation—not quantity—drives gains (84)
+• Best setting uses 0.20–0.30 VNS fallback with K_max=200 across 90 scenarios (79)

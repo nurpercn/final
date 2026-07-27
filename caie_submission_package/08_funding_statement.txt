@@ -1,0 +1,7 @@
+Funding sources
+
+This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
+
+If funding exists, replace with the Elsevier standard format:
+
+Funding: This work was supported by the [Funder Name] [grant numbers xxxx, yyyy].
