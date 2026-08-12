@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Regulatory Affairs Infographic</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1200px;
+    height: 1500px;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #e8ecf1;
+    color: #1a2332;
+  }
+  .frame {
+    width: 1200px;
+    height: 1500px;
+    display: grid;
+    grid-template-columns: 430px 1fr;
+    grid-template-rows: 1fr 72px;
+  }
+
+  .left {
+    background: linear-gradient(165deg, #0f2744 0%, #163a5f 55%, #1a4a6e 100%);
+    color: #fff;
+    padding: 48px 36px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .left::after {
+    content: '';
+    position: absolute;
+    right: -80px; bottom: -40px;
+    width: 280px; height: 280px;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .left h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 34px;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .left h1 .accent {
+    color: #f0a35e;
+    display: block;
+    margin-top: 4px;
+  }
+  .left .sub {
+    font-size: 15px;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 36px;
+  }
+  .pillar {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(240,163,94,0.35);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: #f0a35e;
+    font-size: 16px;
+    font-weight: 800;
+    font-family: Georgia, serif;
+  }
+  .pillar .label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f0a35e;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .pillar p {
+    font-size: 15px;
+    line-height: 1.35;
+    color: rgba(255,255,255,0.92);
+  }
+  .pillar strong { color: #fff; font-weight: 800; }
+
+  .checks {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .checks li {
+    list-style: none;
+    font-size: 15px;
+    margin-bottom: 12px;
+    padding-left: 28px;
+    position: relative;
+    color: rgba(255,255,255,0.92);
+  }
+  .checks li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #f0a35e;
+    font-weight: 800;
+  }
+
+  .right {
+    background: #f4f6f8;
+    padding: 44px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .right h2 {
+    font-size: 22px;
+    line-height: 1.3;
+    color: #0f2744;
+  }
+  .right h2 span {
+    display: block;
+    font-weight: 500;
+    font-size: 16px;
+    color: #4a5a6e;
+    margin-top: 6px;
+  }
+
+  .puzzle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tile {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px 16px;
+    border: 1px solid #e2e8ef;
+    min-height: 108px;
+  }
+  .tile .t-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .tile p { font-size: 14px; line-height: 1.35; color: #243447; font-weight: 500; }
+  .t1 .t-label { color: #0f2744; }
+  .t2 .t-label { color: #2b6cb0; }
+  .t3 .t-label { color: #c05621; }
+  .t4 .t-label { color: #0d9488; }
+  .t1 { border-top: 3px solid #0f2744; }
+  .t2 { border-top: 3px solid #2b6cb0; }
+  .t3 { border-top: 3px solid #c05621; }
+  .t4 { border-top: 3px solid #0d9488; }
+
+  .center-pill {
+    grid-column: 1 / -1;
+    background: #0f2744;
+    color: #fff;
+    text-align: center;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .vestel {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #334155;
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid #e2e8ef;
+  }
+  .vestel strong { color: #0f2744; }
+
+  .marks {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .mark {
+    background: #fff;
+    border: 1px solid #d7dee8;
+    border-radius: 10px;
+    padding: 10px 6px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 92px;
+  }
+  .mark img {
+    max-width: 72px;
+    max-height: 44px;
+    object-fit: contain;
+  }
+  .mark .caption {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    line-height: 1.2;
+  }
+  .mark .caption b {
+    display: block;
+    color: #0f2744;
+    font-size: 11px;
+    margin-bottom: 1px;
+  }
+
+  .value {
+    background: #e8f1fb;
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #0f2744;
+    border-left: 4px solid #2b6cb0;
+  }
+  .value strong { font-weight: 800; }
+
+  .footer {
+    grid-column: 1 / -1;
+    background: #fff;
+    border-top: 1px solid #d7dee8;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 24px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+  }
+  .footer span { display: flex; align-items: center; gap: 8px; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #f0a35e;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <section class="left">
+      <h1>REGULATORY AFFAIRS <span class="accent">IS NOT ABOUT TICKING BOXES.</span></h1>
+      <p class="sub">It’s about understanding the big picture and turning complexity into clear guidance.</p>
+
+      <div class="pillar">
+        <div class="icon">01</div>
+        <div>
+          <div class="label">Reading</div>
+          <p>is not the same as <strong>INTERPRETING.</strong></p>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="icon">02</div>
+        <div>
+          <div class="label">Interpretation</div>
+          <p>only works when you truly <strong>UNDERSTAND THE PRODUCT.</strong></p>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="icon">03</div>
+        <div>
+          <div class="label">The Goal</div>
+          <p>is to turn ambiguity into <strong>CLEAR GUIDANCE.</strong></p>
+        </div>
+      </div>
+
+      <ul class="checks">
+        <li>What must be met?</li>
+        <li>How can it be met?</li>
+        <li>What trade-offs is the business actually making?</li>
+      </ul>
+    </section>
+
+    <section class="right">
+      <h2>A REQUIREMENT RARELY LIVES IN ISOLATION.
+        <span>It needs to be analysed together with:</span>
+      </h2>
+
+      <div class="puzzle">
+        <div class="tile t1">
+          <div class="t-label">01 · Product</div>
+          <p>Product parameters and design choices</p>
+        </div>
+        <div class="tile t2">
+          <div class="t-label">02 · Standards</div>
+          <p>Related standards and overlapping regulations</p>
+        </div>
+        <div class="tile t3">
+          <div class="t-label">03 · Evidence</div>
+          <p>Test evidence, certification routes and national deviations</p>
+        </div>
+        <div class="tile t4">
+          <div class="t-label">04 · Commercial</div>
+          <p>Timelines, cost and the realities of market access</p>
+        </div>
+        <div class="center-pill">CROSS-FUNCTIONAL COLLABORATION IS THE KEY</div>
+      </div>
+
+      <p class="vestel">At <strong>Vestel</strong>, I’ve led global regulatory affairs &amp; market access for refrigeration products across <strong>100+ countries</strong> — roughly <strong>500 certification projects</strong> a year, navigating regimes including:</p>
+
+      <div class="marks" aria-label="Certification regimes">
+        <div class="mark">
+          <img src="marks/ce.png" alt="CE" />
+          <div class="caption"><b>CE</b>Marking</div>
+        </div>
+        <div class="mark">
+          <img src="marks/ukca.png" alt="UKCA" />
+          <div class="caption"><b>UKCA</b>UK Conformity</div>
+        </div>
+        <div class="mark">
+          <img src="marks/cb.png" alt="CB Scheme" />
+          <div class="caption"><b>CB Scheme</b>IECEE (no product mark)</div>
+        </div>
+        <div class="mark">
+          <img src="marks/ul.png" alt="UL" />
+          <div class="caption"><b>UL</b>UL Mark</div>
+        </div>
+        <div class="mark">
+          <img src="marks/isi.png" alt="BIS ISI" />
+          <div class="caption"><b>BIS</b>ISI Mark (India)</div>
+        </div>
+        <div class="mark">
+          <img src="marks/gmark.png" alt="G-Mark" />
+          <div class="caption"><b>G-Mark</b>Gulf Conformity</div>
+        </div>
+        <div class="mark">
+          <img src="marks/energy.png" alt="Energy" />
+          <div class="caption"><b>Energy</b>Efficiency regimes</div>
+        </div>
+      </div>
+
+      <div class="value">
+        Regulatory affairs creates the most value when it helps an organisation <strong>SEE THE WHOLE PICTURE</strong> — not when it only quotes the clause.
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span><i class="dot"></i> Global Perspective</span>
+      <span><i class="dot"></i> Cross-Functional Collaboration</span>
+      <span><i class="dot"></i> Compliance with Purpose</span>
+      <span><i class="dot"></i> Business Impact</span>
+    </footer>
+  </div>
+</body>
+</html>
