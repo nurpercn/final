@@ -1,6 +1,6 @@
 # Hafta 1 — Soft positioning (Tip D)
 
-**Amaç:** Kim olduğunu netleştir, “open to work” bağırmadan Avrupa ağına sinyal ver.  
+**Amaç:** Kim olduğunu netleştir; iş arama CTA’sı yok — bakış açısı / uzmanlık sinyali.  
 **Dil:** İngilizce  
 **Önerilen gün:** Bu haftanın Salı/Çarşambası
 
@@ -10,21 +10,27 @@
 
 Most people think regulatory affairs is about ticking boxes.
 
-In practice, it’s about translating ambiguity into decisions that keep products shipping.
+In practice, knowing a regulation or a standard is never enough.
+
+This work is a mindset.
+Reading is not the same as interpreting.
+And interpretation only works if you truly understand the product.
+
+A requirement rarely lives in isolation. It has to be analysed together with:
+• product parameters and design choices
+• related standards and overlapping regulations
+• test evidence, certification routes and national deviations
+• the commercial reality of timelines, cost and market access
+
+That takes a wide perspective and real coordination — working with R&D, quality, labs, supply chain and commercial teams to turn ambiguity into clear guidance: what must be met, how it can be met, and what trade-offs the business is actually making.
 
 For the last years at Vestel, I’ve led global regulatory affairs and market access for refrigeration products across 100+ countries — roughly 500 certification projects a year, thousands of active product codes, and continuous navigation of CE, UKCA, CB, UL, BIS, G-Mark and energy efficiency regimes.
 
-What I enjoy most is the intersection:
-• interpreting complex rules (Ecodesign, labelling, product safety, substance restrictions)
-• turning them into workable certification and market-entry strategy
-• aligning R&D, quality, labs, authorities and commercial teams under pressure
-
 Alongside this, I’m completing a PhD in Industrial Engineering at Özyeğin University, focused on optimisation-based test chamber scheduling — because compliance operations also need better decision systems, not only better checklists.
 
-I’m currently exploring senior roles in Europe / UK in:
-Regulatory Affairs · Product Compliance · Market Access · Product Safety · Certification Strategy
+Regulatory affairs creates the most value when it helps the organisation see the whole picture — not when it only quotes the clause.
 
-If you’re hiring in these areas — or know someone who is — I’d be glad to connect.
+Curious how others in product compliance balance technical interpretation with commercial decision-making. Where does that conversation usually break down in your organisation?
 
 #RegulatoryAffairs #ProductCompliance #MarketAccess #IndustrialEngineering #EUregulations
 
@@ -34,24 +40,32 @@ If you’re hiring in these areas — or know someone who is — I’d be glad t
 
 Birçok kişi regulatory affairs’i “kutucuk işaretlemek” sanıyor.
 
-Gerçekte iş, belirsizliği üretime ve sevkiyata engel olmayan kararlara çevirmek.
+Oysa bir regülasyonu veya standardı bilmek asla yetmez.
 
-Vestel’de soğutma ürünleri için 100+ ülkede global regulatory affairs & market access tarafını yönetiyorum: yılda yüzlerce sertifikasyon projesi, binlerce ürün kodu ve CE / UKCA / CB / UL / BIS / G-Mark / enerji verimliliği rejimleri arasında sürekli geçiş.
+Bu iş bir bakış açısı işidir.
+Okumak, yorumlamak demek değildir.
+Yorum da ürünü gerçekten tanımıyorsan işlemez.
 
-En çok şu kesişimde çalışmayı seviyorum:
-• karmaşık regülasyonları okumak
-• bunları uygulanabilir sertifikasyon ve market access stratejisine dönüştürmek
-• R&D, kalite, laboratuvar, otorite ve ticari ekipleri aynı masada tutmak
+Bir gereklilik nadiren tek başına durur. Şunlarla birlikte analiz edilmelidir:
+• ürün parametreleri ve tasarım tercihleri
+• ilişkili standartlar ve örtüşen regülasyonlar
+• test kanıtı, sertifikasyon yolu ve national deviation’lar
+• zaman, maliyet ve market access’in ticari gerçeği
+
+Bu da geniş bir bakış açısı ve ciddi koordinasyon ister — R&D, kalite, laboratuvar, tedarik zinciri ve ticari ekiplerle birlikte belirsizliği net yönlendirmeye çevirmek: ne karşılanmalı, nasıl karşılanabilir, iş hangi trade-off’u gerçekten yapıyor?
+
+Vestel’de soğutma ürünleri için 100+ ülkede global regulatory affairs & market access tarafını yönetiyorum: yılda yüzlerce sertifikasyon projesi, binlerce ürün kodu ve CE / UKCA / CB / UL / BIS / G-Mark / enerji verimliliği rejimleri.
 
 Paralelinde Özyeğin Üniversitesi’nde Endüstri Mühendisliği doktoramı sürdürüyorum; odak alanım test odası çizelgeleme optimizasyonu.
 
-Şu an Avrupa / İngiltere’de senior Regulatory Affairs, Product Compliance, Market Access, Product Safety ve Certification Strategy rollerine bakıyorum.
+Regulatory affairs en çok, organizasyona büyük resmi gösterdiğinde değer üretir — yalnızca maddeyi alıntıladığında değil.
 
-Bu alanlarda işe alım yapan veya tanıyan varsa bağlantı kurmaktan memnuniyet duyarım.
+Product compliance tarafında teknik yorum ile ticari kararı dengelemek sizde nasıl işliyor? Bu konuşma genelde nerede kopuyor?
 
 ---
 
 ## Paylaşım notu
 
-- Foto/görsel: profesyonel baş fotoğrafın net olsun; banner’da “Global Regulatory Affairs | Market Access | Product Compliance” yeterli
-- “Open to work” yeşil çerçevesini sadece recruiter’lara açık tutman daha zarif olabilir; post zaten sinyali veriyor
+- İş arama cümlesi bilinçli olarak çıkarıldı; sinyal uzmanlıkta
+- Open to work’ü profilde “recruiters only” tutman yeterli
+- Hook + bakış açısı + ölçek + PhD + soru ile bitiyor

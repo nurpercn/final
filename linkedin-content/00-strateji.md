@@ -23,7 +23,7 @@ Global Regulatory Affairs & Market Access | Product Compliance | Certification S
 | A — Uzmanlık | Regülasyon yorumu | UKCA, Ecodesign, PFAS, energy label |
 | B — Hikâye | Deneyimden ders | 100+ ülke market access, Brexit transition |
 | C — Araştırma | PhD / OR sinyali | Test chamber scheduling, sample size optimization |
-| D — Pozisyon | Kimsin + ne arıyorsun | Soft open to work, hedef roller |
+| D — Pozisyon / bakış açısı | Kimsin + nasıl düşünürsün | Mindset, yorumlama, ürün + ticari boyut (iş arama CTA’sız) |
 
 **4 haftalık döngü:** A → B → C → D → tekrar
 
