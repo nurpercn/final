@@ -1,8 +1,8 @@
 # Hafta 1 — Soft positioning (Tip D)
 
-**Amaç:** Kim olduğunu netleştir; iş arama CTA’sı yok — bakış açısı / uzmanlık sinyali.  
+**Amaç:** Bakış açısı / uzmanlık sinyali. İş arama CTA’sı yok.  
 **Dil:** İngilizce  
-**Önerilen gün:** Bu haftanın Salı/Çarşambası
+**Durum:** Kullanıcı revizyonu onaylandı (küçük polish ile)
 
 ---
 
@@ -24,48 +24,27 @@ A requirement rarely lives in isolation. It has to be analysed together with:
 
 That takes a wide perspective and real coordination — working with R&D, quality, labs, supply chain and commercial teams to turn ambiguity into clear guidance: what must be met, how it can be met, and what trade-offs the business is actually making.
 
-For the last years at Vestel, I’ve led global regulatory affairs and market access for refrigeration products across 100+ countries — roughly 500 certification projects a year, thousands of active product codes, and continuous navigation of CE, UKCA, CB, UL, BIS, G-Mark and energy efficiency regimes.
+For the last years at Vestel, I’ve led global regulatory affairs and market access for refrigeration products across 100+ countries — roughly 500 test report and certification projects a year, thousands of active product codes, and continuous navigation of CE, UKCA, CB, UL, BIS, G-Mark and energy efficiency regimes.
 
 Alongside this, I’m completing a PhD in Industrial Engineering at Özyeğin University, focused on optimisation-based test chamber scheduling — because compliance operations also need better decision systems, not only better checklists.
 
 Regulatory affairs creates the most value when it helps the organisation see the whole picture — not when it only quotes the clause.
 
-Curious how others in product compliance balance technical interpretation with commercial decision-making. Where does that conversation usually break down in your organisation?
-
 #RegulatoryAffairs #ProductCompliance #MarketAccess #IndustrialEngineering #EUregulations
 
 ---
 
-## Türkçe alternatif (istersen)
+## Neden iyi?
 
-Birçok kişi regulatory affairs’i “kutucuk işaretlemek” sanıyor.
+- Hook güçlü (“ticking boxes” → mindset)
+- Felsefe net: bilmek ≠ yorumlamak; ürün + ticari boyut
+- Ölçek kanıtı (100+ ülke, 500 proje) yerinde — övünme değil, bağlam
+- PhD cümlesi checklist eleştirisiyle bağlanıyor
+- Kapanış cümlesi quotable; ekstra “iş arıyorum” yok
 
-Oysa bir regülasyonu veya standardı bilmek asla yetmez.
+## Küçük notlar (opsiyonel)
 
-Bu iş bir bakış açısı işidir.
-Okumak, yorumlamak demek değildir.
-Yorum da ürünü gerçekten tanımıyorsan işlemez.
-
-Bir gereklilik nadiren tek başına durur. Şunlarla birlikte analiz edilmelidir:
-• ürün parametreleri ve tasarım tercihleri
-• ilişkili standartlar ve örtüşen regülasyonlar
-• test kanıtı, sertifikasyon yolu ve national deviation’lar
-• zaman, maliyet ve market access’in ticari gerçeği
-
-Bu da geniş bir bakış açısı ve ciddi koordinasyon ister — R&D, kalite, laboratuvar, tedarik zinciri ve ticari ekiplerle birlikte belirsizliği net yönlendirmeye çevirmek: ne karşılanmalı, nasıl karşılanabilir, iş hangi trade-off’u gerçekten yapıyor?
-
-Vestel’de soğutma ürünleri için 100+ ülkede global regulatory affairs & market access tarafını yönetiyorum: yılda yüzlerce sertifikasyon projesi, binlerce ürün kodu ve CE / UKCA / CB / UL / BIS / G-Mark / enerji verimliliği rejimleri.
-
-Paralelinde Özyeğin Üniversitesi’nde Endüstri Mühendisliği doktoramı sürdürüyorum; odak alanım test odası çizelgeleme optimizasyonu.
-
-Regulatory affairs en çok, organizasyona büyük resmi gösterdiğinde değer üretir — yalnızca maddeyi alıntıladığında değil.
-
-Product compliance tarafında teknik yorum ile ticari kararı dengelemek sizde nasıl işliyor? Bu konuşma genelde nerede kopuyor?
-
----
-
-## Paylaşım notu
-
-- İş arama cümlesi bilinçli olarak çıkarıldı; sinyal uzmanlıkta
-- Open to work’ü profilde “recruiters only” tutman yeterli
-- Hook + bakış açısı + ölçek + PhD + soru ile bitiyor
+1. LinkedIn’e yapıştırırken hashtag’leri şöyle yaz: `#RegulatoryAffairs` — “hashtag#…” görünümü LinkedIn’in kopyalama formatı, postta böyle bırakma
+2. Madde işaretlerini satır satır bırak (tek satırda • • • okunması zor)
+3. İstersen sonda 1 soru ekleyebilirsin engagement için; zorunlu değil — şu anki kapanış zaten güçlü
+4. “test report and certification projects” doğru ve daha kesin; kalsın
