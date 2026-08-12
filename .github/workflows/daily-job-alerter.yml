@@ -1,0 +1,74 @@
+name: Daily Job Alerter
+
+on:
+  schedule:
+    # 07:00 UTC every day
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: job-alerter
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: job-alerter/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Write .env from secrets
+        env:
+          ALERT_TO_EMAIL: ${{ secrets.ALERT_TO_EMAIL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          REED_API_KEY: ${{ secrets.REED_API_KEY }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+        run: |
+          cat > .env <<EOF
+          ALERT_TO_EMAIL=${ALERT_TO_EMAIL}
+          SMTP_HOST=${SMTP_HOST:-smtp-mail.outlook.com}
+          SMTP_PORT=${SMTP_PORT:-587}
+          SMTP_USER=${SMTP_USER}
+          SMTP_PASSWORD=${SMTP_PASSWORD}
+          SMTP_FROM=${SMTP_FROM:-$SMTP_USER}
+          SMTP_USE_TLS=true
+          REED_API_KEY=${REED_API_KEY}
+          ADZUNA_APP_ID=${ADZUNA_APP_ID}
+          ADZUNA_APP_KEY=${ADZUNA_APP_KEY}
+          SEARCH_LOCATION=United Kingdom
+          SEARCH_COUNTRY=gb
+          MIN_MATCH_SCORE=45
+          LOOKBACK_DAYS=3
+          EOF
+
+      - name: Restore seen-jobs cache
+        uses: actions/cache@v4
+        with:
+          path: job-alerter/data/jobs.sqlite3
+          key: job-alerter-db-${{ github.run_id }}
+          restore-keys: |
+            job-alerter-db-
+
+      - name: Run alerter
+        run: python -m src.main
+
+      - name: Upload dry-run artifact on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: job-alerter-logs
+          path: job-alerter/data/

@@ -1,0 +1,207 @@
+# Nur Percin — job search profile
+candidate:
+  name: Nur Percin
+  email: nur.percin@hotmail.com
+  location_preference:
+    - United Kingdom
+    - UK
+    - Europe
+    - Remote
+    - Hybrid
+  seniority: senior_to_manager
+
+target_titles:
+  - Regulatory Affairs Manager
+  - Product Compliance Manager
+  - Product Safety Manager
+  - Certification Manager
+  - Market Access Manager
+  - Regulatory Compliance Manager
+  - Technical Compliance Manager
+  - Global Regulatory Affairs Manager
+  - Global Product Compliance Manager
+  - Regulatory Affairs Lead
+  - Product Compliance Lead
+  - Certification Lead
+  - Senior Regulatory Affairs Specialist
+  - Senior Product Compliance Specialist
+  - Senior Certification Specialist
+  - Senior Compliance Engineer
+  - Senior Product Safety Engineer
+  - Senior Regulatory Engineer
+  - Market Access Specialist
+  - Head of Regulatory Affairs
+  - Head of Product Compliance
+  - Head of Certification
+  - Global Compliance Lead
+  - Senior Regulatory Affairs Manager
+  - Global Regulatory Affairs Specialist
+  - Product Safety & Compliance Manager
+  - Certification & Compliance Manager
+
+# Broader query seeds used on job boards (OR-style searches)
+search_queries:
+  - "Regulatory Affairs Manager"
+  - "Product Compliance Manager"
+  - "Product Safety Manager"
+  - "Certification Manager"
+  - "Market Access Manager"
+  - "Regulatory Compliance"
+  - "Technical Compliance Manager"
+  - "Global Regulatory Affairs"
+  - "Senior Regulatory Affairs"
+  - "Head of Regulatory Affairs"
+  - "Head of Product Compliance"
+  - "Product Compliance Lead"
+  - "Certification Lead"
+  - "Senior Compliance Engineer"
+  - "Senior Product Safety"
+
+target_companies:
+  appliances:
+    - Beko
+    - Electrolux
+    - Bosch
+    - BSH
+    - Miele
+    - Haier
+    - Whirlpool
+    - Dyson
+    - SharkNinja
+    - Samsung
+    - LG
+    - De'Longhi
+    - Delonghi
+    - Versuni
+    - Vestel
+    - Arcelik
+    - Arçelik
+  hvac_cooling:
+    - Daikin
+    - Carrier
+    - Johnson Controls
+    - Trane
+    - Trane Technologies
+    - Mitsubishi Electric
+    - Panasonic
+    - Vaillant
+    - Viessmann
+    - Ariston
+  industrial_electrical:
+    - Schneider Electric
+    - Siemens
+    - ABB
+    - Honeywell
+    - Emerson
+    - Eaton
+    - Legrand
+  certification_bodies:
+    - UL Solutions
+    - UL
+    - Intertek
+    - SGS
+    - BSI
+    - TÜV SÜD
+    - TUV SUD
+    - TÜV Rheinland
+    - TUV Rheinland
+    - Bureau Veritas
+    - Element Materials Technology
+    - Element
+    - DEKRA
+
+# Keywords extracted / aligned with CV — used for scoring
+cv_keywords:
+  must_boost:
+    - regulatory affairs
+    - product compliance
+    - market access
+    - product safety
+    - certification
+    - UKCA
+    - CE marking
+    - notified body
+  strong:
+    - LVD
+    - EMC
+    - RoHS
+    - REACH
+    - PFAS
+    - Ecodesign
+    - energy labelling
+    - WEEE
+    - IEC 60335
+    - UL standards
+    - CB scheme
+    - GS mark
+    - G-Mark
+    - BIS
+    - CCC
+    - NOM
+    - SASO
+    - INMETRO
+    - DOE
+    - ENERGY STAR
+    - OPSS
+    - AMDEA
+    - APPLIA
+    - refrigeration
+    - household appliances
+    - cooling
+    - HVAC
+  nice:
+    - ISO 9001
+    - ISO 14001
+    - ISO/IEC 17025
+    - risk assessment
+    - gap analysis
+    - technical file
+    - conformity assessment
+    - stakeholder management
+    - cross-functional
+    - PhD
+    - industrial engineering
+
+# Exclude noisy / wrong-track roles
+exclude_title_keywords:
+  - financial compliance
+  - regulatory reporting
+  - regulatory data
+  - AML
+  - KYC
+  - anti-money
+  - GDPR officer
+  - data protection officer
+  - privacy counsel
+  - tax compliance
+  - trade compliance analyst junior
+  - pharmacy
+  - clinical research
+  - clinical affairs
+  - pharmacovigilance
+  - pharmaceutical
+  - medical device regulatory affairs graduate
+  - solicitor
+  - paralegal
+  - quality assurance manager
+  - QA manager
+  - finance
+  - financial
+  - audit manager
+  - internal audit
+
+sources:
+  reed: true
+  adzuna: true
+  indeed_rss: true
+  totaljobs: true
+  cv_library: true
+  glassdoor: true
+  # LinkedIn guest search is brittle; enabled as best-effort + manual deep links in email
+  linkedin: true
+
+locations:
+  - United Kingdom
+  - England
+  - London
+  - Remote
