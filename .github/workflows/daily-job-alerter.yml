@@ -38,22 +38,22 @@ jobs:
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
         run: |
-          cat > .env <<EOF
-          ALERT_TO_EMAIL=${ALERT_TO_EMAIL}
-          SMTP_HOST=${SMTP_HOST:-smtp-mail.outlook.com}
-          SMTP_PORT=${SMTP_PORT:-587}
-          SMTP_USER=${SMTP_USER}
-          SMTP_PASSWORD=${SMTP_PASSWORD}
-          SMTP_FROM=${SMTP_FROM:-$SMTP_USER}
-          SMTP_USE_TLS=true
-          REED_API_KEY=${REED_API_KEY}
-          ADZUNA_APP_ID=${ADZUNA_APP_ID}
-          ADZUNA_APP_KEY=${ADZUNA_APP_KEY}
-          SEARCH_LOCATION=United Kingdom
-          SEARCH_COUNTRY=gb
-          MIN_MATCH_SCORE=45
-          LOOKBACK_DAYS=3
-          EOF
+          {
+            echo "ALERT_TO_EMAIL=${ALERT_TO_EMAIL}"
+            echo "SMTP_HOST=${SMTP_HOST:-smtp-mail.outlook.com}"
+            echo "SMTP_PORT=${SMTP_PORT:-587}"
+            echo "SMTP_USER=${SMTP_USER}"
+            echo "SMTP_PASSWORD=${SMTP_PASSWORD}"
+            echo "SMTP_FROM=${SMTP_FROM:-$SMTP_USER}"
+            echo "SMTP_USE_TLS=true"
+            echo "REED_API_KEY=${REED_API_KEY}"
+            echo "ADZUNA_APP_ID=${ADZUNA_APP_ID}"
+            echo "ADZUNA_APP_KEY=${ADZUNA_APP_KEY}"
+            echo "SEARCH_LOCATION=United Kingdom"
+            echo "SEARCH_COUNTRY=gb"
+            echo "MIN_MATCH_SCORE=45"
+            echo "LOOKBACK_DAYS=3"
+          } > .env
 
       - name: Restore seen-jobs cache
         uses: actions/cache@v4
