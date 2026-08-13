@@ -1,43 +1,47 @@
-# Hafta 4 — Deneyim hikâyesi (Tip B)
+# Hafta 4 — Regülasyon değişince ekipler ne sorar? (Tip B)
 
-**Amaç:** Liderlik + problem çözme; soft skills + hard skills bir arada.  
-**Konu:** Belirsiz regülasyonu ticari karara çevirmek (genel çerçeve, gizli proje yok)  
-**Dil:** İngilizce
+**Amaç:** Cross-functional “translation layer” — her ekibin sorusu + RA/Compliance/Market Access nasıl cevaplar  
+**Dil:** İngilizce  
+**Durum:** Kullanıcı brief’ine göre yeniden yazıldı
 
 ---
 
 ## Post (kopyala-yapıştır)
 
-The most expensive compliance failures I’ve seen didn’t start in the lab.
+A regulatory change doesn’t start as a document problem.
 
-They started in a meeting where everyone assumed the same interpretation of a regulation — and nobody wrote it down.
+It starts as a set of questions — asked by different teams, at the same time, under pressure.
 
-In global market access work, the pattern is familiar:
-• A new requirement appears (or an old one is re-interpreted)
-• Engineering asks: “What exactly do we need to change?”
-• Sales asks: “When can we ship?”
-• Quality asks: “Who owns the evidence?”
-• Leadership asks: “What’s the risk if we wait?”
+When a new requirement appears (or an old one is re-interpreted), this is what I usually hear:
 
-If regulatory affairs only answers with “it depends,” the organisation freezes.
-If it answers too fast without a decision framework, the organisation ships risk.
+• Sales: “Can we still sell this? In which markets? From when?”
+• Stock / inventory: “What happens to products already built or in warehouses?”
+• Quality: “What evidence do we need — and who owns the file?”
+• R&D: “What exactly must change in the design / BOM / performance claim?”
+• Production planning: “When do we cut over? Which platforms are affected first?”
+• Supply planning: “Which components, suppliers or certifications become the bottleneck?”
+• Artwork / labelling: “What must change on the label, rating plate, packaging and instructions — and by which shipment?”
 
-What I try to build instead is a translation layer:
+If Regulatory Affairs only answers with “it depends,” the organisation freezes.
+If it answers too fast without a framework, the organisation ships risk.
+
+A good Compliance / Market Access answer should make the trade-off visible:
+
 1. What is mandatory vs. what is interpretation
-2. What evidence closes the gap
-3. What commercial options exist (delay, redesign, alternative route, phased rollout)
-4. Who decides — and by when
+2. Which SKUs / markets / factories are in scope — and which are not
+3. What evidence closes the gap (test, certificate, technical file, declaration)
+4. What happens to stock already produced
+5. What commercial options exist: sell-through, rework, redesign, alternative route, phased rollout
+6. Who decides — and by when
 
-Regulatory affairs creates the most value when it reduces ambiguity for the business, not when it accumulates documents.
+Regulatory Affairs creates the most value when it translates a regulation into decisions the business can act on — not when it only circulates the clause.
 
-What’s the hardest part in your organisation: reading the regulation, aligning stakeholders, or choosing the commercial trade-off?
+In your organisation, which team’s question is usually the hardest to answer first?
 
-#RegulatoryAffairs #ProductCompliance #Leadership #MarketAccess #ChangeManagement
+#RegulatoryAffairs #ProductCompliance #MarketAccess #Leadership #ChangeManagement
 
 ---
 
-## Neden işe yarar?
+## Türkçe özet (referans)
 
-- Senior rol için “team lead / stakeholder management” sinyali verir
-- APPLiA / policy / manager seviyesi ilanlarla uyumlu dil kullanır
-- Soru ile engagement alır
+Regülasyon değişince Sales, stok, kalite, Ar-Ge, üretim planlama, tedarik planlama ve artwork’ün sorduğu sorular + RA’nın cevap çerçevesi (zorunlu vs yorum, stok, kanıt, ticari seçenekler, karar sahibi).
