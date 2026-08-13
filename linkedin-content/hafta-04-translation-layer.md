@@ -24,12 +24,12 @@ Within hours, the organisation starts talking past itself:
 • Supply planning wants to know which part, supplier or certificate becomes the bottleneck
 • Artwork wants to know what must change on the label before the next shipment leaves
 
-This is where Regulatory Affairs, Compliance and Market Access have to work as one function — not as separate inboxes.
+This is where the Regulatory / Compliance / Market Access team has to step in — not as separate inboxes, but as one decision-making function.
 
 If the answer is only “it depends,” the organisation freezes.
 If the answer comes too fast, without a shared framework, the organisation ships risk.
 
-The real job is not to quote the regulation.
+The real job of the Regulatory / Compliance / Market Access team is not to quote the regulation.
 It is to translate it into decisions the business can act on:
 
 1. What is mandatory — and what is only interpretation
@@ -39,8 +39,8 @@ It is to translate it into decisions the business can act on:
 5. Which commercial options remain: sell-through, rework, redesign, alternative route, phased rollout
 6. Who decides — and by when
 
-These roles create the most value when they reduce ambiguity under pressure.
-Not when they accumulate documents after the decision has already been made.
+This team creates the most value when it reduces ambiguity under pressure.
+Not when it accumulates documents after the decision has already been made.
 
 So tell me — in your organisation, whose question usually arrives first…
 and whose question is usually answered last?
