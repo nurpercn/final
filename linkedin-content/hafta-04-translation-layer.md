@@ -1,7 +1,7 @@
 # Hafta 4 — FINAL (regülasyon + standart değişikliği)
 
 **Dil:** İngilizce  
-**Not:** Closing question kaldırıldı / kullanıcı son metnine göre; regulation + standard eklendi
+**Not:** Closing question kaldırıldı. Hem regulation hem standards change aynı koordinasyon problemini yaratır — metin buna göre zenginleştirildi.
 
 ---
 
@@ -11,8 +11,8 @@ The hardest part of a regulatory or standards change is rarely understanding the
 
 It is aligning different functions — each with different questions, risks and priorities — around the same interpretation.
 
-A new regulation or standard appears. Or an existing requirement is re-interpreted.
-Very quickly, different parts of the organisation need different answers:
+A new regulation lands. A standard is revised, replaced or withdrawn. Or an existing requirement is re-interpreted — by a market, an auditor, a notified body or the organisation itself.
+Very quickly, different parts of the business need different answers:
 
 • Sales wants to know what they can still promise the customer
 • Inventory and Logistics want to know what happens to products already produced or sitting in warehouses
@@ -24,7 +24,7 @@ Very quickly, different parts of the organisation need different answers:
 
 And depending on the change, Legal, Procurement, Product Management, After Sales and other functions may have their own questions too.
 
-This is where Regulatory / Compliance / Market Access has to step in — not simply as the team that interprets the requirement, but as a coordinating decision-making function across the business.
+This is where Regulatory / Compliance / Market Access has to step in — not simply as the team that interprets the text, but as a coordinating decision-making function across the business.
 
 If the answer is only “it depends,” the organisation freezes.
 If the answer comes too fast, without a shared framework, the organisation ships risk.
@@ -39,8 +39,8 @@ It is to translate it into decisions the business can act on:
 5. Which commercial options remain — sell-through, rework, redesign, an alternative route or a phased rollout?
 6. Who decides — and by when?
 
-This is where Regulatory / Compliance / Market Access creates the most value: reducing ambiguity under pressure and turning regulatory and standards requirements into clear business decisions.
+This is where Regulatory / Compliance / Market Access creates the most value: reducing ambiguity under pressure and turning both regulatory and standards requirements into clear business decisions.
 
 Not simply accumulating documents after the decision has already been made.
 
-#RegulatoryAffairs #ProductCompliance #MarketAccess #RegulatoryCompliance #ChangeManagement #Leadership #ProductStandards
+#RegulatoryAffairs #ProductCompliance #MarketAccess #RegulatoryCompliance #ProductStandards #ChangeManagement #Leadership
