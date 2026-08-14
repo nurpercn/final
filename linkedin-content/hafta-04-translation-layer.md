@@ -1,48 +1,46 @@
-# Hafta 4 — Regülasyon değişince ekipler ne sorar? (Tip B)
+# Hafta 4 — FINAL (regülasyon + standart değişikliği)
 
-**Amaç:** RA + Compliance + Market Access fonksiyonunun rolünü netleştiren anlatım  
-**Dil:** İngilizce
+**Dil:** İngilizce  
+**Not:** Closing question kaldırıldı / kullanıcı son metnine göre; regulation + standard eklendi
 
 ---
 
 ## Post (kopyala-yapıştır)
 
-A regulatory change rarely fails because the clause was unclear.
+The hardest part of a regulatory or standards change is rarely understanding the clause itself.
 
-It fails because seven teams ask seven different questions — and nobody owns the answer clearly enough.
+It is aligning different functions — each with different questions, risks and priorities — around the same interpretation.
 
-I’ve seen this pattern too many times.
-
-A new requirement appears. Or an old one is suddenly re-interpreted.
-Within hours, the organisation starts talking past itself:
+A new regulation or standard appears. Or an existing requirement is re-interpreted.
+Very quickly, different parts of the organisation need different answers:
 
 • Sales wants to know what they can still promise the customer
-• Stock wants to know what happens to product already sitting in warehouses
-• Quality wants to know what evidence will survive an audit
+• Inventory and Logistics want to know what happens to products already produced or sitting in warehouses
+• Quality wants to know what evidence will stand up to an audit
 • R&D wants to know what must actually change in the design
-• Production planning wants a cut-over date they can schedule against
-• Supply planning wants to know which part, supplier or certificate becomes the bottleneck
+• Production Planning wants a cut-over date they can schedule against
+• Supply Planning wants to know which part, supplier or certificate could become the bottleneck
 • Artwork wants to know what must change on the label before the next shipment leaves
 
-This is where the Regulatory / Compliance / Market Access team has to step in — not as separate inboxes, but as one decision-making function.
+And depending on the change, Legal, Procurement, Product Management, After Sales and other functions may have their own questions too.
+
+This is where Regulatory / Compliance / Market Access has to step in — not simply as the team that interprets the requirement, but as a coordinating decision-making function across the business.
 
 If the answer is only “it depends,” the organisation freezes.
 If the answer comes too fast, without a shared framework, the organisation ships risk.
 
-The real job of the Regulatory / Compliance / Market Access team is not to quote the regulation.
+The real job is not to quote the regulation or the standard.
 It is to translate it into decisions the business can act on:
 
-1. What is mandatory — and what is only interpretation
-2. Which products, markets and factories are in scope
-3. What evidence closes the gap
-4. What happens to stock already produced
-5. Which commercial options remain: sell-through, rework, redesign, alternative route, phased rollout
-6. Who decides — and by when
+1. What is mandatory — and what is interpretation?
+2. Which products, markets and factories are in scope?
+3. What evidence closes the gap?
+4. What happens to products and stock already produced?
+5. Which commercial options remain — sell-through, rework, redesign, an alternative route or a phased rollout?
+6. Who decides — and by when?
 
-This team creates the most value when it reduces ambiguity under pressure.
-Not when it accumulates documents after the decision has already been made.
+This is where Regulatory / Compliance / Market Access creates the most value: reducing ambiguity under pressure and turning regulatory and standards requirements into clear business decisions.
 
-So tell me — in your organisation, whose question usually arrives first…
-and whose question is usually answered last?
+Not simply accumulating documents after the decision has already been made.
 
-#RegulatoryAffairs #ProductCompliance #MarketAccess #Leadership #ChangeManagement
+#RegulatoryAffairs #ProductCompliance #MarketAccess #RegulatoryCompliance #ChangeManagement #Leadership #ProductStandards
