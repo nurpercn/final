@@ -1,83 +1,87 @@
-# DOE Buzdolabı / Dondurucu Geçişi — LinkedIn Bilgilendirme Postu
+# DOE Refrigerator & Freezer Transition — LinkedIn post (English)
 
-Kaynak: 10 CFR 430.32 (eCFR), DOE Direct Final Rule (17 Ocak 2024; uyum tarihleri 13 Haziran 2024’te teyit edildi).
+Copy the post below into LinkedIn. Attach the 5 slides in order, or upload `DOE_refrigerator_freezer_transition_carousel.pdf` as a LinkedIn document (carousel).
 
-Aşağıdaki metin kopyala-yapıştır için hazırdır. İlk blok LinkedIn’e doğrudan yapıştırılabilir.
+Slide order:
+1. `01_overview.png` — two-phase dates
+2. `02_compliance_calendar.png` — who complies when
+3. `03_standards_2029.png` — max energy-use equations from Jan 31, 2029
+4. `04_standards_2030.png` — max energy-use equations from Jan 31, 2030
+5. `05_door_coefficients.png` — K door-coefficient tables
+
+Source: 10 CFR 430.32; DOE Direct Final Rule (Jan. 17, 2024; dates confirmed June 13, 2024).
 
 ---
 
-## Ana post (önerilen)
+## Post (copy-paste)
 
-ABD’de buzdolabı ve dondurucu enerji standartlarında iki aşamalı bir geçiş var.
+U.S. refrigerator and freezer energy standards are moving to a two-phase DOE transition.
 
-Bugün piyasadaki ürünler hâlâ 15 Eylül 2014’ten beri yürürlükte olan limitlere göre üretiliyor. ABD Enerji Bakanlığı (DOE) bu limitleri güncelledi. Yeni kurallar, ürün sınıfına göre **31 Ocak 2029** veya **31 Ocak 2030**’dan itibaren ABD’de üretilen veya ithal edilen ürünler için zorunlu.
+Products on the market today are still built to the limits that took effect on September 15, 2014. DOE has amended those limits under 10 CFR 430.32. The new maximum energy-use equations become mandatory for products manufactured in, or imported into, the United States on two dates — depending on product class.
 
-Kısaca takvim:
+January 31, 2029
+Built-in refrigerators and freezers, compact products, chest freezers, and selected special classes. This group also includes new class 9A-BI: a built-in upright freezer with through-the-door ice.
 
-31 Ocak 2029
-Built-in (ankastre) buzdolabı ve dondurucular, compact (küçük hacimli) ürünler, sandık tipi dondurucular ve bazı özel sınıflar. Bu grupta ayrıca yeni 9A-BI sınıfı da var: ankastre dik dondurucu + kapıdan buz.
+January 31, 2030
+Freestanding standard refrigerator-freezers — top, side, and bottom mount — plus all-refrigerators and upright automatic-defrost freezers.
 
-31 Ocak 2030
-Serbest duran standart buzdolabı-dondurucular: üstten, yandan ve alttan donduruculu modeller, all-refrigerator’lar ve otomatik çözdürmeli dik dondurucular.
+The limits are tighter, and the formulas are cleaner.
 
-Sadece limitler sıkılaşmıyor; hesaplama yöntemi de sadeleşiyor.
+The icemaker is no longer a separate product class. It is now a factor I in the equation: I = 1 adds 28 kWh/year; I = 0 if there is no automatic icemaker.
 
-Buz makinesi artık ayrı bir ürün sınıfı değil. Denklemde I katsayısı var: otomatik buz makinesi varsa I = 1 ve yıla +28 kWh ekleniyor, yoksa I = 0.
+Door design is handled with coefficient K:
+• Transparent door → 10% allowance (K = 1.10)
+• Door-in-door → 6% allowance (K = 1.06)
+• Each extra external door above the typical count for that class → 2%
 
-Kapı tasarımı da K katsayısıyla modele giriyor:
-• Şeffaf kapı → %10 pay (K = 1,10)
-• Door-in-door → %6 pay (K = 1,06)
-• Sınıfın tipik kapı sayısının üzerindeki her dış kapı → %2 pay
+DOE estimates about 11% energy savings versus a no-new-standards case, or 5.6 quads nationally over 30 years.
 
-DOE’nin analizine göre bu paket, standart olmasaydı oluşacak tüketime kıyasla yaklaşık %11 enerji tasarrufu ve 30 yılda 5,6 quad ulusal tasarruf anlamına geliyor.
+The slides below map the dates, product classes, kWh/year equations, and K tables.
 
-Üretici, ithalatçı ve ABD pazarına çalışan ekipler için pratik anlamı net: 2029 sınıflarında kalan süre tasarım + test + sertifikasyon için dar. 2030 sınıflarında hacim yüksek; kompresör, yalıtım ve kapı mimarisi kararlarının şimdiden kilitlenmesi gerekiyor.
-
-Kaynak: 10 CFR 430.32 — Energy and water conservation standards and their compliance dates
+Source: 10 CFR 430.32 — Energy and water conservation standards and their compliance dates
 
 #DOE #EnergyEfficiency #ApplianceStandards #Refrigeration #Sustainability
 
 ---
 
-## Kısa versiyon (daha sade, daha LinkedIn)
+## Shorter version
 
-ABD buzdolabı ve dondurucu pazarında DOE geçişi iki tarihe bölünmüş durumda.
+DOE has set a two-phase transition for U.S. refrigerator and freezer energy standards.
 
-2014’ten beri kullanılan enerji limitleri güncellendi. ABD’de üretilen veya ithal edilen ürünler için:
+Current 2014 limits stay in force until:
+• January 31, 2029 — built-in, compact, and chest-freezer classes
+• January 31, 2030 — freestanding standard refrigerator-freezers
 
-• 31 Ocak 2029 → ankastre, compact ve sandık tipi dondurucular
-• 31 Ocak 2030 → serbest duran standart buzdolabı-dondurucular
+Two formula changes matter for design and certification:
 
-Yeni denklemlerde iki detay öne çıkıyor:
+1. Icemaker is a factor, not a separate class. I = 1 adds 28 kWh/year.
+2. Transparent doors, door-in-door, and extra external doors use coefficient K (+10% / +6% / +2% per extra door).
 
-1) Buz makinesi ayrı sınıf değil. I = 1 ise +28 kWh/yıl.
-2) Şeffaf kapı, door-in-door ve ekstra dış kapılar K katsayısıyla hesaba katılıyor (%10 / %6 / kapı başına %2).
+Class-by-class dates, energy-use equations, and K tables are in the carousel.
 
-Yani hem daha sıkı kWh/yıl limitleri var, hem de kapı ve buz makinesi özellikleri artık standart formülün içinde.
-
-ABD pazarına çalışan tasarım, test ve belgelendirme ekiplerinin 2029 sınıflarını önce, 2030 hacimli modelleri peşinden planlaması gerekiyor.
-
-Kaynak: 10 CFR 430.32
+Source: 10 CFR 430.32
 
 #DOE #EnergyEfficiency #ApplianceStandards
 
 ---
 
-## Postu paylaşırken kullanılabilecek görsel notu
+## How to post the visuals
 
-LinkedIn’de en çok işe yarayan görsel: iki sütunlu basit bir takvim kartı.
+Option A — LinkedIn document (recommended)
+Upload `linkedin-assets/DOE_refrigerator_freezer_transition_carousel.pdf`. LinkedIn turns it into a swipeable carousel. Add the post text in the caption.
 
-Sol: 31 Ocak 2029 — Built-in / Compact / Chest freezer
-Sağ: 31 Ocak 2030 — Freestanding refrigerator-freezer
+Option B — Image carousel
+Attach the five PNGs in numbered order (01 → 05). Use 1080×1350; that ratio holds up in feed and on mobile.
 
-Alt satır: “I katsayısı (buz makinesi) + K katsayısı (kapı tipi)”
+Do not screenshot the eCFR pages for the post. These slides are built for feed readability; the regulation remains the source of truth.
 
 ---
 
-## Doğruluk notları (yorumlara hazırlık)
+## Fact-check notes (for comments)
 
-- Yürürlük, **üretim veya ABD’ye ithalat tarihi** ile bağlıdır; raftaki eski stok için ayrı bir “satış yasağı tarihi” bu kural metninde yok.
-- Limitler yıllık azami enerji kullanımı (kWh/yr); adjusted volume (AV) üzerinden hesaplanır.
-- K katsayıları 10 CFR 430.32 Tablo 3 (2029 sınıfları) ve Tablo 5 (2030 sınıfları) içinde.
-- 2029 ve 2030 tarihleri DOE’nin 17 Ocak 2024 Direct Final Rule’u ile konuldu; 13 Haziran 2024’te teyit edildi.
-- Tasarruf rakamı (%11 ve 5,6 quad) DOE’nin kural analizinden; “her model %11 daha verimli olacak” dememek daha doğru.
+- Compliance is tied to the date of manufacture or U.S. import, not to a separate sell-through ban in this section.
+- Limits are maximum annual energy use (kWh/yr) from adjusted volume (AV).
+- Door coefficients are Table 3 (2029 classes) and Table 5 (2030 classes) in 10 CFR 430.32.
+- The 2029/2030 dates come from DOE’s January 17, 2024 Direct Final Rule, confirmed June 13, 2024.
+- The ~11% / 5.6 quad figures are DOE’s national impact estimate, not a guarantee for every model.
+- Standards do not apply to refrigerators / refrigerator-freezers over 39 ft³ or freezers over 30 ft³.
