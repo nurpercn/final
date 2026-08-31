@@ -10,5 +10,6 @@ Safety Compliance Engineer (öncelik) ve PED Compliance Engineer ilanları için
 | `madeleine_cevap_ve_sonraki_adim.md` | HR cevabı, referanslar, g-num / g-fair |
 | `assessment_ve_feedback_hazirlik.md` | Test pratik + feedback görüşmesi soru bankası |
 | `son_gorusme_sonrasi_maas.md` | Skip-level bitti, maaş yok — bekleme kuralı, mailler, telefon metni |
+| `teklif_nasil_gelir.md` | Teklif hangi yolla gelir, sözleşmede ne olur, ne sorulur |
 
 Görüşme büyük ihtimalle İngilizce. Cevaplar ağızdan çıkacak şekilde yazıldı; ezberleme, sayıları ve hikâyeleri tut.
