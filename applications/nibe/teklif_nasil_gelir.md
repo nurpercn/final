@@ -66,6 +66,8 @@ Kalın teklif (istenen): yukarıdakiler + yıllık izin, kollektivavtal adı, em
 4. NIBE istihdam teklifini sisteme koyar; sen pasaport + sözleşme ile başvurursun.
 5. Karar gelmeden Markaryd’e taşınma / Vestel’den çıkış yok. İstifa, permit kararına bağlanır.
 
+Neden: NIBE’de işe permit olmadan başlamak yasak. Sözleşme de izne bağlı; karar gecikir veya reddedilirse NIBE maaş ödemez. Vestel’den o gün çıkarsan iki iş birden kaybedersin. Highly qualified, dosya tamsa karar çoğu zaman ~1 ay; eksik dosyada 2 ay+. Karar sonrası kart/biometri ve 8 haftalık ihbar var. İstifayı karar günü ver; başlangıç ~3–5 ay. NIBE bunu bilir.
+
 ## İnce vs kabul edilebilir
 
 **İnce:** sadece “48k, Markaryd, sözleşme yolda.” Telefon evet’i yeter sayma.
