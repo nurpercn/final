@@ -2,7 +2,7 @@
 
 Vize alındı. Hareket pazartesi. Bu, teklif mektubu değildir. Vestel’den çıkış 18 Eylül 2026’da oldu; yeni bir istifa yok. Çalışma izni ayrıca, sözleşme sonrası. Başlangıç ihbara değil, izne bağlı.
 
-Skip-level 31 Ağustos’ta bitti, maaş konuşulmadı. Fabrika günü kararı sahada bağlar: ekip, lab, hat, ve senin gerçekten taşınıp taşınmayacağın.
+Skip-level 31 Ağustos’ta bitti. Maaşı sonra sen sordun. Onlar rakam vermedi, soruyu sana çevirdi. Sen **55.000–60.000 SEK brüt/ay** dedin. Fabrika günü bu aralığı yeniden açma. Gün ekip, lab, hat ve taşınma kararını bağlar.
 
 ## Saat yetişir mi
 
@@ -87,23 +87,25 @@ CE cümlesi hatın önünde de aynı: kullanım → direktif → standart → bo
 
 ## Maaş ve teklif
 
-Rakamı sen açmazsın. Müdür ve mühendis bunu konuşmaz.
+Aralık zaten söylendi: **55.000–60.000 SEK brüt/ay.** Onu sen açtın, onlar cevap vermeyip sana sordular. Pazartesi aynı konuyu sen yeniden açma. Özür de dileme.
 
-Madeleine “what are your expectations?” derse tek sayı: **52.000 SEK brüt/ay.** Aralık gerekirse 50–55. Konuşmada taban 50. **48 altı kabul edilmez.**
-
-```
-I’m looking at around 52,000 kronor gross per month, depending on the full package — pension, relocation support, and how the work-permit process is handled. I’m flexible on the mix, but I need the overall terms to make the move to Markaryd sustainable.
-```
-
-Onlar rakam verirse masada imza yok.
+Madeleine veya bir başkası dönerse aynı aralık. 52 veya 55’in altı o odada söylenmez. Kendi verdiğin aralığın altına inmek, pazarlığı kendine karşı yapmaktır.
 
 ```
-Thank you. I would like a day to look at the full package. Please send the terms in writing.
+When we spoke earlier I gave a range of 55 to 60 thousand kronor gross per month. That still stands. It depends on the full package — pension, relocation support, and how the work permit is handled.
 ```
+
+Onlar rakam verirse masada evet veya hayır yok.
+
+```
+Thank you. That sits against the range I already shared, 55 to 60. I would like a day to look at the full package. Please send the terms in writing.
+```
+
+55’in altındaki yazılı teklifi evde okursun. Odada yeni, daha düşük bir sayı yok.
 
 Maaştan sonra yazılı olsun diye sor: tillsvidare ve deneme en fazla 6 ay; relocation’da kaç ay konut ve taşıma; izni kim yürütür, 2.200 SEK harcı kim öder; başlangıç izne bağlı, ihbar kalmadı; kollektivavtal ve ITP.
 
-48–49 gelirse 51–52’ye çek; 50 kabul edilebilir. 45–47 düşük. 53 ve üstü paketi okumaya değer. 50–52 ordinary permit bandıdır. Bunu masada tartışma.
+55–60 kendi aralığın. 55 ve üstü, paketi okumaya değer. 55’in altını odada pazarlık etme; yazılı gelsin, evde bak. Blue Card eşiğini masada tartışma.
 
 ## Vestel
 

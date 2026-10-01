@@ -39,13 +39,13 @@ Yer kalırsa: masam ofiste mi labda mı; İsveççe kursu var mı; ilk aylar kon
 
 ## Maaş o gün açılırsa
 
-Sen açma. Mühendis ve müdür masasında rakam yok. Madeleine veya “terms / offer” derse:
+Sen yeniden açma. Aralık zaten gitti: **55–60 bin SEK brüt.** Onlar sormadı, sen sordun; cevap vermeyip sana sordular. Özür yok. Madeleine dönerse:
 
 ```
-I’m looking at around 52,000 kronor gross per month, depending on the full package — pension, relocation support, and how the work-permit process is handled.
+When we spoke earlier I gave a range of 55 to 60 thousand kronor gross per month. That still stands. It depends on the full package — pension, relocation support, and how the work permit is handled.
 ```
 
-Hemen evet yok. “Please send it in writing. I’d like a day to read it.” 48 altını kabul etme. Vestel’den zaten ayrıldın; başlangıç izne bağlı, ihbar hesabı yok.
+52 veya 55’in altını odada söyleme. Hemen evet yok. “That sits against the range I already shared. Please send the terms in writing. I’d like a day to read them.” Yazılı teklif 55’in altındaysa kararı evde verirsin.
 
 ## Kapanış
 
