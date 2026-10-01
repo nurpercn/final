@@ -4,7 +4,7 @@
 
 **Rol:** Safety Compliance Engineer. PED denirse: “not a PED owner.”
 
-**Açılış (60 sn):** Vestel cooling, 100+ ülke, ~500 proje/yıl, ~5.000 kod, CE + IEC 60335. Kimya + bitmekte olan doktora. 100 ülke daha değil, derinlik: ısı pompası, Markaryd, fabrikanın yanında dosyayı kapatmak.
+**Açılış (60 sn):** Vestel soğutma, 100+ ülke, ~500 proje/yıl, ~5.000 kod, CE + IEC 60335. Son gün 18 Eylül 2026. Kimya + bitmekte olan doktora. 100 ülke daha değil, derinlik: ısı pompası, Markaryd, fabrikanın yanında dosyayı kapatmak.
 
 **Neden buradayım:** ürün gerçekten burada yapılıyor. Uyum işini çizimden hatta kadar görmek istiyorum. Vize çıktı, geldim.
 
@@ -12,7 +12,7 @@
 
 Bilmediğim standardı uydurmam. 60335-2-40’ı günlük sahiplenmedim; 2-24 ailesinden gelir, maddeleri ekiple çıkarırım. RED sahibi değilim. MD’de kapsam kararı vardır, uzmanlık iddiası yok. İsveççe yok, öğreneceğim. Taşınırım. Çalışma izni lazım.
 
-Vestel’i kötüleme. Ayrılık gerekçesi: iş teknik olarak iyiydi, organizasyon sürekli değişti.
+Vestel’i kötüleme. Ayrılık: yeniden yapılanma ve işgücü azaltımı, rol 18 Eylül’de bitti. Tazminat, isim ve iç detay yok. “Hâlâ Vestel’deyim” veya “8 hafta ihbar” yok; ihbar bitti. Başlangıç çalışma iznine bağlı.
 
 ## Turda bir cümle yeter
 
@@ -45,7 +45,7 @@ Sen açma. Mühendis ve müdür masasında rakam yok. Madeleine veya “terms / 
 I’m looking at around 52,000 kronor gross per month, depending on the full package — pension, relocation support, and how the work-permit process is handled.
 ```
 
-Hemen evet yok. “Please send it in writing. I’d like a day to read it.” 48 altını kabul etme. Vestel’den çıkış yok; ihbar 8 hafta, izin dahil gerçek başlangıç 3–5 ay.
+Hemen evet yok. “Please send it in writing. I’d like a day to read it.” 48 altını kabul etme. Vestel’den zaten ayrıldın; başlangıç izne bağlı, ihbar hesabı yok.
 
 ## Kapanış
 

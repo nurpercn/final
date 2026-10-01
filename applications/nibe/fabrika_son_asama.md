@@ -1,6 +1,6 @@
 # NIBE — fabrikaya gidiş (5 Ekim 2026)
 
-Vize alındı. Hareket pazartesi. Bu, teklif mektubu değildir. Vestel’den çıkış yok. Çalışma izni ayrıca, sözleşme sonrası.
+Vize alındı. Hareket pazartesi. Bu, teklif mektubu değildir. Vestel’den çıkış 18 Eylül 2026’da oldu; yeni bir istifa yok. Çalışma izni ayrıca, sözleşme sonrası. Başlangıç ihbara değil, izne bağlı.
 
 Skip-level 31 Ağustos’ta bitti, maaş konuşulmadı. Fabrika günü kararı sahada bağlar: ekip, lab, hat, ve senin gerçekten taşınıp taşınmayacağın.
 
@@ -22,7 +22,7 @@ Madeleine saat yazmadıysa bugün `fabrika_kabul_maili.md` gitsin. Saat pazartes
 2. Pasaportta vize etiketinin 5 Ekim’i ve dönüş gününü kapsadığını gör. Sigorta poliçesini telefona ve çıktı olarak al.
 3. Uçak NIBE’den geldiyse onu kullan. Kendin aldıysan kabin bagajına kıyafet koy; bavul gecikirse tur yedek ayakkabıyla olmaz.
 4. Kartını yurt dışı işleme aç. İsveç’te nakit gerekmez. Türkiye fişi İsveç’te çalışır (tip C/F).
-5. Vestel’e istifa yok. Bu izinle gidilen bir görüşmedir.
+5. Vestel’e dönük yeni bir istifa yok. Son çalışma günü 18 Eylül. Tazminat ve iç detay konuşulmaz.
 
 ## Yolda
 
@@ -76,9 +76,12 @@ Bir durak, bir gözlem, bir soru.
 - CE + IEC 60335; 2-24 var, 2-40 sahipliği yok
 - İngiltere: belirsiz kural, etiket ve stok, kesinti olmadan ~300.000 ürün
 - Çin: yanlış numune gitmedi, kayıt bitmeden üretim yok
+- Ayrılık: yeniden yapılanma ve işgücü azaltımı, 18 Eylül. Kısa. Kötüleme yok.
 - Zayıf nokta erken detaydı. Düzeltme: önce sonuç (sevk / sevk etme / seçenek)
 
-İddia etme: PED uzmanı, RED sahibi, MD uzmanı, laboratuvar teknisyeni, resmî Vestel müdürü, İsveççe.
+İddia etme: PED uzmanı, 60335-2-40’ı günlük sahiplendiğin, RED sahibi, Makine Yönetmeliği uzmanı, laboratuvar teknisyeni, resmî Vestel müdürü, İsveççe.
+
+Buzdolabı mevzuatını ısı pompasına taşıma. Senin standardın 60335-2-24 ve enerji tarafında 2019/2019 ile 2019/2016. NIBE hidronik ısı pompasında güvenlik 60335-2-40; ekotasarım hâlen 813/2013, etiket 811/2013 (A–G değil, eski A+++ skalası). F-gaz (EU) 2024/573. Makine Yönetmeliği 2023/1230, 20 Ocak 2027’de uygulanır. Bilmediğin maddeyi uydurma. Ayrıntı `NIBE_Hazirlik.docx` içinde.
 
 CE cümlesi hatın önünde de aynı: kullanım → direktif → standart → boşluk → test → uygunsuzluk kapanışı → teknik dosya → DoC → sevk → değişiklik kontrolü.
 
@@ -98,15 +101,15 @@ Onlar rakam verirse masada imza yok.
 Thank you. I would like a day to look at the full package. Please send the terms in writing.
 ```
 
-Maaştan sonra yazılı olsun diye sor: tillsvidare ve deneme en fazla 6 ay; relocation’da kaç ay konut ve taşıma; izni kim yürütür, 2.200 SEK harcı kim öder; başlangıç izin artı Vestel’de 8 hafta ihbar, yani 3–5 ay; kollektivavtal ve ITP.
+Maaştan sonra yazılı olsun diye sor: tillsvidare ve deneme en fazla 6 ay; relocation’da kaç ay konut ve taşıma; izni kim yürütür, 2.200 SEK harcı kim öder; başlangıç izne bağlı, ihbar kalmadı; kollektivavtal ve ITP.
 
 48–49 gelirse 51–52’ye çek; 50 kabul edilebilir. 45–47 düşük. 53 ve üstü paketi okumaya değer. 50–52 ordinary permit bandıdır. Bunu masada tartışma.
 
 ## Vestel
 
-İstifa, yazılı teklif ve çalışma izni kararına bağlı. İzin çıkmadan çıkış, iki tarafı da boş bırakabilir. NIBE izinsiz işbaşı yaptırmaz.
+Son çalışma günü 18 Eylül 2026. İhbar kalmadı. “Hâlâ çalışıyorum” veya “mevcut yöneticimi aramayın” cümlesi artık yanlış. Referans vereceksen, aranacak kişiye önce sen haber ver.
 
-Mevcut yönetici, sen izin verene kadar referans olarak aranmasın.
+NIBE izinsiz işbaşı yaptırmaz. Sözleşme de izne bağlı yazılır. İzin çıkmadan taşınma yok. Tazminat, dava ve isim konuşulmaz. Ayrılık cümlesi: yeniden yapılanma ve işgücü azaltımı, rol o dönemde bitti.
 
 ## Dönüş maili — aynı akşam
 
