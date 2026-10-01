@@ -1,12 +1,12 @@
 # Fabrika günü — tek sayfa
 
-Cebinde veya telefonda. Ezber konuşma değil.
+5 Ekim 2026 haftası, Markaryd. Cebinde dursun.
 
 **Rol:** Safety Compliance Engineer. PED denirse: “not a PED owner.”
 
 **Açılış (60 sn):** Vestel cooling, 100+ ülke, ~500 proje/yıl, ~5.000 kod, CE + IEC 60335. Kimya + bitmekte olan doktora. 100 ülke daha değil, derinlik: ısı pompası, Markaryd, fabrikanın yanında dosyayı kapatmak.
 
-**Neden buradayım:** ürün gerçekten burada yapılıyor. Uyum işini çizimden hatta kadar görmek istiyorum.
+**Neden buradayım:** ürün gerçekten burada yapılıyor. Uyum işini çizimden hatta kadar görmek istiyorum. Vize çıktı, geldim.
 
 ## Çizgi
 

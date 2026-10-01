@@ -1,27 +1,23 @@
-# Daveti yazıya bağla — bugün
+# Pazartesi teyidi — bugün gönder
 
-Telefonla çağırdılarsa bile tarih, adres, masraf ve vize mektubu mailde olsun. Bilet, mail gelmeden alınmaz.
+Vize çıktı. Gidiş **pazartesi 5 Ekim 2026**. Bu mail tarih sormaz; varışını ve hâlâ eksik olan üç şeyi kilitler: saat, adres, otel.
 
-Kime: Madeleine Johannesson, madeleine.johannesson@nibe.se. Seni arayan başkaysa ona; Madeleine’i Cc.
+Kime: Madeleine Johannesson, madeleine.johannesson@nibe.se. Seni arayan başkaysa ona, Madeleine Cc.
 
-Tarih net değilse köşeli yerleri sil, “which dates” cümlesini bırak. Tarih netse o cümleyi sil, günü yaz.
-
-**Subject:** Safety Compliance Engineer — visit to Markaryd
+**Subject:** Safety Compliance Engineer — travelling Monday 5 October
 
 ```
 Dear Madeleine,
 
-Thank you for the invitation to Markaryd. I would be glad to come for this last stage, and I remain very interested in the Safety Compliance Engineer role.
+My visa has been issued. I will travel on Monday 5 October for the visit to Markaryd, and I remain very interested in the Safety Compliance Engineer role.
 
-To arrange the trip from Turkey, could you confirm a few practical points:
+Could you confirm three points so I arrive at the right place:
 
-- The date, or which dates work on your side, and whether this is one day or an overnight stay
-- The agenda, and who I will meet
-- The visiting address and where I should report on arrival
-- Whether NIBE books the travel and hotel, or I book and you reimburse
-- A short invitation letter on NIBE letterhead (purpose, dates, Markaryd, your contact). I am a Turkish citizen, so a short business visit needs a Schengen visa unless my current visa already covers the dates
+- The time I should be there, and whether the conversations are on Monday or Tuesday morning
+- The visiting address, and who I should ask for at reception
+- The hotel if I stay overnight, and whether NIBE has booked it
 
-I can travel once the date leaves enough time for the visa, if a new one is required. Applications have to be filed at least 15 days before departure.
+I will be reachable on +90 554 428 9101.
 
 Kind regards,
 Nur Perçin
@@ -29,22 +25,16 @@ Nur Perçin
 nur.percin@hotmail.com
 ```
 
-“Salary”, “offer” ve “package” yok. Rol PED diye netleştiyse konu satırını değiştir.
+Maaş yok. Ajanda ve karşılamayı zaten yazdılarsa o maddeleri sil, sadece “I travel Monday 5 October and will be there at [saat]” kalsın.
 
-## Hâlâ telefondaysa
+## Görüşme pazartesi sabahıysa ve sen hâlâ Türkiye’deysen
 
-```
-Thank you, I would like to come. Could you send the date, the address, and who I will meet by email? I will also need a short invitation letter, because travel from Turkey may need a visa. And please confirm whether NIBE arranges the ticket and hotel.
-```
+İstanbul’dan pazartesi sabahı kalkış, aynı sabah Markaryd’e yetişmez. Uçuş yaklaşık dört saat, Kopenhag–Markaryd tren aktarmalı yaklaşık 2 saat 40 dakika. Sabah 08.00–09.00 randevu için **pazar akşamı** İsveç veya Kopenhag tarafında ol.
 
-Tarihi o an kabul etme, takvimi ve vizeyi görmeden. “I’ll confirm the date once I see it in the email.”
-
-## Tarih çok yakınsa
-
-15 günden az süre varsa vize yetişmez (geçerli vizen yoksa). Bunu saklama.
+Bunu görür görmez, aynı mailin sonuna ekle:
 
 ```
-I want to come. A new Schengen visa from Turkey needs the application at least 15 days before travel, plus an appointment. Could we set the visit after [tarih], so the visa can actually be issued?
+If the programme starts Monday morning, I will fly on Sunday instead, so I am in Markaryd on time. Please tell me the start time today if you can.
 ```
 
-Uydurma acil gerekçe yok. Konsolosluk, 15 günden geç başvuruyu kural olarak reddeder.
+Randevu salı sabahıysa pazartesi uçuş yeter. Pazartesi öğleden sonra başlıyorsa da pazartesi sabah uçuşu ancak erken kalkış ve hazır tren biletiyle yetişir; payın dar.
