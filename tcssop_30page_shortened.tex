@@ -161,8 +161,12 @@ their requirements are compatible
 Such applications are closely related to climatic-chamber operations because
 test feasibility depends on specialized testing resources and test-specific
 operating conditions.
-Nevertheless, the workload to be executed is essentially determined before
-the scheduling decisions are made.
+In these studies the set of test types, and therefore the number of
+operations, is given before scheduling.
+In the present problem the required test types of each product are also
+known, but the number of operations is not: pull-down is executed once per
+physical sample, so the sample-size decision changes both the upstream
+workload and the feasible downstream parallelism.
 
 Another closely related research stream considers {R\&D} testing in which
 expensive physical prototypes must be allocated among multiple tests.
@@ -223,7 +227,8 @@ and capacity-constrained testing resources.
 Thus, reliability test-planning models endogenize sample quantity but
 abstract from detailed resource scheduling, whereas industrial laboratory
 and prototype-test scheduling models represent operational execution in
-greater detail but largely begin from a predetermined testing workload.
+greater detail but take both the test types and the number of operations
+as given.
 
 The problem considered in this study connects these research streams through
 a different role of the sample-size decision.
@@ -246,12 +251,12 @@ This mechanism distinguishes the present setting from the individual
 research streams discussed above.
 Prototype-test scheduling models account for limited and costly physical
 test units and, in some cases, jointly determine their number or
-configuration, but the underlying portfolio of test operations remains
-predetermined.
+configuration, but the set of test types and the number of operations
+remain given.
 Industrial test-laboratory and thermal-test scheduling models capture
 heterogeneous resources, compatibility restrictions, and detailed execution
-constraints, but likewise treat the incoming testing workload as given or
-reorganize a predetermined set of testing tasks.
+constraints, but likewise treat both the test types and the number of
+operations as given.
 Reliability-test planning explicitly optimizes sample size, but does not
 represent the resulting detailed chamber-level execution.
 In the present problem, by contrast, sample allocation simultaneously
