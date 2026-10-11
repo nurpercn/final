@@ -496,42 +496,86 @@ The main notation used throughout the problem definition and solution approach i
 \section{Solution Methodology}
 \label{sec:solution_methodology}
 
-\subsection{Overall solution framework}
+\subsection{Overall Solution Framework}
+\label{subsec:framework}
 \label{subsec:overall_framework}
 
-The proposed method coordinates chamber-environment assignment, sample-size optimization, and feasible schedule construction within an iterative framework. These decisions are interdependent: sample counts determine part of the workload, chamber assignments determine compatible capacity by environment, and the scheduler evaluates the resulting operational performance under station, sample, and stage-based precedence constraints.
+The proposed method coordinates three decision blocks:
+chamber assignment, sample-size search, and feasible scheduling.
+For a sample vector \(\mathbf{s}=(s_p)_{p\in\mathcal{P}}\), each
+chamber is assigned a temperature--humidity environment, producing
+a configuration \(\mathbf{x}\).
+Under this configuration, sample sizes are improved by local search.
+Every candidate is decoded by an earliest-due-date (EDD)
+constructive scheduler, which returns a feasible schedule \(\Pi\)
+and the associated total tardiness \(T^{tot}\).
+If local search does not improve the incumbent, a variable
+neighborhood search (VNS) perturbs sample sizes and repeats the
+same local search.
+The inner procedures are specified in the following subsections;
+this subsection states only the outer coordination.
 
-The procedure starts from the baseline sample policy. At each outer iteration, chamber environments are assigned for the current sample vector, sample sizes are improved under the resulting chamber configuration, and the solution is evaluated by a feasible scheduling procedure. If the locally improved solution improves the incumbent under the lexicographic objective \((T^{tot},S^{tot})\), it becomes the new incumbent. Otherwise, a VNS diversification phase perturbs the incumbent sample vector and applies local improvement again. The search terminates when neither local improvement nor VNS produces a better solution.
-
-This iterative structure captures the feedback between sample decisions and chamber configuration. Changing sample counts alters the workload distribution across environments, especially through pull-down operations, and may therefore require a different chamber assignment. Conversely, a new chamber configuration can change which products benefit most from additional samples. The overall procedure is summarized in Algorithm~\ref{alg:overall_framework}.
+A candidate is compared with the incumbent by the lexicographic
+order
+\begin{equation}
+\label{eq:lex}
+(T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})
+\prec_{\mathrm{lex}}
+(T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})
+\end{equation}
+if it has a strictly smaller total tardiness, or the same total
+tardiness and a strictly smaller total sample count
+\(\mathbf{1}^{\mathsf{T}}\mathbf{s}\).
+The outer loop is required because a change in \(\mathbf{s}\)
+alters the environment-wise workload---in particular pull-down
+tests, which are executed once per sample---and may therefore
+justify a different assignment \(\mathbf{x}\).
+A new assignment, in turn, changes which products benefit from
+additional samples.
+Algorithm~\ref{alg:framework} states the resulting control logic.
 
 \begin{algorithm}[H]
-\caption{Overall Solution Framework for TCSSOP}
+\caption{Overall Solution Framework}
+\label{alg:framework}
 \label{alg:overall_framework}
 \begin{algorithmic}[1]
-\State \textbf{Input:} TCSSOP instance \((\mathcal{P},\mathcal{C},\mathcal{T},\mathcal{E})\)
-\State \textbf{Output:} Best solution \((X^{best},S^{best},\Pi^{best},Eval^{best})\)
-\State Initialize \(S^{current}\) using baseline sample policy.
-\State \((X^{best},S^{best},\Pi^{best},Eval^{best})\leftarrow(\emptyset,\emptyset,\emptyset,(+\infty,+\infty))\)
-\For{\(iter\leftarrow 1\) to \(I_{\max}\)}
-    \State \(X^{current}\leftarrow\) \Call{ChamberAssignmentWithLocalSearch}{\(S^{current}\)}
-    \State \((S^{local},\Pi^{local},Eval^{local})\leftarrow\) \Call{SampleSizeLocalSearch}{\(X^{current},S^{current}\)}
-    \If{\Call{Better}{\(Eval^{local},Eval^{best}\)}}
-        \State \((X^{best},S^{best},\Pi^{best},Eval^{best})\leftarrow(X^{current},S^{local},\Pi^{local},Eval^{local})\)
-        \State \((X^{current},S^{current})\leftarrow(X^{best},S^{best})\)
-        \State \textbf{continue}
-    \EndIf
-    \State \((S^{vns},\Pi^{vns},Eval^{vns},improved)\leftarrow\) \Call{VNSWithFixedFallback}{\(X^{best},S^{best},\Pi^{best},Eval^{best}\)}
-    \If{\(improved=true\)}
-        \State \((S^{best},\Pi^{best},Eval^{best})\leftarrow(S^{vns},\Pi^{vns},Eval^{vns})\)
-        \State \((X^{current},S^{current})\leftarrow(X^{best},S^{best})\)
+\State \textbf{Input:} instance data
+\State \textbf{Output:} \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State Set \(s_p\leftarrow s_{\min}\) for all \(p\in\mathcal{P}\); \(\mathbf{s}\leftarrow(s_p)_{p\in\mathcal{P}}\) \label{step:fw-init}
+\State \((\mathbf{x}_{inc},\mathbf{s}_{inc},T^{tot}_{inc})\leftarrow(\emptyset,\mathbf{s},+\infty)\)
+\For{\(i\leftarrow 1\) to \(I_{\max}\)}
+    \State \(\mathbf{x}\leftarrow\) \Call{ChamberAssignment}{\(\mathbf{s}\)} \label{step:fw-assign}
+    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\) \Call{SampleLocalSearch}{\(\mathbf{x},\mathbf{s}\)} \label{step:fw-ls}
+    \If{\((T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\prec_{\mathrm{lex}}(T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\)} \label{step:fw-lex}
+        \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+        \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
     \Else
-        \State \textbf{break}
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\) \Call{VNS}{\(\mathbf{x},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc}\)} \label{step:fw-vns}
+        \If{\((T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\prec_{\mathrm{lex}}(T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\)}
+            \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+            \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
+        \Else
+            \State \Return \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-stop}
+        \EndIf
     \EndIf
 \EndFor
-\State \Return \((X^{best},S^{best},\Pi^{best},Eval^{best})\)
+\State \Return \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 \end{algorithmic}
 \end{algorithm}
+
+The search starts from the minimum sample policy
+(Step~\ref{step:fw-init}).
+Each outer iteration assigns chambers to the current \(\mathbf{s}\)
+(Step~\ref{step:fw-assign}) and then applies sample-size local
+search under that assignment (Step~\ref{step:fw-ls}).
+If the resulting candidate is lexicographically better than the
+incumbent (Step~\ref{step:fw-lex}), it is accepted and the next
+iteration reassigns chambers to the updated sample vector.
+Otherwise VNS is called from the incumbent
+(Step~\ref{step:fw-vns}).
+The procedure stops when VNS fails to improve the incumbent
+(Step~\ref{step:fw-stop}) or when the iteration limit
+\(I_{\max}\) is reached.
 
 \subsection{Chamber assignment under environment constraints}
 \label{subsec:chamber_assignment}
