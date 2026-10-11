@@ -571,107 +571,147 @@ It also stops when the iteration limit \(I_{\max}\) is reached.
 \subsection{Chamber assignment under environment constraints}
 \label{subsec:chamber_assignment}
 
-For a fixed sample vector \(S\), this component assigns each chamber to one environment configuration. Since sample counts affect the workload generated in each environment, chamber assignment must be updated when \(S\) changes. The procedure has two layers: an exact workload-balancing assignment model and a schedule-aware local refinement phase.
+For a fixed sample vector \(\mathbf{s}\), this stage gives each
+chamber one temperature--humidity setting.
+The tests themselves are not assigned here; that is done later by
+the scheduler.
+Because pull-down work grows with \(\mathbf{s}\), the environment-wise
+load changes when the sample vector changes, so the outer framework
+recomputes the assignment whenever \(\mathbf{s}\) is updated.
 
-For each environment \(e\in\mathcal{E}\), total workload and voltage-sensitive workload are computed as
-\begin{align}
-W_e(S)
-&=
-\sum_{p\in\mathcal{P}}
+The total work of environment \(e\), \(W_e(\mathbf{s})\), is already
+defined in the problem statement: it sums \(m_{pt}(\mathbf{s})\tau_t\)
+over every required test that needs \(e\).
+Voltage-sensitive work is the same sum, restricted to the products
+that require a voltage-capable chamber,
+\(\mathcal{P}^v=\{p\in\mathcal{P}:\nu_p=1\}\):
+\begin{equation}
+\label{eq:workload_voltage}
+W_e^V(\mathbf{s})
+=
+\sum_{p\in\mathcal{P}^v}
 \sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
-m_{pt}(S)\tau_t, \label{eq:workload_total}\\
-W_e^V(S)
-&=
-\sum_{\substack{p\in\mathcal{P}\\\nu_p=1}}
-\sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
-m_{pt}(S)\tau_t, \label{eq:workload_voltage}
-\end{align}
-where
-\[
-m_{pt}(S)=
-\begin{cases}
-s_p, & \text{if test }t\text{ is executed for each sample of product }p,\\
-1, & \text{if test }t\text{ is executed once per product.}
-\end{cases}
-\]
-Let
-\[
-W^{tot}(S)=\sum_{e\in\mathcal{E}}W_e(S),
+m_{pt}(\mathbf{s})\tau_t.
+\end{equation}
+\(W_e^V(\mathbf{s})\) is part of \(W_e(\mathbf{s})\), not a second
+pile of jobs.
+Only environments with \(W_e(\mathbf{s})>0\) enter the model; we
+keep writing \(\mathcal{E}\) for that demanded set.
+Let \(M_c\) be the number of stations in chamber \(c\), and let
+\(M^{tot}\) and \(M^{V,tot}\) be the totals of all stations and of
+voltage-capable stations.
+The station targets are the workload shares of these two pools:
+\begin{equation}
+\label{eq:targets}
+T_e
+=
+\frac{W_e(\mathbf{s})}{\sum_{e'}W_{e'}(\mathbf{s})}\,M^{tot},
 \qquad
-W^{V,tot}(S)=\sum_{e\in\mathcal{E}}W_e^V(S).
-\]
-The workload shares are
-\[
-\phi_e=\frac{W_e(S)}{W^{tot}(S)},\qquad
-\phi_e^V=\frac{W_e^V(S)}{W^{V,tot}(S)},
-\]
-when the denominators are positive; otherwise the corresponding shares are set to zero. Let
-\[
-M^{tot}=\sum_{c\in\mathcal{C}}M_c,\qquad
-M^{V,tot}=\sum_{c\in\mathcal{C}}M_cv_c.
-\]
-The target capacities are
-\[
-T_e=\phi_e M^{tot},\qquad
-T_e^V=\phi_e^V M^{V,tot}.
-\]
-Thus, total workload targets are scaled by total station capacity, while voltage-sensitive targets are scaled by voltage-capable station capacity.
+T_e^V
+=
+\frac{W_e^V(\mathbf{s})}{\sum_{e'}W_{e'}^V(\mathbf{s})}\,M^{V,tot}.
+\end{equation}
+If an environment has no voltage-sensitive work, we set
+\(T_e^V=0\).
+Thus \(T_e\) asks for enough stations where the work is, and
+\(T_e^V\) asks for voltage-capable stations where the voltage work
+is.
+A voltage-requiring test is not treated as feasible on a
+non-voltage chamber: the scheduler will later refuse that assignment.
+The first target is only a coarse capacity guide; the second target
+is the correction for scarce voltage capacity.
 
-In this assignment model, \(\mathcal{E}\) denotes the set of environments required by the current test portfolio under sample vector \(S\), i.e.,
+The decision variables are as follows.
+The binary variable \(x_{ce}\) equals \(1\) if chamber \(c\) is
+set to environment \(e\).
+The assigned station counts are then
 \[
-\mathcal{E}(S)=\{e:W_e(S)>0\}.
+S_e=\sum_{c\in\mathcal{C}}M_cx_{ce},
+\qquad
+V_e=\sum_{c\in\mathcal{C}}M_cv_cx_{ce}.
 \]
-For notational simplicity, this set is denoted by \(\mathcal{E}\) in the assignment model.
-
-Let \(x_{ce}=1\) if chamber \(c\) is assigned to environment \(e\), and let \(\mathcal{E}^H\) be the set of humidity-controlled environments. The chamber assignment model is
+Nonnegative deviation variables \(z_e\) and \(z_e^V\) measure
+\(|S_e-T_e|\) and \(|V_e-T_e^V|\).
+The assignment model is
 \begin{align}
-\min\quad & \sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V \label{eq:assign_obj}\\
+\min\quad
+&
+\sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V
+\label{eq:assign_obj}\\
 \text{s.t.}\quad
-& \sum_{e\in\mathcal{E}}x_{ce}=1 && \forall c\in\mathcal{C}, \label{eq:assign_one_env}\\
-& \sum_{c\in\mathcal{C}}x_{ce}\ge 1 && \forall e\in\mathcal{E}, \label{eq:assign_cover}\\
-& \sum_{c\in\mathcal{C}}v_cx_{ce}\ge 1 && \forall e\in\mathcal{E}^{V}(S), \label{eq:assign_voltage_cover}\\
-& x_{ce}\le h_c && \forall c\in\mathcal{C},\ e\in\mathcal{E}^{H}, \label{eq:assign_humidity}\\
-& z_e\ge \sum_{c\in\mathcal{C}}M_cx_{ce}-T_e && \forall e\in\mathcal{E}, \label{eq:assign_total_dev_pos}\\
-& z_e\ge T_e-\sum_{c\in\mathcal{C}}M_cx_{ce} && \forall e\in\mathcal{E}, \label{eq:assign_total_dev_neg}\\
-& z_e^V\ge \sum_{c\in\mathcal{C}}M_cv_cx_{ce}-T_e^V && \forall e\in\mathcal{E}, \label{eq:assign_voltage_dev_pos}\\
-& z_e^V\ge T_e^V-\sum_{c\in\mathcal{C}}M_cv_cx_{ce} && \forall e\in\mathcal{E}, \label{eq:assign_voltage_dev_neg}\\
-& x_{ce}\in\{0,1\},\quad z_e,z_e^V\ge 0 && \forall c,e. \label{eq:assign_domains}
+&
+\sum_{e\in\mathcal{E}}x_{ce}=1
+&& \forall c\in\mathcal{C},
+\label{eq:assign_one}\\
+&
+\sum_{c\in\mathcal{C}}x_{ce}\ge 1
+&& \forall e\in\mathcal{E},
+\label{eq:assign_cover}\\
+&
+\sum_{c\in\mathcal{C}}v_cx_{ce}\ge 1
+&& \forall e\in\mathcal{E}:W_e^V(\mathbf{s})>0,
+\label{eq:assign_volt}\\
+&
+x_{ce}=0
+&& \text{if }e\text{ needs humidity and }h_c=0,
+\label{eq:assign_hum}\\
+&
+z_e\ge |S_e-T_e|,
+\quad
+z_e^V\ge |V_e-T_e^V|
+&& \forall e\in\mathcal{E},
+\label{eq:assign_dev}\\
+&
+x_{ce}\in\{0,1\},\quad z_e,z_e^V\ge 0.
+&&
+\label{eq:assign_dom}
 \end{align}
-The model assigns each chamber to one environment, ensures coverage of required environments, enforces humidity feasibility, and reserves voltage-capable capacity for environments with voltage-sensitive workload.
+Constraint~\eqref{eq:assign_one} puts each chamber in exactly one
+environment.
+Constraint~\eqref{eq:assign_cover} gives every demanded environment
+at least one chamber.
+Constraint~\eqref{eq:assign_volt} gives every environment that
+carries voltage-sensitive work at least one voltage-capable chamber.
+Constraint~\eqref{eq:assign_hum} blocks humidity-controlled
+settings on chambers that cannot hold humidity.
+The objective drives \(S_e\) toward \(T_e\) and \(V_e\) toward
+\(T_e^V\); it is a capacity proxy, not tardiness.
 
-The exact assignment is then refined by local search. Neighboring assignments are generated using load-guided swap and move operators. Chambers are first ranked according to their normalized workload under the current assignment. The swap operator exchanges environments between a highly loaded chamber and a lightly loaded chamber. The move operator reassigns a lightly loaded chamber to the environment of a highly loaded chamber. Candidate assignments are accepted only if they preserve environment coverage, humidity feasibility, and voltage feasibility. Feasible candidates are evaluated using the fast schedule-aware evaluation mode, and a first-improvement rule is applied: the first feasible neighbor that improves the current solution is accepted, and the neighborhood search continues from the updated assignment.
+The exact solution is then improved by a short local search.
+A swap exchanges the settings of a busy chamber and an idle
+chamber; a move gives an idle chamber the setting of a busy one.
+A neighbor is kept only if it still satisfies
+\eqref{eq:assign_one}--\eqref{eq:assign_hum}.
+The first neighbor that reduces the EDD tardiness of
+\(\mathbf{s}\) is accepted.
+Algorithm~\ref{alg:chamber_assignment} is the resulting procedure.
 
 \begin{algorithm}[H]
-\caption{Chamber Assignment with Local Refinement}
+\caption{ChamberAssignment}
 \label{alg:chamber_assignment}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Sample vector \(S\)
-\State \textbf{Output:} Chamber assignment \(X\)
-\State Build the demanded environment set \(\mathcal{E}\).
-\State Compute \(W_e(S)\), \(W_e^V(S)\), \(\phi_e\), \(\phi_e^V\), \(T_e\), and \(T_e^V\).
-\State \(X^0\leftarrow\) \Call{SolveExactAssignment}{\(\mathcal{C},\mathcal{E},T_e,T_e^V\)}
-\State \(X^{best}\leftarrow X^0\)
-\State \(Eval^{best}\leftarrow\) \Call{EvaluateFast}{\(X^{best},S\)}
-\State \(improved\leftarrow true\)
-\While{\(improved\)}
-    \State \(improved\leftarrow false\)
-    \State Rank chambers by normalized workload.
-    \State Generate candidate assignments using load-guided swap and move operators.
-    \For{each candidate assignment \(X^{cand}\)}
-        \If{\Call{Feasible}{\(X^{cand}\)}}
-            \State \(Eval^{cand}\leftarrow\) \Call{EvaluateFast}{\(X^{cand},S\)}
-            \If{\Call{Better}{\(Eval^{cand},Eval^{best}\)}}
-                \State \(X^{best}\leftarrow X^{cand}\)
-                \State \(Eval^{best}\leftarrow Eval^{cand}\)
-                \State \(improved\leftarrow true\)
-                \State \textbf{break}
-            \EndIf
-        \EndIf
-    \EndFor
-\EndWhile
-\State \Return \(X^{best}\)
+\State \textbf{Input:} sample vector \(\mathbf{s}\)
+\State \textbf{Output:} chamber assignment \(\mathbf{x}\)
+\State Compute \(W_e(\mathbf{s})\), \(W_e^V(\mathbf{s})\), \(T_e\), and \(T_e^V\) \label{step:ca-load}
+\State \(\mathbf{x}\leftarrow\) the optimal solution of \eqref{eq:assign_obj}--\eqref{eq:assign_dom} \label{step:ca-exact}
+\Repeat \label{step:ca-loop}
+    \State Try load-guided swaps and moves that stay feasible \label{step:ca-nbhd}
+    \If{a neighbor improves the EDD tardiness of \(\mathbf{s}\)} \label{step:ca-accept}
+        \State Replace \(\mathbf{x}\) by that neighbor
+    \EndIf
+\Until{no improving feasible neighbor remains} \label{step:ca-stop}
+\State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
+
+Step~\ref{step:ca-load} turns the current sample vector into
+workload and station targets.
+Step~\ref{step:ca-exact} solves the assignment model.
+Steps~\ref{step:ca-loop}--\ref{step:ca-accept} then adjust the
+map against the true schedule, because two assignments with the
+same \((S_e,V_e)\) can still differ in due-date performance.
+The search stops when a pass finds no improving neighbor
+(Step~\ref{step:ca-stop}).
 
 \subsection{Sample size optimization}
 \label{subsec:sample_optimization}
