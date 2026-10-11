@@ -686,7 +686,7 @@ does the chance of overlap.
 Which direction helps is not known in advance, so both are tried
 under the same assignment.
 
-The search never uses fewer than three samples per product.
+The search keeps every product between three and eleven samples.
 A single physical unit would place every test of that product on the
 same sample, so those tests cannot overlap, and a one-unit plan
 would give no replication across units.
@@ -694,8 +694,10 @@ The laboratory therefore treats several units as the minimum for a
 valid test plan.
 Three is the industrial baseline: the local search starts there and
 does not go below it.
-An upper bound \(s_{\max}\) only keeps the plan from using an
-unrealistic number of prototypes.
+At the other end, at most eleven tests of a product can run in
+parallel, so a twelfth sample cannot create additional concurrent
+work.
+The upper bound is therefore \(s_{\max}=11\).
 
 The neighborhood changes one product at a time by one or two
 samples, provided the new count stays between \(s_{\min}\) and
@@ -739,8 +741,7 @@ Algorithm~\ref{alg:sample_ls} states the procedure.
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ls-init} enforces the three-sample floor and the
-upper bound.
+Step~\ref{step:ls-init} enforces \(s_{\min}=3\) and \(s_{\max}=11\).
 Step~\ref{step:ls-eval} builds the EDD schedule of the current
 vector; this is the incumbent of the local search.
 Each pass (Step~\ref{step:ls-loop}) first tries the one-product
