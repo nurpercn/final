@@ -683,7 +683,7 @@ Algorithm~\ref{alg:sample_ls} states the procedure.
 \State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
 \State Restrict every \(s_p\) to \([s_{\min},s_{\max}]\) \label{step:ls-init}
 \State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
-\For{\(k\leftarrow 1\) to \(I_{\max}^{(2)}\)} \label{step:ls-loop}
+\Repeat \label{step:ls-loop}
     \For{each product \(p\in\mathcal{P}\)}
         \State Try changing \(s_p\) by one or two samples within the bounds \label{step:ls-nbhd}
         \If{the best of those trials improves the incumbent} \label{step:ls-accept}
@@ -695,10 +695,7 @@ Algorithm~\ref{alg:sample_ls} states the procedure.
     \If{the rebalance does not worsen the incumbent}
         \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
     \EndIf
-    \If{no move was accepted in this pass}
-        \State \Return \((\mathbf{s},\Pi,T^{tot})\) \label{step:ls-stop}
-    \EndIf
-\EndFor
+\Until{no move was accepted in this pass} \label{step:ls-stop}
 \State \Return \((\mathbf{s},\Pi,T^{tot})\)
 \end{algorithmic}
 \end{algorithm}
@@ -716,8 +713,7 @@ That move need only not worsen tardiness; the single-product moves
 must strictly improve the incumbent under the same rule as the outer
 framework.
 The search stops when a pass accepts nothing
-(Step~\ref{step:ls-stop}) or when the pass limit \(I_{\max}^{(2)}\)
-is reached.
+(Step~\ref{step:ls-stop}).
 
 \subsection{Scheduling and feasibility validation}
 \label{subsec:scheduling}
