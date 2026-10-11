@@ -1,0 +1,83 @@
+\subsection{Sample size optimization}
+\label{subsec:sample_optimization}
+
+For a fixed chamber assignment \(\mathbf{x}\), this stage changes the
+sample vector \(\mathbf{s}\).
+An extra sample adds one pull-down operation but can let later tests
+of that product run in parallel.
+Removing a sample does the opposite: pull-down work falls, and so
+does the chance of overlap.
+Which direction helps is not known in advance, so both are tried
+under the same assignment.
+
+The search never uses fewer than three samples per product.
+A single physical unit would place every test of that product on the
+same sample, so those tests cannot overlap, and a one-unit plan
+would give no replication across units.
+The laboratory therefore treats several units as the minimum for a
+valid test plan.
+Three is the industrial baseline: the local search starts there and
+does not go below it.
+An upper bound \(s_{\max}\) only keeps the plan from using an
+unrealistic number of prototypes.
+
+The neighborhood changes one product at a time by one or two
+samples, provided the new count stays between \(s_{\min}\) and
+\(s_{\max}\).
+For each product the improving trial with the best tardiness---or,
+when tardiness is equal, the smaller sample count---is kept.
+After this single-product pass, a Late--Early Rebalance pairs late
+products, ordered by decreasing tardiness, with early products,
+ordered by decreasing slack, up to \(K_{\mathrm{reb}}\) pairs.
+Each pair moves one sample from an early product to a late product
+without leaving the bounds.
+The paired move is accepted if total tardiness does not increase;
+when tardiness is unchanged, the total number of samples must not
+increase.
+Every trial is decoded by the same earliest-due-date (EDD)
+scheduler used in the outer framework.
+Algorithm~\ref{alg:sample_ls} states the procedure.
+
+\begin{algorithm}[H]
+\caption{Sample Size Optimization}
+\label{alg:sample_ls}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\State Restrict every \(s_p\) to \([s_{\min},s_{\max}]\) \label{step:ls-init}
+\State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
+\For{\(k\leftarrow 1\) to \(I_{\max}^{(2)}\)} \label{step:ls-loop}
+    \For{each product \(p\in\mathcal{P}\)}
+        \State Try changing \(s_p\) by one or two samples within the bounds \label{step:ls-nbhd}
+        \If{the best of those trials improves the incumbent} \label{step:ls-accept}
+            \State Update \(s_p\) and set \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\)
+        \EndIf
+    \EndFor
+    \State \(\mathbf{s}_{reb}\leftarrow\text{LateEarlyRebalance}(\mathbf{s},K_{\mathrm{reb}})\) \label{step:ls-reb}
+    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
+    \If{the rebalance does not worsen the incumbent}
+        \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
+    \EndIf
+    \If{no move was accepted in this pass}
+        \State \Return \((\mathbf{s},\Pi,T^{tot})\) \label{step:ls-stop}
+    \EndIf
+\EndFor
+\State \Return \((\mathbf{s},\Pi,T^{tot})\)
+\end{algorithmic}
+\end{algorithm}
+
+Step~\ref{step:ls-init} enforces the three-sample floor and the
+upper bound.
+Step~\ref{step:ls-eval} builds the EDD schedule of the current
+vector; this is the incumbent of the local search.
+Each pass (Step~\ref{step:ls-loop}) first tries the one-product
+moves (Step~\ref{step:ls-nbhd}) and accepts a product's best
+improving trial (Step~\ref{step:ls-accept}).
+Step~\ref{step:ls-reb} then shifts one sample from an early product
+to a late product.
+That move need only not worsen tardiness; the single-product moves
+must strictly improve the incumbent under the same rule as the outer
+framework.
+The search stops when a pass accepts nothing
+(Step~\ref{step:ls-stop}) or when the pass limit \(I_{\max}^{(2)}\)
+is reached.

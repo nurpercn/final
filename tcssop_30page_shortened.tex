@@ -634,48 +634,90 @@ The exact assignment model alone cannot represent all detailed scheduling intera
 
 The exact model provides a balanced starting point, while the local refinement step incorporates scheduling-aware information that is not represented in the aggregate workload objective. In particular, two assignments with similar environment-level capacity deviations can produce different completion times because the detailed scheduler also sees due dates, release times, and sample conflicts. The local phase therefore acts as a bridge between aggregate chamber planning and detailed operational scheduling.
 
-\subsection{Sample-size local search}
+\subsection{Sample size optimization}
 \label{subsec:sample_optimization}
 
-Given chamber assignment \(X\), local search explores product-level sample changes. For each product \(p\), the neighborhood is
-\[
-\Delta_p \subseteq \{-2,-1,+1,+2\}
-\]
-subject to sample bounds. Candidate vectors are first screened by fast schedule-aware evaluation. If a move improves the lexicographic objective, the full scheduler is executed to obtain the exact schedule and objective value.
+For a fixed chamber assignment \(\mathbf{x}\), this stage changes the
+sample vector \(\mathbf{s}\).
+An extra sample adds one pull-down operation but can let later tests
+of that product run in parallel.
+Removing a sample does the opposite: pull-down work falls, and so
+does the chance of overlap.
+Which direction helps is not known in advance, so both are tried
+under the same assignment.
 
-Both increasing and decreasing sample counts are considered. Increasing a sample count may improve a tardy product by enabling more downstream parallelism. Decreasing a sample count may reduce congestion caused by pull-down operations and may also reduce the secondary objective when tardiness is unchanged. The local search therefore does not impose a monotone preference for more or fewer samples; it evaluates both directions according to their scheduling effect.
+The search never uses fewer than three samples per product.
+A single physical unit would place every test of that product on the
+same sample, so those tests cannot overlap, and a one-unit plan
+would give no replication across units.
+The laboratory therefore treats several units as the minimum for a
+valid test plan.
+Three is the industrial baseline: the local search starts there and
+does not go below it.
+An upper bound \(s_{\max}\) only keeps the plan from using an
+unrealistic number of prototypes.
 
-A Late--Early Rebalance operator is also used. Products with positive tardiness are paired with products having earliness slack. For each pair, one sample is added to the late product and one sample is removed from the early product, subject to bounds. The paired move is accepted if total tardiness does not worsen and, under equal tardiness, total sample usage does not increase.
-
-The rebalance operator is designed to capture coordinated moves that a single-product neighborhood may miss. A late product may need one additional sample, but adding that sample alone increases total pull-down workload. Pairing it with a reduction on an early product can preserve or reduce total sample usage while redistributing parallelization potential toward more urgent projects.
+The neighborhood changes one product at a time by one or two
+samples, provided the new count stays between \(s_{\min}\) and
+\(s_{\max}\).
+For each product the improving trial with the best tardiness---or,
+when tardiness is equal, the smaller sample count---is kept.
+After this single-product pass, a Late--Early Rebalance pairs late
+products, ordered by decreasing tardiness, with early products,
+ordered by decreasing slack, up to \(K_{\mathrm{reb}}\) pairs.
+Each pair moves one sample from an early product to a late product
+without leaving the bounds.
+The paired move is accepted if total tardiness does not increase;
+when tardiness is unchanged, the total number of samples must not
+increase.
+Every trial is decoded by the same earliest-due-date (EDD)
+scheduler used in the outer framework.
+Algorithm~\ref{alg:sample_ls} states the procedure.
 
 \begin{algorithm}[H]
-\caption{Sample-size local search}
+\caption{Sample Size Optimization}
+\label{alg:sample_ls}
 \label{alg:sample_ls_short}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Chamber assignment \(X\), sample vector \(S\)
-\State Clamp all sample values to \([s_{\min},s_{\max}]\).
-\State Construct an initial schedule \(\Pi\) and evaluation \(Eval\).
-\Repeat
-    \State \(improved\leftarrow false\)
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\State Restrict every \(s_p\) to \([s_{\min},s_{\max}]\) \label{step:ls-init}
+\State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
+\For{\(k\leftarrow 1\) to \(I_{\max}^{(2)}\)} \label{step:ls-loop}
     \For{each product \(p\in\mathcal{P}\)}
-        \State Define feasible moves \(\Delta_p\subseteq\{-2,-1,+1,+2\}\).
-        \State Screen all \(s_p+\delta\), \(\delta\in\Delta_p\), using fast evaluation.
-        \If{the best screened move improves the incumbent}
-            \State Apply the move, construct the full schedule, and update \(Eval\).
-            \State \(improved\leftarrow true\)
+        \State Try changing \(s_p\) by one or two samples within the bounds \label{step:ls-nbhd}
+        \If{the best of those trials improves the incumbent} \label{step:ls-accept}
+            \State Update \(s_p\) and set \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\)
         \EndIf
     \EndFor
-    \State Apply the Late--Early Rebalance operator.
-    \If{the rebalance solution is accepted}
-        \State Update \(S\), \(\Pi\), and \(Eval\); set \(improved\leftarrow true\).
+    \State \(\mathbf{s}_{reb}\leftarrow\text{LateEarlyRebalance}(\mathbf{s},K_{\mathrm{reb}})\) \label{step:ls-reb}
+    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
+    \If{the rebalance does not worsen the incumbent}
+        \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
     \EndIf
-\Until{\(improved=false\) or the pass limit is reached}
-\State \Return \((S,\Pi,Eval)\)
+    \If{no move was accepted in this pass}
+        \State \Return \((\mathbf{s},\Pi,T^{tot})\) \label{step:ls-stop}
+    \EndIf
+\EndFor
+\State \Return \((\mathbf{s},\Pi,T^{tot})\)
 \end{algorithmic}
 \end{algorithm}
 
-The fast evaluation is used only for screening. Accepted solutions are always re-evaluated by the full scheduler, which prevents the local search from accepting solutions that look attractive under an aggregate proxy but are infeasible or weak under detailed station and sample constraints. This two-level evaluation structure reduces computational effort while preserving consistency in final objective comparisons.
+Step~\ref{step:ls-init} enforces the three-sample floor and the
+upper bound.
+Step~\ref{step:ls-eval} builds the EDD schedule of the current
+vector; this is the incumbent of the local search.
+Each pass (Step~\ref{step:ls-loop}) first tries the one-product
+moves (Step~\ref{step:ls-nbhd}) and accepts a product's best
+improving trial (Step~\ref{step:ls-accept}).
+Step~\ref{step:ls-reb} then shifts one sample from an early product
+to a late product.
+That move need only not worsen tardiness; the single-product moves
+must strictly improve the incumbent under the same rule as the outer
+framework.
+The search stops when a pass accepts nothing
+(Step~\ref{step:ls-stop}) or when the pass limit \(I_{\max}^{(2)}\)
+is reached.
 
 \subsection{Scheduling and feasibility validation}
 \label{subsec:scheduling}
