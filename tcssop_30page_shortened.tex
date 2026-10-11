@@ -530,7 +530,7 @@ the inner procedures are developed in the following subsections.
 \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\emptyset,\mathbf{s},\emptyset,+\infty)\)
 \For{\(i\leftarrow 1\) to \(I_{\max}\)}
     \State \(\mathbf{x}\leftarrow\text{ChamberAssignment}(\mathbf{s})\) \label{step:fw-assign}
-    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{SampleLocalSearch}(\mathbf{x},\mathbf{s})\) \label{step:fw-ls}
+    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s})\) \label{step:fw-ls}
     \If{\((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\) improves the incumbent} \label{step:fw-lex}
         \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
@@ -675,7 +675,7 @@ scheduler used in the outer framework.
 Algorithm~\ref{alg:sample_ls} states the procedure.
 
 \begin{algorithm}[H]
-\caption{Sample Size Optimization}
+\caption{SampleSizeLocalSearch}
 \label{alg:sample_ls}
 \label{alg:sample_ls_short}
 \begin{algorithmic}[1]
