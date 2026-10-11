@@ -512,28 +512,8 @@ is currently allocated across environments.
 The search therefore alternates between assigning chambers to a given
 sample vector and improving that sample vector under a fixed
 assignment.
-
-We start from the minimum feasible sample count for every product.
-At each outer iteration the chambers are first assigned so that the
-available station capacity follows the environment-wise workload
-implied by the current samples.
-Sample sizes are then adjusted by local search.
-Every candidate is evaluated by constructing a feasible schedule with
-an earliest-due-date (EDD) rule and reading off the resulting total
-tardiness.
-As already stated in the problem definition, a candidate replaces the
-incumbent only if it reduces total tardiness, or if tardiness is
-unchanged and fewer samples are used.
-When local search cannot improve the incumbent, the sample vector is
-perturbed by variable neighborhood search (VNS) and the same local
-search is applied again.
-After any accepted change the procedure returns to chamber
-assignment, because the workload shares that justified the previous
-assignment are no longer valid.
-The search stops when VNS also fails to improve the incumbent, or
-when a prescribed iteration limit is reached.
-The inner procedures are developed in the following subsections;
-Algorithm~\ref{alg:framework} records only this outer coordination.
+Algorithm~\ref{alg:framework} records this outer coordination;
+the inner procedures are developed in the following subsections.
 
 \begin{algorithm}[H]
 \caption{Overall Solution Framework}
@@ -564,18 +544,28 @@ Algorithm~\ref{alg:framework} records only this outer coordination.
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:fw-init} starts the search at the industrial minimum
-sample policy.
-Steps~\ref{step:fw-assign}--\ref{step:fw-lex} are the regular
-iteration: chambers are fitted to the current samples, the samples
-are then improved under that fit, and an improving candidate is
-accepted.
-VNS (Step~\ref{step:fw-vns}) is used only when this regular
-iteration fails.
-The method then either restarts chamber assignment from the
-diversified samples or terminates (Step~\ref{step:fw-stop}).
-Throughout, the quality of a candidate is the tardiness of the EDD
-schedule, with total sample count used only to break ties.
+We start from the minimum feasible sample count for every product
+(Step~\ref{step:fw-init}).
+At each outer iteration the chambers are first assigned so that the
+available station capacity follows the environment-wise workload
+implied by the current samples (Step~\ref{step:fw-assign}).
+Sample sizes are then adjusted by local search
+(Step~\ref{step:fw-ls}).
+Every candidate is evaluated by constructing a feasible schedule with
+an earliest-due-date (EDD) rule and reading off the resulting total
+tardiness.
+As already stated in the problem definition, a candidate replaces the
+incumbent only if it reduces total tardiness, or if tardiness is
+unchanged and fewer samples are used (Step~\ref{step:fw-lex}).
+When local search cannot improve the incumbent, the sample vector is
+perturbed by variable neighborhood search (VNS) and the same local
+search is applied again (Step~\ref{step:fw-vns}).
+After any accepted change the procedure returns to chamber
+assignment, because the workload shares that justified the previous
+assignment are no longer valid.
+The search stops when VNS also fails to improve the incumbent
+(Step~\ref{step:fw-stop}), or when a prescribed iteration limit is
+reached.
 
 \subsection{Chamber assignment under environment constraints}
 \label{subsec:chamber_assignment}
