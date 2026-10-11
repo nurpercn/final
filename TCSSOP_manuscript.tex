@@ -577,12 +577,9 @@ Tests are assigned later by the scheduler.
 Pull-down work scales with \(\mathbf{s}\), so the assignment is
 recomputed whenever the sample vector changes.
 
-The workload \(W_e(\mathbf{s})\) of the problem statement is the
-total processing time of every required test that needs
-environment \(e\).
-Voltage-sensitive work is the same sum, taken only over the
-products that require a voltage-capable chamber,
-\(\mathcal{P}^v=\{p\in\mathcal{P}:\nu_p=1\}\):
+Let \(\mathcal{P}^v=\{p\in\mathcal{P}:\nu_p=1\}\).
+The workload \(W_e(\mathbf{s})\) is already defined; voltage-sensitive
+work is the same sum over \(\mathcal{P}^v\) only:
 \begin{equation}
 \label{eq:workload_voltage}
 W_e^V(\mathbf{s})
@@ -591,12 +588,9 @@ W_e^V(\mathbf{s})
 \sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
 m_{pt}(\mathbf{s})\tau_t.
 \end{equation}
-Only environments with \(W_e(\mathbf{s})>0\) enter the model.
-Chamber \(c\) has \(M_c\) stations; \(M^{tot}\) and
-\(M^{V,tot}\) are the totals of all stations and of
-voltage-capable stations.
-The two loads are turned into station targets by sharing each
-pool in proportion to its work:
+Only environments with \(W_e(\mathbf{s})>0\) are used below.
+With \(M^{tot}=\sum_{c\in\mathcal{C}}M_c\) and
+\(M^{V,tot}=\sum_{c\in\mathcal{C}}M_cv_c\),
 \begin{equation}
 \label{eq:targets}
 T_e
@@ -605,21 +599,10 @@ T_e
 \qquad
 T_e^V
 =
-\frac{W_e^V(\mathbf{s})}{\sum_{e'}W_{e'}^V(\mathbf{s})}\,M^{V,tot}.
+\frac{W_e^V(\mathbf{s})}{\sum_{e'}W_{e'}^V(\mathbf{s})}\,M^{V,tot},
 \end{equation}
-If \(W_e^V(\mathbf{s})=0\), we set \(T_e^V=0\).
-
-The decision variables are the assignment
-\(x_{ce}\in\{0,1\}\), equal to \(1\) when chamber \(c\) is set to
-environment \(e\); the resulting station counts
-\(S_e=\sum_{c\in\mathcal{C}}M_cx_{ce}\) and
-\(V_e=\sum_{c\in\mathcal{C}}M_cv_cx_{ce}\); and the deviations
-\(z_e,z_e^V\ge 0\).
-Each chamber takes one environment, every demanded environment
-receives at least one chamber, every environment with
-\(W_e^V(\mathbf{s})>0\) receives at least one voltage-capable
-chamber, and a humidity setting is forbidden when \(h_c=0\).
-The objective is the total deviation from the two targets:
+and \(T_e^V=0\) whenever \(W_e^V(\mathbf{s})=0\).
+The assignment model is
 \begin{align}
 \min\quad
 &
@@ -643,22 +626,43 @@ x_{ce}=0
 && \text{if }e\text{ needs humidity and }h_c=0,
 \label{eq:assign_hum}\\
 &
+S_e=\sum_{c\in\mathcal{C}}M_cx_{ce},
+\quad
+V_e=\sum_{c\in\mathcal{C}}M_cv_cx_{ce}
+&& \forall e\in\mathcal{E},
+\label{eq:assign_counts}\\
+&
 z_e\ge |S_e-T_e|,
 \quad
 z_e^V\ge |V_e-T_e^V|
 && \forall e\in\mathcal{E},
 \label{eq:assign_dev}\\
 &
-x_{ce}\in\{0,1\},\quad z_e,z_e^V\ge 0.
+x_{ce}\in\{0,1\},\quad S_e,V_e,z_e,z_e^V\ge 0.
 &&
 \label{eq:assign_dom}
 \end{align}
 
-A short local search then adjusts \(\mathbf{x}\).
-A swap exchanges the settings of a busy chamber and an idle
-chamber; a move copies a busy setting onto an idle chamber.
-The first feasible neighbor that reduces the EDD tardiness of
-\(\mathbf{s}\) is accepted.
+The integer program matches station counts to \((T_e,T_e^V)\).
+Tardiness is corrected afterwards.
+Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) and
+let \(B_c\) be the total processing time placed in chamber \(c\) by
+\(\Pi\). The load of chamber \(c\) is
+\begin{equation}
+\label{eq:chamber_load}
+\lambda_c=\frac{B_c}{M_c}.
+\end{equation}
+A swap \(\mathbf{x}^{c\leftrightarrow c'}\) exchanges the
+environments of \(c\) and \(c'\) when
+\(\lambda_c>\lambda_{c'}\) and both chambers can hold the other's
+setting.
+A move \(\mathbf{x}^{c\rightarrow c'}\) copies the environment of
+the heavier chamber onto the lighter one.
+Both maps are kept only if they satisfy
+\eqref{eq:assign_one}--\eqref{eq:assign_hum}.
+Pairs are scanned from the largest \(\lambda_c\) to the smallest;
+the first neighbor with a strictly smaller \(T^{tot}\) is accepted.
+Swap is tried first; move is used only when no swap improves.
 Algorithm~\ref{alg:chamber_assignment} is the procedure.
 
 \begin{algorithm}[H]
@@ -670,8 +674,12 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 \State Compute \(W_e(\mathbf{s})\), \(W_e^V(\mathbf{s})\), \(T_e\), and \(T_e^V\) \label{step:ca-load}
 \State \(\mathbf{x}\leftarrow\) the optimal solution of \eqref{eq:assign_obj}--\eqref{eq:assign_dom} \label{step:ca-exact}
 \Repeat \label{step:ca-loop}
-    \State Try load-guided swaps and moves that stay feasible \label{step:ca-nbhd}
-    \If{a neighbor improves the EDD tardiness of \(\mathbf{s}\)} \label{step:ca-accept}
+    \State Compute \(\lambda_c\) from \(\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ca-loadrank}
+    \State Try swaps \(\mathbf{x}^{c\leftrightarrow c'}\) on pairs with \(\lambda_c>\lambda_{c'}\) \label{step:ca-nbhd}
+    \If{no improving swap}
+        \State Try moves \(\mathbf{x}^{c\rightarrow c'}\) on the same pairs
+    \EndIf
+    \If{a neighbor improves \(T^{tot}\)} \label{step:ca-accept}
         \State Replace \(\mathbf{x}\) by that neighbor
     \EndIf
 \Until{no improving feasible neighbor remains} \label{step:ca-stop}
@@ -681,9 +689,11 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 
 Step~\ref{step:ca-load} forms the loads and the targets.
 Step~\ref{step:ca-exact} solves the assignment model.
-Steps~\ref{step:ca-loop}--\ref{step:ca-accept} accept the first
-feasible neighbor that improves tardiness, and stop when a pass
-finds none (Step~\ref{step:ca-stop}).
+Step~\ref{step:ca-loadrank} ranks chambers by
+\eqref{eq:chamber_load}.
+Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first
+feasible heaviest--lightest swap, or move, that reduces tardiness,
+and stop when a pass finds none (Step~\ref{step:ca-stop}).
 
 \subsection{Sample size optimization}
 \label{subsec:sample_optimization}
