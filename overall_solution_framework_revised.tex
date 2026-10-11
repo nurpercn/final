@@ -23,17 +23,17 @@ the inner procedures are developed in the following subsections.
 \State \textbf{Input:} instance data
 \State \textbf{Output:} \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 \State Set \(s_p\leftarrow s_{\min}\) for all \(p\in\mathcal{P}\); \(\mathbf{s}\leftarrow(s_p)_{p\in\mathcal{P}}\) \label{step:fw-init}
-\State Initialize the incumbent with \(T^{tot}_{inc}=+\infty\)
+\State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\emptyset,\mathbf{s},\emptyset,+\infty)\)
 \For{\(i\leftarrow 1\) to \(I_{\max}\)}
-    \State \(\mathbf{x}\leftarrow\) \Call{ChamberAssignment}{\(\mathbf{s}\)} \label{step:fw-assign}
-    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\) \Call{SampleLocalSearch}{\(\mathbf{x},\mathbf{s}\)} \label{step:fw-ls}
-    \If{the candidate improves the incumbent} \label{step:fw-lex}
+    \State \(\mathbf{x}\leftarrow\text{ChamberAssignment}(\mathbf{s})\) \label{step:fw-assign}
+    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{SampleLocalSearch}(\mathbf{x},\mathbf{s})\) \label{step:fw-ls}
+    \If{\((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\) improves the incumbent} \label{step:fw-lex}
         \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
     \Else
-        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\) \Call{VNS}{\(\mathbf{x},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc}\)} \label{step:fw-vns}
-        \If{the VNS candidate improves the incumbent}
-            \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{VNS}(\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-vns}
+        \If{\((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\) improves the incumbent}
+            \State \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
             \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
         \Else
             \State \Return \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-stop}
