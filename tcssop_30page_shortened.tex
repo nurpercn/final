@@ -550,26 +550,28 @@ the inner procedures are developed in the following subsections.
 
 We start from the minimum feasible sample count for every product
 (Step~\ref{step:fw-init}).
-At each outer iteration the chambers are first assigned so that the
-available station capacity follows the environment-wise workload
-implied by the current samples (Step~\ref{step:fw-assign}).
-Sample sizes are then adjusted by local search
+At each outer iteration the chambers are first assigned to the
+current sample vector (Step~\ref{step:fw-assign}).
+Sample sizes are then improved by local search under this assignment
 (Step~\ref{step:fw-ls}).
-Every candidate is evaluated by constructing a feasible schedule with
-an earliest-due-date (EDD) rule and reading off the resulting total
+That procedure evaluates each trial by an earliest-due-date (EDD)
+schedule and returns the resulting sample vector, schedule, and total
 tardiness.
 As already stated in the problem definition, a candidate replaces the
-incumbent only if it reduces total tardiness, or if tardiness is
-unchanged and fewer samples are used (Step~\ref{step:fw-lex}).
-When local search cannot improve the incumbent, the sample vector is
-perturbed by variable neighborhood search (VNS) and the same local
-search is applied again (Step~\ref{step:fw-vns}).
-After any accepted change the procedure returns to chamber
-assignment, because the workload shares that justified the previous
-assignment are no longer valid.
-The search stops when VNS also fails to improve the incumbent
-(Step~\ref{step:fw-stop}), or when a prescribed iteration limit is
-reached.
+incumbent if it reduces total tardiness, or if tardiness is unchanged
+and fewer samples are used (Step~\ref{step:fw-lex}).
+The search then continues from the accepted samples, so the next
+iteration reassigns the chambers.
+If local search does not improve the incumbent, VNS is applied to
+the incumbent
+\((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+(Step~\ref{step:fw-vns}): it perturbs the sample vector and repeats
+the same local search under the incumbent assignment.
+If that candidate improves the incumbent, only the incumbent
+samples, schedule, and tardiness are replaced; the next iteration
+reassigns the chambers to the new samples.
+Otherwise the search stops (Step~\ref{step:fw-stop}).
+It also stops when the iteration limit \(I_{\max}\) is reached.
 
 \subsection{Chamber assignment}
 \label{subsec:chamber_assignment}
