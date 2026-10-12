@@ -798,44 +798,111 @@ framework.
 The search stops when a pass accepts nothing
 (Step~\ref{step:ls-stop}).
 
-\subsection{Scheduling and feasibility validation}
+\subsection{Scheduling procedure}
+\label{subsec:scheduling_procedure}
 \label{subsec:scheduling}
 
-For fixed \(X\) and \(S\), schedules are constructed using an earliest-due-date (EDD) ready-set rule. Candidate jobs are generated project-wise from the current stage state, sample availability, and earliest feasible station time. The best ready job of each product enters a global candidate pool, and the next job is selected by due date, with earliest feasible start time as a tie-breaker. Constructive heuristics of this type are particularly attractive for unrelated parallel-machine problems with eligibility and due-date pressure, where repeated decoding must remain computationally light \citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019}.
+We represent the chamber settings determined by MIP-CCD(\(\mathbf{s}\))
+by \(\mathbf{x}\) and the sample-size vector by \(\mathbf{s}\).
+An integral component of the proposed solution approach is to
+evaluate the quality of a solution.
+We need the total tardiness of a given pair
+\((\mathbf{x},\mathbf{s})\).
+For that purpose we use an earliest-due-date (EDD) constructive
+scheduler, called \(\mathrm{Schedule}\) in the outer framework,
+that assigns tests to stations.
+Such constructive heuristics are particularly attractive for
+unrelated parallel-machine problems with eligibility constraints
+and due-date pressure, where repeated implementation must remain
+computationally efficient
+\citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019,WangHeKerkhoveVanhoucke2017}.
 
-The scheduler is constructive rather than optimization-based. This design is appropriate because the scheduling procedure is called repeatedly inside local search and VNS. A computationally expensive exact scheduling model would make the integrated framework impractical over 90 benchmark scenarios. The EDD rule provides a deterministic tardiness-oriented decoding mechanism that is fast enough to be used many times while still respecting all feasibility constraints, consistent with the strong role of due-date priority rules in multi-project resource contention \citep{WangHeKerkhoveVanhoucke2017}.
+Readiness follows the stage logic of the problem definition.
+Gas amount determination, when required, is executed once per
+product and may start at time zero.
+Pull-down is executed once per sample and can start only after
+gas amount determination of that product has finished.
+Third-stage tests are released after every pull-down of that
+product has finished.
+A consumer-usage test is released after every pull-down of that
+product has finished and every required third-stage test has
+started.
 
-Each selected job is assigned to the earliest compatible chamber station. Compatibility requires matching environment, humidity capability when needed, and voltage capability for voltage-sensitive products. Sample availability is updated after every assignment to prevent overlap on the same physical unit.
-
-After construction, the schedule is validated independently. The validation checks required-test multiplicity, chamber-environment compatibility, humidity and voltage feasibility, station non-overlap, sample non-overlap, stage-state logic, and completion-time calculation. This layer is essential because infeasible schedules are operationally unusable regardless of objective value.
-
-The validation layer also protects the higher-level search from hidden feasibility errors. Since local search and VNS generate many sample vectors, it is possible for a candidate to look promising under a fast score but fail detailed operational checks. By validating the full schedule after construction, the framework ensures that reported objective values correspond only to implementable schedules.
+At each iteration the procedure looks at every product and asks
+for at most one candidate.
+\texttt{BestReady}(\(p\)) inspects only the currently released
+tests of product \(p\).
+It uses the stage state of \(p\), the sample-availability clocks
+induced by \(\mathbf{s}\), and the eligible stations induced by
+\(\mathbf{x}\); it does not read the full schedule list.
+Among those released tests it returns the operation with the
+earliest feasible start, already paired with a compatible station
+and a free sample, or reports that \(p\) has nothing ready.
+The next operation in the system is then the candidate with the
+earliest due date; ties are broken by the earliest feasible start.
+That operation is placed on its planned station and sample.
+The station must match the test environment, be humidity-capable
+when the test is humidity-controlled, and be voltage-capable when
+the product requires it.
+Station and sample clocks, and the stage state of the product,
+are updated so that the next candidate pool is rebuilt from the
+new state.
+When no product has a ready operation, completion times \(C_p\)
+are the finish times of each product's last scheduled test, and
+\[
+T^{tot}=\sum_{p\in\mathcal{P}}\max(0,C_p-d_p).
+\]
+The constructed schedule is then checked against the feasibility
+conditions of the problem definition: required-test multiplicity,
+environment, humidity and voltage eligibility, station
+non-overlap, sample non-overlap, and stage release.
+Algorithm~\ref{alg:schedule} is the procedure.
 
 \begin{algorithm}[H]
-\caption{EDD-based schedule construction}
+\caption{Schedule}
+\label{alg:schedule}
+\label{alg:scheduling}
+\label{alg:scheduling_procedure}
 \label{alg:scheduler_short}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Chamber assignment \(X\), sample vector \(S\)
-\State Initialize station availability, sample availability, product states, and schedule \(\Pi\).
-\While{at least one product has an executable operation}
-    \State Create an empty candidate pool.
+\State \textbf{Input:} instance data, chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
+\State \textbf{Output:} schedule \(\Pi\), total tardiness \(T^{tot}\)
+\State \(\Pi\leftarrow\emptyset\); initialize station availability, sample availability, and stage states \label{step:sch-init}
+\Repeat \label{step:sch-loop}
+    \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\emptyset\) \label{step:sch-pool}
     \For{each product \(p\in\mathcal{P}\)}
-        \State Identify the best ready operation of \(p\) using stage state, compatible chambers, and sample availability.
-        \If{a ready operation exists}
-            \State Add it to the candidate pool.
+        \State \(o_p\leftarrow\text{BestReady}(p)\) \label{step:sch-ready}
+        \If{\(o_p\) exists}
+            \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\{o_p\}\)
         \EndIf
     \EndFor
-    \State Select the next operation by earliest due date; break ties by earliest feasible start.
-    \State Assign the operation to the earliest feasible compatible station and sample.
-    \State Update station, sample, and product-stage states.
-\EndWhile
-\State Compute \(C_p\), \(T_p\), \(T^{tot}\), and \(S^{tot}\).
-\State Validate all feasibility conditions.
-\State \Return \((\Pi,(T^{tot},S^{tot}))\)
+    \If{\(\mathcal{O}^{\mathrm{cand}}\neq\emptyset\)} \label{step:sch-select}
+        \State Choose \(o^{\star}\in\mathcal{O}^{\mathrm{cand}}\) with the earliest due date; break ties by the earliest feasible start
+        \State Assign \(o^{\star}\) to its planned compatible station and sample \label{step:sch-assign}
+        \State Update station availability, sample availability, and the stage state of its product \label{step:sch-update}
+        \State Append \(o^{\star}\) to \(\Pi\)
+    \EndIf
+\Until{\(\mathcal{O}^{\mathrm{cand}}=\emptyset\)} \label{step:sch-stop}
+\State Compute \(C_p\), \(T_p\), and \(T^{tot}\) \label{step:sch-obj}
+\State \Return \((\Pi,T^{tot})\)
 \end{algorithmic}
 \end{algorithm}
 
-The scheduler is deterministic under fixed inputs and tie-breaking rules. This determinism is useful in the computational study because performance differences can be attributed to algorithmic design rather than random variation. It also makes the local-search and VNS phases easier to compare, since the same sample vector and chamber assignment always decode into the same schedule.
+Step~\ref{step:sch-init} starts from an empty schedule and zero
+availability clocks.
+Each pass (Step~\ref{step:sch-loop}) rebuilds the candidate pool
+(Step~\ref{step:sch-pool}).
+Step~\ref{step:sch-ready} returns, for each product, the released
+operation that can start earliest under \(\mathbf{x}\) and
+\(\mathbf{s}\).
+Step~\ref{step:sch-select} applies EDD to that pool, and
+Step~\ref{step:sch-assign} writes the operation onto the station
+and sample already chosen by \texttt{BestReady}.
+Step~\ref{step:sch-update} advances the clocks so that later
+passes see the new stage state.
+The loop stops when no product has a ready operation
+(Step~\ref{step:sch-stop}).
+Step~\ref{step:sch-obj} records tardiness.
 
 \subsection{VNS diversification}
 \label{subsec:vns}
