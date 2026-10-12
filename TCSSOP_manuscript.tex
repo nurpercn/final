@@ -823,25 +823,50 @@ A consumer-usage test is released after every pull-down of that
 product has finished and every required third-stage test has
 started.
 
-At each iteration the procedure looks at every product and asks
-for at most one candidate.
-\(\mathrm{BestReady}(p)\) inspects only the currently released
-tests of product \(p\).
-It uses the stage state of \(p\), the sample-availability clocks
-induced by \(\mathbf{s}\), and the eligible stations induced by
-\(\mathbf{x}\); it does not read the full schedule list.
+At each iteration the procedure rebuilds a candidate pool
+\(\mathcal{O}^{\mathrm{cand}}\) with at most one operation per
+product.
+That operation is returned by \(\mathrm{BestReady}(p)\).
+The inputs of \(\mathrm{BestReady}(p)\) are the required tests
+\(\mathcal{T}_p\) of product \(p\) together with their durations
+and environments, the voltage requirement of \(p\), the current
+stage state of \(p\), the \(s_p\) sample-availability clocks
+induced by \(\mathbf{s}\), and the stations made eligible by
+\(\mathbf{x}\).
+It does not read the full schedule \(\Pi\).
+It inspects only the currently released tests of \(p\).
+Let \(\rho_{pt}\) denote the stage-release time of test \(t\) of
+product \(p\), let \(\alpha_{p\ell}\) denote the availability time
+of sample \(\ell\) of \(p\), and let \(\beta_{cr}\) denote the
+availability time of station \(r\) in chamber \(c\).
+For each released test, \(\mathrm{BestReady}\) enumerates
+compatible stations and samples and records the earliest feasible
+start
+\[
+\max\{\rho_{pt},\alpha_{p\ell},\beta_{cr}\}.
+\]
+A station is compatible if its chamber matches the test
+environment, is humidity-capable when the test is
+humidity-controlled, and is voltage-capable when the product
+requires it.
 Among those released tests it returns the operation with the
-earliest feasible start, already paired with a compatible station
-and a free sample, or reports that \(p\) has nothing ready.
-The next operation in the system is then the candidate with the
+earliest planned start, already paired with that station and
+sample, or reports that \(p\) has nothing ready.
+
+A candidate in \(\mathcal{O}^{\mathrm{cand}}\) is therefore not an
+unbound test waiting only on a sample and a station.
+Stage release is required before the test can enter the pool, and
+that release time is included in the planned start.
+The candidate already carries one compatible station and one
+sample; its start is the first time at which the stage, the
+sample, and the station are all free.
+While it sits in the pool it waits only to be selected.
+The next operation in the system is the candidate with the
 earliest due date; ties are broken by the earliest feasible start.
-That operation is placed on its planned station and sample.
-The station must match the test environment, be humidity-capable
-when the test is humidity-controlled, and be voltage-capable when
-the product requires it.
-Station and sample clocks, and the stage state of the product,
-are updated so that the next candidate pool is rebuilt from the
-new state.
+Only that winner is written onto its planned station and sample.
+Station and sample clocks, and the stage state of its product,
+are then updated, and the pool is rebuilt from the new state.
+Unselected candidates occupy no resource.
 When no product has a ready operation, the completion time
 \(C_p\) is the finish time of product \(p\)'s last scheduled
 test, and \(T^{tot}\) is computed as in the problem definition.
@@ -885,14 +910,15 @@ Step~\ref{step:sch-init} starts from an empty schedule and zero
 availability clocks.
 Each pass (Step~\ref{step:sch-loop}) rebuilds the candidate pool
 (Step~\ref{step:sch-pool}).
-Step~\ref{step:sch-ready} returns, for each product, the released
-operation that can start earliest under \(\mathbf{x}\) and
-\(\mathbf{s}\).
-Step~\ref{step:sch-select} applies EDD to that pool, and
-Step~\ref{step:sch-assign} writes the operation onto the station
-and sample already chosen by \(\mathrm{BestReady}\).
+Step~\ref{step:sch-ready} returns, for each product, at most one
+released operation, already bound to a station and a sample, whose
+planned start is \(\max\{\rho_{pt},\alpha_{p\ell},\beta_{cr}\}\).
+Step~\ref{step:sch-select} applies EDD to the pool, and
+Step~\ref{step:sch-assign} writes the winner onto the station and
+sample already chosen by \(\mathrm{BestReady}\).
 Step~\ref{step:sch-update} advances the clocks so that later
 passes see the new stage state.
+The remaining candidates of that pass are discarded.
 The loop stops when no product has a ready operation
 (Step~\ref{step:sch-stop}).
 Step~\ref{step:sch-obj} records tardiness.
