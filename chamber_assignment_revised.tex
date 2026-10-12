@@ -1,25 +1,7 @@
 \subsection{Chamber assignment under environment constraints}
 \label{subsec:chamber_assignment}
 
-In this section, we explain how the chamber configurations are
-determined based on the test workload.
-We use \(\mathbf{s}=(s_p)_{p\in\mathcal{P}}\) to represent the
-sample-size vector.
-For a fixed sample-size vector \(\mathbf{s}\), we determine the
-environmental configuration of each chamber by a two-step
-procedure: a mixed-integer linear program that matches station
-counts to workload-based targets, followed by a local search that
-improves the resulting assignment against total tardiness.
-Since sample counts affect the workload of environmental
-configurations, chamber assignment must be updated when
-\(\mathbf{s}\) changes.
-We use \(m_{pt}(s_p)\) to represent the number of times test \(t\)
-of product \(p\) has to be executed.
-We first determine the total test workload for each environmental
-configuration based on the voltage-adjustment requirement.
-More specifically, for each environmental configuration
-\(e\in\mathcal{E}\) we calculate the overall total test duration
-and the total test duration with nonstandard voltage as follows:
+In this section, we explain how the chamber configurations are determined based on the test workload. We use \(\mathbf{s}=(s_p)_{p\in\mathcal{P}}\) to represent the sample-size vector. For a fixed sample-size vector \(\mathbf{s}\), we determine the environmental configuration of each chamber solving a mixed-integer linear program. We implement this chamber configuration phase in two steps. Since sample counts affect the workload of environmental configurations, chamber assignment must be updated when \(\mathbf{s}\) changes. We use \(m_{pt}(s_p)\) to represent the number of samples on which test \(t\) of product \(p\) has to be executed. We first determine the total test workload for each environmental configuration based on voltage-adjustment requirement. More specifically, for each environmental configuration \(e \in \mathcal{E}\) we calculate the overall total test duration and total test duration with nonstandard voltage as follows:
 \begin{align*}
 W_e(\mathbf{s}) &=
 \sum_{p\in\mathcal{P}}
@@ -31,36 +13,24 @@ W_e^V(\mathbf{s}) &=
 \sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
 m_{pt}(s_p)\tau_t.
 \end{align*}
-The workload shares of each environmental configuration,
-considering all tests and only those requiring nonstandard
-voltage, respectively, are calculated as follows:
+\(W_e(\mathbf{s})\) denotes the total test duration under environmental configuration \(e\), and \(W_e^V(\mathbf{s})\) denotes the total duration of the tests requiring nonstandard voltage under environmental configuration \(e\). The workload shares of each environmental configuration, considering all tests and only those requiring nonstandard voltage, respectively, are defined as follows:
 \[
 \phi_e=\frac{W_e(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e(\mathbf{s})},\qquad
 \phi_e^V=\frac{W_e^V(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e^V(\mathbf{s})}.
 \]
-If no test requires nonstandard voltage, we set
-\(\phi_e^V=0\).
-The target capacities (in terms of number of stations required)
-are calculated as follows:
+The target capacities (in terms of number of stations required) are calculated as follows:
 \[
 S_e=\phi_e \sum_{c\in\mathcal{C}}K_c,\qquad
 S_e^V=\phi_e^V \sum_{c\in\mathcal{C}^v}K_c.
 \]
-
-We define \(\mathcal{E}_{\mathbf{s}}\) and
-\(\mathcal{E}^V_{\mathbf{s}}\) as the sets of environmental
-conditions for which nonzero test durations are needed,
-considering all tests and the ones requiring nonstandard voltage
-only. That is,
+We define \(\mathcal{E}_\mathbf{s}\) and \(\mathcal{E}^V_\mathbf{s}\) as the set environmental conditions for which nonzero test durations are needed considering all tests and the ones requiring nonstandard voltage only. That is,
 \[
-\mathcal{E}_{\mathbf{s}}=\{e\in\mathcal{E}:\ W_e(\mathbf{s})>0\},
+\mathcal{E}_\mathbf{s}=\{e\in\mathcal{E}:\ W_e(\mathbf{s})>0\},
 \]
 \[
-\mathcal{E}^V_{\mathbf{s}}=\{e\in\mathcal{E}:W_e^V(\mathbf{s})>0\}.
+\mathcal{E}^V_\mathbf{s}=\{e\in\mathcal{E}:W_e^V(\mathbf{s})>0\}.
 \]
-The parameters and decision variables of the chamber
-configuration model are summarized in
-Table~\ref{tab:notation_ccd}.
+The parameters and decision variables of the chamber configuration model are summarized in Table~\ref{tab:notation_ccd}.
 
 \begin{table}[H]
 \caption{Notation used in the integer programming model for determining chamber configurations}
@@ -74,8 +44,8 @@ Table~\ref{tab:notation_ccd}.
 \(\mathcal{P}^v\) & Set of products that require nonstandard voltage \\
 \(\mathcal{C}^v\) & Set of voltage-capable chambers \\
 \(\mathcal{E}^H\) & Set of humidity-controlled environmental configurations \\
-\(\mathcal{E}_{\mathbf{s}}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
-\(\mathcal{E}^V_{\mathbf{s}}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
+\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
+\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
 \(K_c\) & Number of stations in chamber \(c\) \\
 \(h_c\) & 1 if chamber \(c\) has humidity adjustment; 0 otherwise \\
 \(W_e(\mathbf{s})\) & Total test duration under configuration \(e\) \\
@@ -94,114 +64,53 @@ Table~\ref{tab:notation_ccd}.
 \end{tabular}
 \end{table}
 
-Using the workload calculations explained above, we propose a
-mixed-integer linear program to determine the configurations of
-the chambers.
-Our goal in this model is to minimize the summation of the
-differences between the number of stations assigned to a
-configuration and the target capacity for that configuration.
-The proposed chamber configuration determination model is as
-follows:
+Using the workload calculations explained above, we propose a mixed-integer linear program to determine the configurations of the chambers. Our goal in this model is to minimize the summation of the differences between the number of stations assigned to a configuration and the target capacity for that configuration. We define \(x_{ce}\) as a binary variable that equals 1 if chamber \(c\) is assigned to environmental configuration \(e\), and 0 otherwise. Moreover, we define \(z_e\) and \(z_e^V\) as the differences between the total number of stations assigned to environmental configuration \(e\) and the corresponding target capacities, considering all tests and only those requiring nonstandard voltage, respectively.
+The proposed chamber configuration determination model is as follows:
 \begin{align}
 \textrm{MIP-CCD($\mathbf{s}$)}: \min\quad
-&
-\sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V
+& \sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V
 \label{eq:assign_obj}\\
 \text{s.t.}\quad
-&
-\sum_{e\in\mathcal{E}}x_{ce}=1,
+& \sum_{e\in\mathcal{E}}x_{ce}=1,
 && \forall c\in\mathcal{C},
 \label{eq:assign_one}\\
-&
-\sum_{c\in\mathcal{C}}x_{ce}\ge 1,
-&& \forall e\in\mathcal{E}_{\mathbf{s}},
+& \sum_{c\in\mathcal{C}}x_{ce}\ge 1,
+&& \forall e\in\mathcal{E}_\mathbf{s},
 \label{eq:assign_cover}\\
-&
-\sum_{c\in\mathcal{C}^v}x_{ce}\ge 1,
-&& \forall e\in\mathcal{E}^V_{\mathbf{s}},
+& \sum_{c\in\mathcal{C}^v}x_{ce}\ge 1,
+&& \forall e\in\mathcal{E}^V_\mathbf{s},
 \label{eq:assign_volt}\\
-&
-x_{ce}\le h_c,
+& x_{ce}\le h_c,
 && \forall c\in\mathcal{C},\ e\in\mathcal{E}^H,
 \label{eq:assign_hum}\\
-&
-z_e\ge \sum_{c\in\mathcal{C}}K_cx_{ce}-S_e,
+& z_e\ge \sum_{c\in\mathcal{C}}K_cx_{ce}-S_e,
 && \forall e\in\mathcal{E},
 \label{eq:assign_z1}\\
-&
-z_e\ge S_e-\sum_{c\in\mathcal{C}}K_cx_{ce},
+& z_e\ge S_e-\sum_{c\in\mathcal{C}}K_cx_{ce},
 && \forall e\in\mathcal{E},
 \label{eq:assign_z2}\\
-&
-z_e^V\ge \sum_{c\in\mathcal{C}^v}K_cx_{ce}-S_e^V,
+& z_e^V\ge \sum_{c\in\mathcal{C}^v}K_cx_{ce}-S_e^V,
 && \forall e\in\mathcal{E},
 \label{eq:assign_zv1}\\
-&
-z_e^V\ge S_e^V-\sum_{c\in\mathcal{C}^v}K_cx_{ce},
+& z_e^V\ge S_e^V-\sum_{c\in\mathcal{C}^v}K_cx_{ce},
 && \forall e\in\mathcal{E},
 \label{eq:assign_zv2}\\
-&
-x_{ce}\in\{0,1\},
-&& \forall c\in\mathcal{C},\ e\in\mathcal{E},
+& x_{ce}\in\{0,1\},
+&& \forall c \in \mathcal{C}, e \in \mathcal{E},
 \label{eq:assign_bin}\\
-&
-z_e,z_e^V\ge 0,
-&& \forall e\in\mathcal{E}.
+& z_e,z_e^V\ge 0,
+&& \forall e \in \mathcal{E}.
 \label{eq:assign_dom}
 \end{align}
-In this model, objective~\eqref{eq:assign_obj} minimizes the total
-deviation between assigned station counts and the two target
-capacities.
-Constraint~\eqref{eq:assign_one} assigns each chamber to exactly
-one environmental configuration.
-Constraint~\eqref{eq:assign_cover} gives every configuration with
-a positive workload at least one chamber.
-Constraint~\eqref{eq:assign_volt} gives every configuration with
-a positive nonstandard-voltage workload at least one
-voltage-capable chamber.
-Constraint~\eqref{eq:assign_hum} forbids humidity-controlled
-configurations on chambers that cannot hold humidity.
-Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force
-\(z_e\) to be at least the absolute difference between the number
-of stations assigned to \(e\) and \(S_e\).
-Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the
-same for voltage-capable stations and \(S_e^V\).
-The remaining constraints specify the domains of the decision
-variables.
+In this model, objective~\eqref{eq:assign_obj} minimizes the total deviation between assigned station counts and the two target capacities. Constraint~\eqref{eq:assign_one} assigns each chamber to exactly one environmental configuration. Constraint~\eqref{eq:assign_cover} gives every configuration with a positive workload at least one chamber. Constraint~\eqref{eq:assign_volt} gives every configuration with a positive nonstandard-voltage workload at least one voltage-capable chamber. Constraint~\eqref{eq:assign_hum} forbids humidity-controlled configurations on chambers that cannot hold humidity. Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force \(z_e\) to be at least the absolute difference between the number of stations assigned to \(e\) and \(S_e\). Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the same for voltage-capable stations and \(S_e^V\). The remaining constraints specify the domains of the decision variables.
 
-After the chamber configurations are determined, as a second step
-we implement a local search phase to fine-tune the chamber
-configuration decisions.
-Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) be
-the earliest-due-date schedule of the current assignment, and let
-\(B_c\) be the total processing time placed in chamber \(c\) by
-\(\Pi\).
-The \emph{normalized workload} of chamber \(c\) is
+After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions.
+Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) be the earliest-due-date schedule of the current assignment, and let \(B_c\) be the total processing time placed in chamber \(c\) by \(\Pi\). The \emph{normalized workload} of chamber \(c\) is
 \begin{equation}
 \label{eq:chamber_load}
 \lambda_c=\frac{B_c}{K_c}.
 \end{equation}
-Dividing by \(K_c\) makes chambers of different sizes comparable.
-A chamber is \emph{highly loaded} if its \(\lambda_c\) is large
-and \emph{lightly loaded} if its \(\lambda_c\) is small.
-Neighboring assignments are generated from this ranking.
-A swap exchanges the environments of a highly loaded chamber
-\(c\) and a lightly loaded chamber \(c'\) with
-\(\lambda_c>\lambda_{c'}\), provided both chambers can hold the
-other's setting.
-A move reassigns a lightly loaded chamber to the environment of a
-highly loaded chamber.
-Both operators are retained only if they still satisfy
-\eqref{eq:assign_one}--\eqref{eq:assign_hum}.
-The acceptance criterion is total tardiness: the first feasible
-neighbor whose EDD schedule has a strictly smaller \(T^{tot}\) is
-accepted, and the search continues from that assignment with
-updated loads \(\lambda_c\).
-Swap is tried first.
-Move is used only when a full scan of the swap pairs accepts
-nothing.
-The search stops when a pass of swap and then move finds no
-improving feasible neighbor.
+Dividing by \(K_c\) makes chambers of different sizes comparable. A chamber is \emph{highly loaded} if its \(\lambda_c\) is large and \emph{lightly loaded} if its \(\lambda_c\) is small. Neighboring assignments are generated from this ranking. A swap exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\), provided both chambers can hold the other's setting. A move reassigns a lightly loaded chamber to the environment of a highly loaded chamber. Both operators are retained only if they still satisfy \eqref{eq:assign_one}--\eqref{eq:assign_hum}. The acceptance criterion is total tardiness: the first feasible neighbor whose EDD schedule has a strictly smaller \(T^{tot}\) is accepted, and the search continues from that assignment with updated loads \(\lambda_c\). Swap is tried first. Move is used only when a full scan of the swap pairs accepts nothing. The search stops when a pass of swap and then move finds no improving feasible neighbor.
 Algorithm~\ref{alg:chamber_assignment} is the procedure.
 
 \begin{algorithm}[H]
@@ -226,11 +135,7 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ca-load} forms the two workloads, the shares, and
-the station targets.
+Step~\ref{step:ca-load} forms the two workloads, the shares, and the station targets.
 Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
-Step~\ref{step:ca-loadrank} ranks chambers by
-\eqref{eq:chamber_load}.
-Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first
-feasible swap, or move, that reduces tardiness, and stop when a
-pass finds none (Step~\ref{step:ca-stop}).
+Step~\ref{step:ca-loadrank} ranks chambers by \eqref{eq:chamber_load}.
+Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first feasible swap, or move, that reduces tardiness, and stop when a pass finds none (Step~\ref{step:ca-stop}).
