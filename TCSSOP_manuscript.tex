@@ -796,8 +796,9 @@ The search stops when a pass accepts nothing
 \label{subsec:scheduling_procedure}
 \label{subsec:scheduling}
 
-We represent the chamber settings determined by MIP-CCD(\(\mathbf{s}\))
-by \(\mathbf{x}\) and the sample-size vector by \(\mathbf{s}\).
+We represent the chamber settings returned by
+\(\mathrm{ChamberAssignment}\) by \(\mathbf{x}\) and the
+sample-size vector by \(\mathbf{s}\).
 An integral component of the proposed solution approach is to
 evaluate the quality of a solution.
 We need the total tardiness of a given pair
@@ -824,7 +825,7 @@ started.
 
 At each iteration the procedure looks at every product and asks
 for at most one candidate.
-\texttt{BestReady}(\(p\)) inspects only the currently released
+\(\mathrm{BestReady}(p)\) inspects only the currently released
 tests of product \(p\).
 It uses the stage state of \(p\), the sample-availability clocks
 induced by \(\mathbf{s}\), and the eligible stations induced by
@@ -846,10 +847,10 @@ are the finish times of each product's last scheduled test, and
 \[
 T^{tot}=\sum_{p\in\mathcal{P}}\max(0,C_p-d_p).
 \]
-The constructed schedule is then checked against the feasibility
-conditions of the problem definition: required-test multiplicity,
-environment, humidity and voltage eligibility, station
-non-overlap, sample non-overlap, and stage release.
+When a full schedule is stored, an independent check audits
+required-test multiplicity, environment, humidity and voltage
+eligibility, station non-overlap, sample non-overlap, and stage
+release.
 Algorithm~\ref{alg:schedule} is the procedure.
 
 \begin{algorithm}[H]
@@ -865,7 +866,7 @@ Algorithm~\ref{alg:schedule} is the procedure.
 \Repeat \label{step:sch-loop}
     \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\emptyset\) \label{step:sch-pool}
     \For{each product \(p\in\mathcal{P}\)}
-        \State \(o_p\leftarrow\text{BestReady}(p)\) \label{step:sch-ready}
+        \State \(o_p\leftarrow\mathrm{BestReady}(p)\) \label{step:sch-ready}
         \If{\(o_p\) exists}
             \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\{o_p\}\)
         \EndIf
@@ -891,7 +892,7 @@ operation that can start earliest under \(\mathbf{x}\) and
 \(\mathbf{s}\).
 Step~\ref{step:sch-select} applies EDD to that pool, and
 Step~\ref{step:sch-assign} writes the operation onto the station
-and sample already chosen by \texttt{BestReady}.
+and sample already chosen by \(\mathrm{BestReady}\).
 Step~\ref{step:sch-update} advances the clocks so that later
 passes see the new stage state.
 The loop stops when no product has a ready operation
