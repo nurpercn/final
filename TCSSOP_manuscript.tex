@@ -680,7 +680,7 @@ Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) be the earliest-d
 \label{eq:chamber_load}
 \lambda_c=\frac{B_c}{K_c}.
 \end{equation}
-Dividing by \(K_c\) makes chambers of different sizes comparable. A chamber is \emph{highly loaded} if its \(\lambda_c\) is large and \emph{lightly loaded} if its \(\lambda_c\) is small. Neighboring assignments are generated from this ranking. A swap exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\), provided both chambers can hold the other's setting. A move reassigns a lightly loaded chamber to the environment of a highly loaded chamber. Both operators are retained only if they still satisfy \eqref{eq:assign_one}--\eqref{eq:assign_hum}. The acceptance criterion is total tardiness: the first feasible neighbor whose EDD schedule has a strictly smaller \(T^{tot}\) is accepted, and the search continues from that assignment with updated loads \(\lambda_c\). Swap is tried first. Move is used only when a full scan of the swap pairs accepts nothing. The search stops when a pass of swap and then move finds no improving feasible neighbor.
+Dividing by \(K_c\) makes chambers of different sizes comparable. A chamber is \emph{highly loaded} if its \(\lambda_c\) is large and \emph{lightly loaded} if its \(\lambda_c\) is small. Neighboring assignments are generated from this ranking. A swap exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\), provided both chambers can hold the other's setting. A move reassigns a lightly loaded chamber to the environment of a highly loaded chamber. Both operators are retained only if they still satisfy \eqref{eq:assign_one}--\eqref{eq:assign_hum}. The acceptance criterion is total tardiness: the first feasible neighbor whose EDD schedule has a strictly smaller \(T^{tot}\) is accepted, and the search continues from that assignment with updated loads \(\lambda_c\). Swap is tried first. Move is used only when a full scan of the swap pairs accepts nothing. The search stops when a pass of swap and then move finds no improving feasible neighbor, or when \(B_{\mathrm{room}}\) schedule evaluations have been used.
 Algorithm~\ref{alg:chamber_assignment} is the procedure.
 
 \begin{algorithm}[H]
@@ -700,7 +700,7 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
     \If{a neighbor reduces \(T^{tot}\)} \label{step:ca-accept}
         \State Replace \(\mathbf{x}\) by that neighbor
     \EndIf
-\Until{no improving feasible neighbor remains} \label{step:ca-stop}
+\Until{no improving feasible neighbor remains or \(B_{\mathrm{room}}\) evaluations have been used} \label{step:ca-stop}
 \State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
@@ -708,7 +708,7 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 Step~\ref{step:ca-load} uses the required tests \(\mathcal{T}_p\) of each product, together with \(\mathbf{s}\), to form the two workloads, the shares, and the station targets.
 Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
 Step~\ref{step:ca-loadrank} ranks chambers by \eqref{eq:chamber_load}.
-Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first feasible swap, or move, that reduces tardiness, and stop when a pass finds none (Step~\ref{step:ca-stop}).
+Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first feasible swap, or move, that reduces tardiness, and stop when a pass finds none or the evaluation budget \(B_{\mathrm{room}}\) is reached (Step~\ref{step:ca-stop}).
 
 \subsection{Sample size optimization}
 \label{subsec:sample_optimization}
