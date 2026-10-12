@@ -1027,9 +1027,9 @@ Four variants are compared:
     \item \textbf{Proposed Framework:} sample optimization, chamber reassignment, and VNS diversification are all enabled.
 \end{itemize}
 
-All parameters are fixed across instances. The initial sample count is \(s_p^{(0)}=3\), \(s_{\min}=3\), \(s_{\max}=11\), and the VNS \textsc{UP} level is \(s_{\max VNS}=8\). The sample neighborhood is \(\{-2,-1,+1,+2\}\), the VNS fallback ratios are \([0.20,0.30]\), \(I_{\max}=100\), and \(K_{\max}=200\) for the selected configuration. The objective is evaluated lexicographically as \((T^{tot},S^{tot})\). Runtime is reported separately.
+All parameters are fixed across instances. The initial sample count is \(s_p^{(0)}=3\), \(s_{\min}=3\), \(s_{\max}=11\), and the VNS upper sample level is \(v_{\max}=8\). The sample neighborhood is \(\{-2,-1,+1,+2\}\), the VNS fallback ratios are \([0.20,0.30]\), \(I_{\max}=100\), and \(K_{\max}=200\) for the selected configuration. The objective is evaluated lexicographically as \((T^{tot},S^{tot})\). Runtime is reported separately.
 
-The lower sample bound corresponds to the industrial baseline and prevents the optimization procedure from selecting sample counts below the minimum accepted engineering policy. The upper bounds allow the search to explore additional parallelism but prevent unrealistic prototype expansion. The separate \(s_{\max VNS}\) parameter limits the intensity of upward VNS perturbations while still allowing local search to refine sample counts within the broader feasible range.
+The lower sample bound corresponds to the industrial baseline and prevents the optimization procedure from selecting sample counts below the minimum accepted engineering policy. The upper bounds allow the search to explore additional parallelism but prevent unrealistic prototype expansion. The separate \(v_{\max}\) parameter limits the intensity of neighborhood \(l=2\) while still allowing local search to refine sample counts within the broader feasible range.
 
 The neighborhood \(\{-2,-1,+1,+2\}\) balances intensification and exploration. Unit moves provide fine adjustment, while two-unit moves allow the search to cross small local barriers caused by the discrete effect of sample availability. The same local-search structure is used across variants so that performance differences can be attributed to the presence or absence of outer reconfiguration and VNS diversification.
 
@@ -1044,7 +1044,7 @@ The neighborhood \(\{-2,-1,+1,+2\}\) balances intensification and exploration. U
 \hline
 \(s_p^{(0)}\) & Initial sample policy per product & 3 \\
 \(s_{\min}\) & Minimum feasible sample count & 3 \\
-\(s_{\max VNS}\) & Maximum sample count for VNS UP move & 8 \\
+\(v_{\max}\) & VNS upper sample level (\(l=2\)) & 8 \\
 \(s_{\max}\) & Maximum feasible sample count & 11 \\
 \(\Delta_p\) & Sample-size neighborhood & \(\{-2,-1,+1,+2\}\) \\
 \(R_{\mathrm{VNS}}\) & VNS fallback perturbation ratios & \([0.20,0.30]\) \\
