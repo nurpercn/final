@@ -1001,20 +1001,54 @@ Together, the chamber-assignment, sample-size optimization, scheduling, and VNS 
 
 In this section, we present the results of the computational experiments conducted to evaluate the effectiveness of the proposed solution approach. We compare the solutions with benchmark methods, including current industrial practice. The proposed approach and the benchmark methods were implemented in Java. All experiments were executed on an Apple MacBook Air (13.6-inch) with an Apple M2 chip, an 8-core CPU, and an 8-core GPU.
 
-\subsection{Experimental design}
+\subsection{Instance Generation}
 \label{subsec:exp_design}
+\label{subsec:experimental_design}
 
-The benchmark set contains 90 scenario combinations formed by \(10\) test matrices, \(3\) due-date scenarios, and \(3\) voltage scenarios. The instances are synthetically generated using ranges and structural rules calibrated from industrial practice, allowing controlled experiments without relying on proprietary raw data.
+We generate test instances motivated by current industrial practice.
+The computational study uses a structured scenario set designed to
+capture the main sources of variability in industrial test-chamber
+operations: product test requirements, due-date pressure, and voltage
+compatibility.
+Each instance represents a multi-project testing scenario in which
+products differ in required tests, due dates, and voltage requirements.
 
-The use of structured synthetic instances provides two advantages. First, it preserves confidentiality because no proprietary project-level dataset is disclosed. Second, it allows the experimental factors to be varied systematically. By combining due-date regimes, voltage-intensity regimes, and test-matrix regimes, the benchmark isolates how different operational pressures affect the value of sample-size optimization.
+At a given planning time, the system is expected to have 50 products
+under test.
+For this reason, every instance contains 50 products.
+We consider three due-date scenarios and three nonstandard-voltage
+scenarios.
+The due dates lie within a two-month planning horizon and are generated
+at three levels of tightness.
+Scenario~1 is relatively concentrated, with due dates ranging from 42
+to 57 days and a median around 50 days.
+Scenario~2 introduces stronger dispersion and earlier deadlines, with
+due dates ranging from 30 to 69 days and a median around 50 days.
+Scenario~3 is more relaxed but still heterogeneous, with due dates
+ranging from 34 to 69 days and a median around 53 days.
 
-Due-date scenarios represent tight, moderate, and loose planning regimes with different dispersion levels. The first due-date setting concentrates project deadlines in a relatively narrow range, creating direct competition among products with similar urgency. The second setting introduces stronger dispersion, which creates priority conflicts between near-term and later projects. The third setting shifts due dates to a more relaxed region while preserving heterogeneity; this case is useful for testing whether the algorithm still benefits from sample optimization when the system is less deadline constrained.
+The voltage scenarios control the proportion of products that require
+voltage-compatible execution, using the mix in current operations as
+the reference.
+Scenario~1 represents a low voltage-adjustment requirement, where
+approximately 15\% of the products require nonstandard voltage.
+Scenario~2 represents a medium requirement, with 30\% of the products
+requiring nonstandard voltage.
+Scenario~3 represents a higher requirement, with 45\% of the products
+requiring nonstandard voltage.
+Since voltage feasibility is one-sided, increasing this share reduces
+the effective resource pool and creates stronger competition for
+chambers that can adjust voltage.
 
-Voltage scenarios define low, medium, and high proportions of voltage-sensitive products. In the low-intensity setting, only a small subset of projects requires voltage-compatible chambers, so voltage capability is rarely the binding resource. In the medium setting, voltage-sensitive projects become frequent enough to create localized competition for voltage-capable stations. In the high-intensity setting, a large share of projects must be processed on voltage-compatible chambers, which sharply reduces assignment flexibility and makes the voltage-capable subset a potential bottleneck.
-
-Test matrices represent different product portfolios and required-test combinations. They mainly affect workload distribution across environments because gas and pull-down tests concentrate upstream demand, while energy, performance, freezing, temperature-rise, and consumer-usage tests distribute downstream workload across several temperatures. Therefore, the 90-scenario benchmark combines deadline tightness, resource eligibility pressure, and environment-dependent workload imbalance without relying on external graphics.
-
-The test matrices are especially important because they create different environment-level bottlenecks. Some matrices place more downstream work at \(25^\circ\mathrm{C}\), while others increase demand at low-temperature or high-temperature environments. Since chamber assignments are made at the environment level, these workload shifts directly affect the usefulness of reassignment and the value of additional samples.
+These choices give nine combinations of due-date and voltage scenarios.
+For each combination we generate 10 instances with different product
+test requirements, so the study uses 90 instances in total.
+For each product, the mandatory tests are those listed in
+Table~\ref{tab:test_attributes_short}.
+Among tests 6, 7, and 9--13, a subset is selected for each product
+according to the explanation under Table~\ref{tab:test_attributes_short}.
+The reported results cover all 90 instances and are also discussed
+with respect to these due-date and voltage scenarios.
 
 \subsection{Compared methods and parameters}
 \label{subsec:methods_params}
@@ -1066,7 +1100,7 @@ Gap_{im}=
 \frac{T^{tot}_{im}-T^{tot,best}_{i}}
 {T^{tot,best}_{i}}\times 100,
 \]
-where \(T^{tot,best}_{i}\) is the best total tardiness observed for that instance in the relevant comparison. In the reported experiments, all denominators are positive. Best-instance counts are based on the lexicographic objective, so total sample usage breaks ties when total tardiness is equal.
+where \(T^{tot,best}_{i}\) is the best total tardiness observed for that instance in the relevant comparison. In the reported experiments, all denominators are positive. Average gaps are computed over all 90 instances, covering the ten replicates of each of the nine due-date and voltage combinations. Best-instance counts are based on the lexicographic objective, so total sample usage breaks ties when total tardiness is equal. Because the proposed configuration attains the best lexicographic solution in every instance, this ranking does not reverse under any due-date tightness or voltage-intensity level in the study.
 
 Runtime is reported as a separate performance indicator rather than being included in the objective. This is appropriate because the primary planning objective is tactical schedule quality, while runtime reflects computational effort. The selected configuration is therefore not expected to be the fastest method; it is intended to provide the best tardiness performance under a reasonable offline planning setting.
 
