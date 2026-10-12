@@ -31,13 +31,9 @@ W_e^V(\mathbf{s}) &=
 \sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
 m_{pt}(s_p)\tau_t.
 \end{align*}
-\(W_e(\mathbf{s})\) denotes the total test duration under
-environmental configuration \(e\), and \(W_e^V(\mathbf{s})\)
-denotes the total duration of the tests requiring nonstandard
-voltage under environmental configuration \(e\).
 The workload shares of each environmental configuration,
 considering all tests and only those requiring nonstandard
-voltage, respectively, are defined as follows:
+voltage, respectively, are calculated as follows:
 \[
 \phi_e=\frac{W_e(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e(\mathbf{s})},\qquad
 \phi_e^V=\frac{W_e^V(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e^V(\mathbf{s})}.
@@ -62,23 +58,48 @@ only. That is,
 \[
 \mathcal{E}^V_{\mathbf{s}}=\{e\in\mathcal{E}:W_e^V(\mathbf{s})>0\}.
 \]
-Let \(\mathcal{C}^v=\{c\in\mathcal{C}:v_c=1\}\) be the
-voltage-capable chambers and \(\mathcal{E}^H\) the
-humidity-controlled configurations.
+The parameters and decision variables of the chamber
+configuration model are summarized in
+Table~\ref{tab:notation_ccd}.
+
+\begin{table}[H]
+\caption{Notation used in the integer programming model for determining chamber configurations}
+\label{tab:notation_ccd}
+\centering
+\small
+\begin{tabular}{cl}
+\toprule
+\textbf{Notation} & \textbf{Description}\\
+\midrule
+\(\mathcal{P}^v\) & Set of products that require nonstandard voltage \\
+\(\mathcal{C}^v\) & Set of voltage-capable chambers \\
+\(\mathcal{E}^H\) & Set of humidity-controlled environmental configurations \\
+\(\mathcal{E}_{\mathbf{s}}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
+\(\mathcal{E}^V_{\mathbf{s}}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
+\(K_c\) & Number of stations in chamber \(c\) \\
+\(h_c\) & 1 if chamber \(c\) has humidity adjustment; 0 otherwise \\
+\(W_e(\mathbf{s})\) & Total test duration under configuration \(e\) \\
+\(W_e^V(\mathbf{s})\) & Nonstandard-voltage test duration under configuration \(e\) \\
+\(\phi_e\) & Workload share of configuration \(e\) \\
+\(\phi_e^V\) & Nonstandard-voltage workload share of configuration \(e\) \\
+\(S_e\) & Target number of stations for configuration \(e\) \\
+\(S_e^V\) & Target number of voltage-capable stations for configuration \(e\) \\
+\midrule
+\textbf{Decision Variables} & \\
+\midrule
+\(x_{ce}\) & 1 if chamber \(c\) is assigned to configuration \(e\); 0 otherwise \\
+\(z_e\) & Absolute deviation between assigned stations and \(S_e\) \\
+\(z_e^V\) & Absolute deviation between assigned voltage-capable stations and \(S_e^V\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 Using the workload calculations explained above, we propose a
 mixed-integer linear program to determine the configurations of
 the chambers.
 Our goal in this model is to minimize the summation of the
 differences between the number of stations assigned to a
 configuration and the target capacity for that configuration.
-We define \(x_{ce}\) as a binary variable that equals 1 if
-chamber \(c\) is assigned to environmental configuration \(e\),
-and 0 otherwise.
-Moreover, we define \(z_e\) and \(z_e^V\) as the differences
-between the total number of stations assigned to environmental
-configuration \(e\) and the corresponding target capacities,
-considering all tests and only those requiring nonstandard
-voltage, respectively.
 The proposed chamber configuration determination model is as
 follows:
 \begin{align}
