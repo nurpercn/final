@@ -939,10 +939,8 @@ changes the workload structure itself.
 We present the main steps of the proposed VNS procedure in
 Algorithm~\ref{alg:vns}.
 It takes the incumbent solution as the initial solution.
-The shake intensity is controlled by two destroy ratios,
-\[
-R=[0.20,0.30].
-\]
+The shake intensity is controlled by two destroy ratios
+\(R=[0.20,0.30]\).
 The smaller ratio is tried first: it changes enough sample counts to
 leave the current local basin, while still keeping much of the
 incumbent allocation.
@@ -974,7 +972,6 @@ If both phases fail, the incumbent is returned.
 \begin{algorithmic}[1]
 \State \textbf{Input:} chamber assignment \(\mathbf{x}\), incumbent solution \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 \State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
-\State \(R\leftarrow[0.20,0.30]\)
 \For{each \(r\in R\)}
     \For{\(k\leftarrow 1\) to \(K_{\max}\)}
         \For{\(l\leftarrow 1\) to \(2\)} \label{VNS:step1}
