@@ -117,7 +117,7 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 \caption{ChamberAssignment}
 \label{alg:chamber_assignment}
 \begin{algorithmic}[1]
-\State \textbf{Input:} sample vector \(\mathbf{s}\)
+\State \textbf{Input:} instance data, sample vector \(\mathbf{s}\)
 \State \textbf{Output:} chamber assignment \(\mathbf{x}\)
 \State Compute \(W_e(\mathbf{s})\), \(W_e^V(\mathbf{s})\), \(\phi_e\), \(\phi_e^V\), \(S_e\), and \(S_e^V\) \label{step:ca-load}
 \State \(\mathbf{x}\leftarrow\) the optimal solution of MIP-CCD(\(\mathbf{s}\)) \label{step:ca-exact}
@@ -135,7 +135,7 @@ Algorithm~\ref{alg:chamber_assignment} is the procedure.
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ca-load} forms the two workloads, the shares, and the station targets.
+Step~\ref{step:ca-load} uses the required tests \(\mathcal{T}_p\) of each product, together with \(\mathbf{s}\), to form the two workloads, the shares, and the station targets.
 Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
 Step~\ref{step:ca-loadrank} ranks chambers by \eqref{eq:chamber_load}.
 Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first feasible swap, or move, that reduces tardiness, and stop when a pass finds none (Step~\ref{step:ca-stop}).
