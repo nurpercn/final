@@ -462,7 +462,7 @@ The main notation used throughout the problem definition and solution approach i
 \(s_p\) & Sample count decision for product \(p\) \\ \hline
 \(S\) & Sample vector, \(S=\{s_p\}_{p\in\mathcal{P}}\) \\ \hline
 \(s_{\min},s_{\max}\) & Lower and upper bounds for sample counts \\ \hline
-\(v_{\max}\) & VNS upper sample level for neighborhood \(l=2\) \\ \hline
+\(u_{\max}\) & VNS upper sample level for neighborhood \(l=2\) \\ \hline
 \(S^{tot}\) & Total sample usage, \(S^{tot}=\sum_{p\in\mathcal{P}}s_p\) \\ \hline
 \(X_c\) & Environment assigned to chamber \(c\) \\ \hline
 \(X\) & Chamber-assignment vector, \(X=\{X_c\}_{c\in\mathcal{C}}\) \\ \hline
@@ -955,7 +955,7 @@ In each neighborhood, \(\mathrm{Shake}\) selects a proportion \(r\) of
 products and changes their sample sizes.
 The first neighborhood (\(l=1\)) decreases the number of samples of
 the selected products to \(s_{\min}\), while the second neighborhood
-(\(l=2\)) increases the number of samples to \(v_{\max}\)
+(\(l=2\)) increases the number of samples to \(u_{\max}\)
 (Step~\ref{VNS:step2}).
 The perturbed solution is then improved using the sample-size local
 search in Algorithm~\ref{alg:sample_ls}.
@@ -1055,7 +1055,7 @@ The VNS diversification phase used the fixed fallback ratio sequence
 \[
 R_{\mathrm{VNS}}=[0.20,0.30].
 \]
-For each ratio, selected products were reset either to \(s_{\min}\) in neighborhood \(l=1\) or to \(v_{\max}\) in neighborhood \(l=2\), followed by sample-size local search. A first-improvement policy was used: the VNS phase terminated as soon as an improving candidate was found.
+For each ratio, selected products were reset either to \(s_{\min}\) in neighborhood \(l=1\) or to \(u_{\max}\) in neighborhood \(l=2\), followed by sample-size local search. A first-improvement policy was used: the VNS phase terminated as soon as an improving candidate was found.
 
 Solutions were compared lexicographically:
 \[
@@ -1080,7 +1080,7 @@ Table~\ref{tab:param_settings_final} reports the fixed parameter values used in 
 \hline
 \(s_p^{(0)}\) & Initial sample policy per product & 3 \\
 \(s_{\min}\) & Minimum feasible sample count & 3 \\
-\(v_{\max}\) & VNS upper sample level (\(l=2\)) & 8 \\
+\(u_{\max}\) & VNS upper sample level (\(l=2\)) & 8 \\
 \(s_{\max}\) & Maximum feasible sample count & 11 \\
 \(\Delta_p\) & Sample-size neighborhood & \(\{-2,-1,+1,+2\}\) \\
 \(R_{\mathrm{VNS}}\) & VNS fallback perturbation ratios & \([0.20,0.30]\) \\
