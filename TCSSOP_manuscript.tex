@@ -923,42 +923,57 @@ The loop stops when no product has a ready operation
 (Step~\ref{step:sch-stop}).
 Step~\ref{step:sch-obj} records tardiness.
 
-\subsection{VNS-based diversification strategy}
+\subsection{Variable Neighborhood Search Mechanism}
+\label{subsec:vns}
 \label{subsec:vns_diversification}
 
-The VNS-based diversification mechanism is activated when the outer loop fails to improve the incumbent. Following the classical VNS principle of changing neighborhood intensity after local stagnation \citep{LiaoCheng2007}, and unlike conventional VNS approaches that perturb sequencing or assignment decisions, this mechanism perturbs sample-size decisions and therefore changes the workload structure itself.
+If \(\mathrm{SampleSizeLocalSearch}\) does not improve the incumbent,
+Algorithm~\ref{alg:framework} calls \(\mathrm{VNS}\) on the incumbent
+chamber assignment and sample vector (Step~\ref{step:fw-vns}).
+Following the classical VNS principle of changing neighborhood
+intensity after local stagnation \citep{LiaoCheng2007}, and unlike
+conventional VNS approaches that perturb sequencing or assignment
+decisions, this mechanism perturbs sample-size decisions and therefore
+changes the workload structure itself.
 
-The selected diversification policy uses a fixed fallback ratio sequence:
-\[
-R_{\mathrm{VNS}}=[0.20,0.30].
-\]
-For each ratio \(r\), up to \(K_{\max}\) shake attempts are performed. The ratio determines the fraction of products selected for perturbation. The smaller ratio is tried first to explore a nearby region; if no improvement is found, the larger ratio provides stronger diversification.
-
-Each shake applies one of two directional moves. In the \textsc{DOWN} direction, selected products are reset to \(s_{\min}\). In the \textsc{UP} direction, selected products are reset to the VNS upper level \(s_{\max VNS}\). The perturbed sample vector is then improved using the sample-size local search in Algorithm~\ref{alg:sample_ls}. The VNS follows a first-improvement policy: as soon as a locally improved candidate improves the incumbent under the lexicographic objective, it is returned to the main framework. If no improvement is found within the shake budget of a ratio phase, the method proceeds to the next fallback ratio.
+We present the main steps of the proposed VNS procedure in
+Algorithm~\ref{alg:vns}.
+It takes the incumbent solution as the initial solution.
+For a number of iterations (\(K_{\max}\)), the algorithm visits the
+two neighborhoods sequentially
+(Steps~\ref{VNS:step1}--\ref{VNS:step7}).
+In each neighborhood, we select a proportion \(R\) of products and
+change the sample size of the selected products.
+The first neighborhood (\(l=1\)) decreases the number of samples of
+the selected products to \(s_{\min}\), while the second neighborhood
+(\(l=2\)) increases the number of samples to \(v_{\max}\)
+(Step~\ref{VNS:step2}).
+The perturbed solution is then improved using the sample-size local
+search in Algorithm~\ref{alg:sample_ls}.
+The VNS follows a first-improvement policy: as soon as a locally
+improved candidate improves the incumbent under the lexicographic
+objective, it is returned to the main framework.
+If no improving candidate is found within the \(K_{\max}\) iterations,
+the incumbent is returned.
 
 \begin{algorithm}[H]
-\caption{VNS with Fixed Fallback Ratios}
+\caption{VNS}
 \label{alg:vns}
+\label{alg:vns_fixed_destroy}
+\label{alg:vns_short}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Fixed chamber assignment \(X\), incumbent \((S^{inc},\Pi^{inc},Eval^{inc})\)
-\State \textbf{Output:} \((S^{out},\Pi^{out},Eval^{out},improved)\)
-\State Fixed policy: \(R=[0.20,0.30]\)
-\For{each ratio \(r\in R\)}
-    \For{\(k\leftarrow 1\) to \(K_{\max}\)}
-        \State \(S^{cand}\leftarrow S^{inc}\)
-        \If{\(k\) is odd}
-            \State \(dir\leftarrow\textsc{DOWN}\)
-        \Else
-            \State \(dir\leftarrow\textsc{UP}\)
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), incumbent solution \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\For{\(k\leftarrow 1\) to \(K_{\max}\)}
+    \For{\(l\leftarrow 1\) to \(2\)} \label{VNS:step1}
+        \State \(\mathbf{s}_{cand}\leftarrow\mathrm{Shake}(\mathbf{s}_{inc},l)\) \label{VNS:step2}
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s}_{cand})\)
+        \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
+            \State \Return \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \EndIf
-        \State \(S^{cand}\leftarrow\) \Call{Shake}{\(S^{cand},dir,r\)}
-        \State \((S^{cand},\Pi^{cand},Eval^{cand})\leftarrow\) \Call{SampleSizeLocalSearch}{\(X,S^{cand}\)}
-        \If{\Call{Better}{\(Eval^{cand},Eval^{inc}\)}}
-            \State \Return \((S^{cand},\Pi^{cand},Eval^{cand},true)\)
-        \EndIf
-    \EndFor
+    \EndFor \label{VNS:step7}
 \EndFor
-\State \Return \((S^{inc},\Pi^{inc},Eval^{inc},false)\)
+\State \Return \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 \end{algorithmic}
 \end{algorithm}
 

@@ -1,0 +1,55 @@
+\subsection{Variable Neighborhood Search Mechanism}
+\label{subsec:vns}
+\label{subsec:vns_diversification}
+
+If \(\mathrm{SampleSizeLocalSearch}\) does not improve the incumbent,
+Algorithm~\ref{alg:framework} calls \(\mathrm{VNS}\) on the incumbent
+chamber assignment and sample vector (Step~\ref{step:fw-vns}).
+Following the classical VNS principle of changing neighborhood
+intensity after local stagnation \citep{LiaoCheng2007}, and unlike
+conventional VNS approaches that perturb sequencing or assignment
+decisions, this mechanism perturbs sample-size decisions and therefore
+changes the workload structure itself.
+
+We present the main steps of the proposed VNS procedure in
+Algorithm~\ref{alg:vns}.
+It takes the incumbent solution as the initial solution.
+For a number of iterations (\(K_{\max}\)), the algorithm visits the
+two neighborhoods sequentially
+(Steps~\ref{VNS:step1}--\ref{VNS:step7}).
+In each neighborhood, we select a proportion \(R\) of products and
+change the sample size of the selected products.
+The first neighborhood (\(l=1\)) decreases the number of samples of
+the selected products to \(s_{\min}\), while the second neighborhood
+(\(l=2\)) increases the number of samples to \(v_{\max}\)
+(Step~\ref{VNS:step2}).
+The perturbed solution is then improved using the sample-size local
+search in Algorithm~\ref{alg:sample_ls}.
+The VNS follows a first-improvement policy: as soon as a locally
+improved candidate improves the incumbent under the lexicographic
+objective, it is returned to the main framework.
+If no improving candidate is found within the \(K_{\max}\) iterations,
+the incumbent is returned.
+
+\begin{algorithm}[H]
+\caption{VNS}
+\label{alg:vns}
+\label{alg:vns_fixed_destroy}
+\label{alg:vns_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), incumbent solution \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\For{\(k\leftarrow 1\) to \(K_{\max}\)}
+    \For{\(l\leftarrow 1\) to \(2\)} \label{VNS:step1}
+        \State \(\mathbf{s}_{cand}\leftarrow\mathrm{Shake}(\mathbf{s}_{inc},l)\) \label{VNS:step2}
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s}_{cand})\)
+        \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
+            \State \Return \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+        \EndIf
+    \EndFor \label{VNS:step7}
+\EndFor
+\State \Return \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\end{algorithmic}
+\end{algorithm}
+
+Together, the chamber-assignment, sample-size optimization, scheduling, and VNS components form an iterative framework in which workload generation, resource configuration, and schedule feasibility are updated jointly. The next section evaluates the contribution of these components through computational experiments.

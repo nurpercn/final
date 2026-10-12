@@ -929,44 +929,61 @@ The loop stops when no product has a ready operation
 (Step~\ref{step:sch-stop}).
 Step~\ref{step:sch-obj} records tardiness.
 
-\subsection{VNS diversification}
+\subsection{Variable Neighborhood Search Mechanism}
 \label{subsec:vns}
+\label{subsec:vns_diversification}
 
-VNS is activated when the outer loop does not improve the incumbent. Following the classical VNS principle of changing neighborhood intensity after local stagnation \citep{LiaoCheng2007}, the method uses a fixed fallback ratio sequence
-\[
-R^{VNS}=[0.20,0.30].
-\]
-For each ratio, up to \(K_{\max}\) shake attempts are performed. A shake selects the corresponding fraction of products and alternates between two directions: \textsc{DOWN}, which resets selected samples to \(s_{\min}\), and \textsc{UP}, which resets selected samples to the VNS upper level. The perturbed vector is then improved by the same sample-size local search. The first locally improved candidate that improves the incumbent is accepted.
+If \(\mathrm{SampleSizeLocalSearch}\) does not improve the incumbent,
+Algorithm~\ref{alg:framework} calls \(\mathrm{VNS}\) on the incumbent
+chamber assignment and sample vector (Step~\ref{step:fw-vns}).
+Following the classical VNS principle of changing neighborhood
+intensity after local stagnation \citep{LiaoCheng2007}, and unlike
+conventional VNS approaches that perturb sequencing or assignment
+decisions, this mechanism perturbs sample-size decisions and therefore
+changes the workload structure itself.
 
-This design changes the workload structure rather than only the sequence of existing operations. As a result, VNS can escape local optima created by the current balance between pull-down workload, downstream parallelism, and chamber eligibility.
-
-The VNS procedure starts each ratio phase from the incumbent rather than from the previous failed shake. This prevents the search from drifting too far from the best known solution through a sequence of non-improving perturbations. The first-improvement rule is also consistent with the tactical objective of obtaining high-quality solutions without exhaustively exploring every possible perturbation.
+We present the main steps of the proposed VNS procedure in
+Algorithm~\ref{alg:vns}.
+It takes the incumbent solution as the initial solution.
+For a number of iterations (\(K_{\max}\)), the algorithm visits the
+two neighborhoods sequentially
+(Steps~\ref{VNS:step1}--\ref{VNS:step7}).
+In each neighborhood, we select a proportion \(R\) of products and
+change the sample size of the selected products.
+The first neighborhood (\(l=1\)) decreases the number of samples of
+the selected products to \(s_{\min}\), while the second neighborhood
+(\(l=2\)) increases the number of samples to \(v_{\max}\)
+(Step~\ref{VNS:step2}).
+The perturbed solution is then improved using the sample-size local
+search in Algorithm~\ref{alg:sample_ls}.
+The VNS follows a first-improvement policy: as soon as a locally
+improved candidate improves the incumbent under the lexicographic
+objective, it is returned to the main framework.
+If no improving candidate is found within the \(K_{\max}\) iterations,
+the incumbent is returned.
 
 \begin{algorithm}[H]
-\caption{VNS with fixed fallback ratios}
+\caption{VNS}
+\label{alg:vns}
+\label{alg:vns_fixed_destroy}
 \label{alg:vns_short}
 \begin{algorithmic}[1]
-\State \textbf{Input:} Chamber assignment \(X\), incumbent \((S^{inc},\Pi^{inc},Eval^{inc})\)
-\State Set \(R^{VNS}=[0.20,0.30]\).
-\For{each ratio \(r\in R^{VNS}\)}
-    \For{\(k=1,\ldots,K_{\max}\)}
-        \State \(S^{cand}\leftarrow S^{inc}\).
-        \If{\(k\) is odd}
-            \State Reset the selected \(r\)-fraction of products to \(s_{\min}\).
-        \Else
-            \State Reset the selected \(r\)-fraction of products to \(s_{\max VNS}\).
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), incumbent solution \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\For{\(k\leftarrow 1\) to \(K_{\max}\)}
+    \For{\(l\leftarrow 1\) to \(2\)} \label{VNS:step1}
+        \State \(\mathbf{s}_{cand}\leftarrow\mathrm{Shake}(\mathbf{s}_{inc},l)\) \label{VNS:step2}
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s}_{cand})\)
+        \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
+            \State \Return \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \EndIf
-        \State Apply sample-size local search to \(S^{cand}\) under \(X\).
-        \If{the locally improved candidate improves \(Eval^{inc}\)}
-            \State \Return the candidate and set \(improved=true\).
-        \EndIf
-    \EndFor
+    \EndFor \label{VNS:step7}
 \EndFor
-\State \Return the incumbent and set \(improved=false\).
+\State \Return \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 \end{algorithmic}
 \end{algorithm}
 
-The fallback structure avoids committing the search to a single perturbation intensity. A \(0.20\) perturbation often preserves useful sample-allocation structure while moving the search outside the immediate local basin. If this is insufficient, the \(0.30\) perturbation provides a stronger change. Larger perturbations were not selected for the final configuration because preliminary tests indicated that they often destroyed beneficial workload patterns generated by the local search.
+Together, the chamber-assignment, sample-size optimization, scheduling, and VNS components form an iterative framework in which workload generation, resource configuration, and schedule feasibility are updated jointly. The next section evaluates the contribution of these components through computational experiments.
 
 \section{Computational Study}
 \label{sec:computational_study}
