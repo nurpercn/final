@@ -842,11 +842,9 @@ the product requires it.
 Station and sample clocks, and the stage state of the product,
 are updated so that the next candidate pool is rebuilt from the
 new state.
-When no product has a ready operation, completion times \(C_p\)
-are the finish times of each product's last scheduled test, and
-\[
-T^{tot}=\sum_{p\in\mathcal{P}}\max(0,C_p-d_p).
-\]
+When no product has a ready operation, the completion time
+\(C_p\) is the finish time of product \(p\)'s last scheduled
+test, and \(T^{tot}\) is computed as in the problem definition.
 When a full schedule is stored, an independent check audits
 required-test multiplicity, environment, humidity and voltage
 eligibility, station non-overlap, sample non-overlap, and stage
