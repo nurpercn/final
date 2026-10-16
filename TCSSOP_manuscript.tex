@@ -469,66 +469,50 @@ These conditions define feasibility at both structural and temporal levels. Stru
 \subsection{Notation}
 \label{subsec:notation}
 
-The main notation used throughout the problem definition and solution approach is summarized in Table~\ref{tab:notation_tcssop}. Objective values are evaluated lexicographically by prioritizing total tardiness and, among equal-tardiness solutions, minimizing total sample usage.
+The main notation used in the definition of RCSP-SO is summarized in Table~\ref{tab:notation_RCSP-SO}. Objective values are evaluated lexicographically by prioritizing total tardiness and, among solutions with equal total tardiness, minimizing total sample usage.
 
-\begin{longtable}{|p{0.21\textwidth}|p{0.70\textwidth}|}
-\caption{Notation used in the proposed TCSSOP framework}
-\label{tab:notation_tcssop}\\
-\hline
-\textbf{Symbol} & \textbf{Definition} \\
-\hline
-\endfirsthead
-\hline
-\textbf{Symbol} & \textbf{Definition} \\
-\hline
-\endhead
-\(\mathcal{P}\) & Set of products/projects, indexed by \(p\) \\ \hline
-\(\mathcal{C}\) & Set of chambers, indexed by \(c\) \\ \hline
-\(\mathcal{K}_c\) & Set of stations in chamber \(c\), indexed by \(r\) \\ \hline
-\(\mathcal{E}\) & Set of feasible environment configurations, indexed by \(e\) \\ \hline
-\(\mathcal{E}^{H}\) & Set of humidity-controlled environments \\ \hline
-\(\mathcal{E}^{V}(S)\) & Set of environments with positive voltage-sensitive workload \\ \hline
-\(\mathcal{T}\) & Set of test types, indexed by \(t\) \\ \hline
-\(\mathcal{T}_p\) & Required test subset of product \(p\) \\ \hline
-\(e(t)\) & Environment requirement of test \(t\) \\ \hline
-\(\tau_t\) & Processing time of test \(t\) \\ \hline
-\(m_{pt}(s_p)\) & Multiplicity of test \(t\) for product \(p\) under sample count \(s_p\) \\ \hline
-\(d_p\) & Due date of product \(p\) \\ \hline
-\(C_p\) & Completion time of product \(p\) \\ \hline
-\(T_p\) & Tardiness of product \(p\), \(T_p=\max(0,C_p-d_p)\) \\ \hline
-\(T^{tot}\) & Total tardiness, \(T^{tot}=\sum_{p\in\mathcal{P}}T_p\) \\ \hline
-\(s_p\) & Sample count decision for product \(p\) \\ \hline
-\(S\) & Sample vector, \(S=\{s_p\}_{p\in\mathcal{P}}\) \\ \hline
-\(s_{\min},s_{\max}\) & Lower and upper bounds for sample counts \\ \hline
-\(u_{\max}\) & VNS upper sample level for neighborhood \(l=2\) \\ \hline
-\(S^{tot}\) & Total sample usage, \(S^{tot}=\sum_{p\in\mathcal{P}}s_p\) \\ \hline
-\(X_c\) & Environment assigned to chamber \(c\) \\ \hline
-\(X\) & Chamber-assignment vector, \(X=\{X_c\}_{c\in\mathcal{C}}\) \\ \hline
-\(x_{ce}\) & Binary variable: 1 if chamber \(c\) is assigned to environment \(e\) \\ \hline
-\(M_c\) & Number of stations in chamber \(c\), \(M_c=|\mathcal{K}_c|\) \\ \hline
-\(M^{tot}\) & Total number of stations, \(M^{tot}=\sum_{c\in\mathcal{C}}M_c\) \\ \hline
-\(M^{V,tot}\) & Voltage-capable station capacity, \(M^{V,tot}=\sum_{c\in\mathcal{C}}M_cv_c\) \\ \hline
-\(h_c\) & Indicator: 1 if chamber \(c\) supports humidity control \\ \hline
-\(v_c\) & Indicator: 1 if chamber \(c\) supports voltage control \\ \hline
-\(\nu_p\) & Indicator: 1 if product \(p\) requires voltage-compatible execution \\ \hline
-\(W_e(S)\) & Total workload assigned to environment \(e\) \\ \hline
-\(W_e^V(S)\) & Voltage-sensitive workload assigned to environment \(e\) \\ \hline
-\(W^{tot}(S)\) & Total workload over all environments \\ \hline
-\(W^{V,tot}(S)\) & Total voltage-sensitive workload \\ \hline
-\(\phi_e\) & Workload share of environment \(e\) \\ \hline
-\(\phi_e^V\) & Voltage-sensitive workload share of environment \(e\) \\ \hline
-\(S_e\) & Target station capacity for environment \(e\) \\ \hline
-\(S_e^V\) & Voltage-sensitive target station capacity for environment \(e\) \\ \hline
-\(z_e,z_e^V\) & Capacity-deviation variables in chamber assignment \\ \hline
-\(\Delta_p\) & Sample-size neighborhood of product \(p\) \\ \hline
-\(I_{\max}\) & Maximum number of outer iterations \\ \hline
-\(K_{\mathrm{reb}}\) & Maximum number of Late--Early Rebalance pairs \\ \hline
-\(K_{\max}\) & Maximum number of VNS shakes per ratio phase \\ \hline
-\(R_{\mathrm{VNS}}\) & VNS fallback ratios, \(R_{\mathrm{VNS}}=[0.20,0.30]\) \\ \hline
-\(\Pi\) & Feasible schedule \\ \hline
-\(Eval\) & Lexicographic objective tuple, \(Eval=(T^{tot},S^{tot})\) \\ \hline
-\(X^{best},S^{best},\Pi^{best},Eval^{best}\) & Incumbent best solution components \\ \hline
-\end{longtable}
+\begin{table}[H]
+\caption{Sets, parameters and solution measures used in the definition of RCSP-SO}
+\label{tab:notation_RCSP-SO}
+\label{tab:notation_tcssop}
+\centering
+\small
+\begin{tabular}{cl}
+\toprule
+\textbf{Notation} & \textbf{Description}\\
+\midrule
+\textbf{Sets} & \\
+\midrule
+\(\mathcal{P}\) & Set of products, indexed by \(p\) \\
+\(\mathcal{P}^v\) & Subset of products that require nonstandard voltage \\
+\(\mathcal{C}\) & Set of chambers, indexed by \(c\) \\
+\(\mathcal{C}^h\) & Subset of chambers that have humidity-adjustment capability \\
+\(\mathcal{C}^v\) & Subset of chambers that have voltage-adjustment capability \\
+\(\mathcal{K}_c\) & Set of stations in chamber \(c\) \\
+\(\mathcal{E}\) & Set of environmental (temperature and humidity) configurations, indexed by \(e\) \\
+\(\mathcal{E}^H\) & Set of environmental configurations that require 85\% RH \\
+\(\mathcal{T}\) & Set of tests, indexed by \(t\) \\
+\(\mathcal{T}_p\) & Set of tests required by product \(p\) \\
+\midrule
+\textbf{Parameters} & \\
+\midrule
+\(d_p\) & Due date of product \(p\) \\
+\(e(t)\) & Environmental configuration required by test \(t\) \\
+\(\tau_t\) & Duration of test \(t\) \\
+\(K_c\) & Number of stations in chamber \(c\) \\
+\(h_c\) & 1 if chamber \(c\) can adjust humidity; 0 otherwise \\
+\(v_c\) & 1 if chamber \(c\) can adjust voltage; 0 otherwise \\
+\(s_{\min}\) & Lower bound on the sample size of a product \\
+\(s_{\max}\) & Upper bound on the sample size of a product \\
+\midrule
+\textbf{Solution measures} & \\
+\midrule
+\(C_p\) & Completion time of product \(p\) \\
+\(T_p\) & Tardiness of product \(p\), \(T_p=\max\{0,C_p-d_p\}\) \\
+\(T^{tot}\) & Total tardiness, \(T^{tot}=\sum_{p\in\mathcal{P}}T_p\) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Solution Methodology}
 \label{sec:solution_methodology}
