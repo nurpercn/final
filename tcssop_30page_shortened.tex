@@ -291,12 +291,29 @@ Product due dates represent market launch deadlines or internal project mileston
 \label{tab:test_attributes}
 \centering
 \footnotesize
-\begin{tabular}{cclcccc}
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular*}{\textwidth}{
+  @{\extracolsep{\fill}}
+  >{\centering\arraybackslash}p{0.72cm}
+  >{\centering\arraybackslash}p{0.78cm}
+  >{\raggedright\arraybackslash}p{2.85cm}
+  >{\centering\arraybackslash}p{1.85cm}
+  >{\centering\arraybackslash}p{1.35cm}
+  >{\centering\arraybackslash}p{1.25cm}
+  >{\centering\arraybackslash}p{1.45cm}
+}
 \toprule
-\textbf{Stage} & \textbf{Test No.} & \textbf{Test Name} & \textbf{Temperature} & \textbf{Humidity} & \textbf{Samples} & \textbf{Duration (days)} \\
+\textbf{Stage} &
+\makecell{\textbf{Test}\\\textbf{No.}} &
+\textbf{Test Name} &
+\textbf{Temperature} &
+\textbf{Humidity} &
+\textbf{Samples} &
+\makecell{\textbf{Duration}\\\textbf{(days)}} \\
 \midrule
-1 & 1 & Refrigerant Charge Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\
-2 & 2 & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All samples & 5 \\
+1 & 1 & Refrigerant Charge Determination & 43/38/32 \si{\degreeCelsius} & Ambient & 1 & 10 \\
+2 & 2 & Pull-down & 43/38/32 \si{\degreeCelsius} & Ambient & All samples & 5 \\
 3 & 3$^{\dagger}$ & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\
 3 & 4$^{\dagger}$ & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\
 3 & 5$^{\dagger}$ & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\
@@ -312,10 +329,10 @@ Product due dates represent market launch deadlines or internal project mileston
 4 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\
 4 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 
 \vspace{1mm}
-\begin{minipage}{0.95\textwidth}
+\begin{minipage}{\textwidth}
 \footnotesize
 $^{\dagger}$ At least one of these tests is required. The energy-labeling regulation of the product's target market selects the pair at \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or a single test at \(25^\circ\mathrm{C}\) or at \(32^\circ\mathrm{C}\).\\
 $^{*}$ Low-temperature performance test of the climatic class: \(10^\circ\mathrm{C}\) for products targeted for subnormal climates and \(16^\circ\mathrm{C}\) otherwise.\\
@@ -323,6 +340,7 @@ $^{**}$ High-temperature performance test of the climatic class: \(43^\circ\math
 $^{***}$ Optional. The product engineer may request either test, both, or neither.
 \end{minipage}
 \end{table}
+
 
 
 The chamber system includes 28 chambers and 240 stations. Chamber capacities range from 6 to 12 stations. Humidity and voltage capabilities are heterogeneous, so the effective capacity available for a given environment may be much smaller than the total station count. Figure~\ref{fig:chamber_3d_short} illustrates the chamber-station structure.
