@@ -280,39 +280,43 @@ Overall, TCSSOP combines three coupled elements: heterogeneous chamber resources
 Test requirements are product-dependent and are determined by the target market, climatic class, energy regulation, electrical specification, and optional engineering decisions. Therefore, each product may require a different subset of tests and a different set of chamber environments. Table~\ref{tab:test_attributes} summarizes the industrial test catalog, including stage membership, environmental conditions, sample usage, and typical durations.
 
 \begin{table}[H]
-\caption{List of tests and their environmental conditions}
+\caption{Tests and their required environmental conditions, number of samples, and durations}
 \label{tab:test_attributes}
 \centering
 \footnotesize
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{|c|c|l|c|c|c|c|}
-\hline
-\textbf{Stage} & \textbf{Test No.} & \textbf{Test Name} & \textbf{Temperature} & \textbf{Ambient Humidity} & \textbf{Samples} & \textbf{Duration (days)} \\ \hline
-1 & 1 & Gas Amount Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-2 & 2  & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All samples & 5 \\ \hline
-3 & 3  & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-3 & 4  & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-3 & 5  & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-3 & 6$^*$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-3 & 7$^*$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-3 & 8  & Performance & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-3 & 9$^{**}$ & Performance & \SI{32}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-3 & 10$^{**}$ & Performance & \SI{38}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-3 & 11$^{**}$ & Performance & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-4 & 12$^{***}$ & Freezing Capacity & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\ \hline
-4 & 13$^{***}$ & Temperature Rise & \SI{25}{\degreeCelsius} & Ambient & 1 & 5 \\ \hline
-5 & 14 & Consumer Usage & \SI{10}{\degreeCelsius} & Ambient & 1 & 15 \\ \hline
-5 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\ \hline
-5 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\ \hline
+\begin{tabular}{cclcccc}
+\toprule
+\textbf{Stage} & \textbf{Test No.} & \textbf{Test Name} & \textbf{Temperature} & \textbf{Humidity} & \textbf{Samples} & \textbf{Duration (days)} \\
+\midrule
+1 & 1 & Refrigerant Charge Determination & 43/38/32~\si{\degreeCelsius} & Ambient & 1 & 10 \\
+2 & 2 & Pull-down & 43/38/32~\si{\degreeCelsius} & Ambient & All samples & 5 \\
+3 & 3$^{\dagger}$ & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 4$^{\dagger}$ & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 5$^{\dagger}$ & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 6$^{*}$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 7$^{*}$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 8 & Performance & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 9$^{**}$ & Performance & \SI{32}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 10$^{**}$ & Performance & \SI{38}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 11$^{**}$ & Performance & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 12$^{***}$ & Freezing Capacity & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 13$^{***}$ & Temperature Rise & \SI{25}{\degreeCelsius} & Ambient & 1 & 5 \\
+4 & 14 & Consumer Usage & \SI{10}{\degreeCelsius} & Ambient & 1 & 15 \\
+4 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+4 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+\bottomrule
 \end{tabular}
+
 \vspace{1mm}
 \begin{minipage}{0.95\textwidth}
 \footnotesize
-$^*$ One of these tests is selected based on target market climatic class requirements.\\
-$^{**}$ One of these tests is selected based on target market climatic class requirements.\\
-$^{***}$ Optional tests decided by the product engineer.
+$^{\dagger}$ At least one of these tests is required. The energy-labeling regulation of the product's target market selects the pair at \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or a single test at \(25^\circ\mathrm{C}\) or at \(32^\circ\mathrm{C}\).\\
+$^{*}$ Low-temperature performance test of the climatic class: \(10^\circ\mathrm{C}\) for products targeted for subnormal climates and \(16^\circ\mathrm{C}\) otherwise.\\
+$^{**}$ High-temperature performance test of the climatic class: \(43^\circ\mathrm{C}\) for products targeted for tropical climates, \(38^\circ\mathrm{C}\) for subtropical climates, and \(32^\circ\mathrm{C}\) for normal and subnormal climates.\\
+$^{***}$ Optional. The product engineer may request either test, both, or neither.
 \end{minipage}
 \end{table}
+
 
 Refrigerant charge determination, pull-down, the performance test at
 \(25^\circ\mathrm{C}\), and the three consumer-usage tests are required
@@ -417,7 +421,7 @@ Because chamber capacities and capabilities are not uniformly distributed, the e
 
 The test process follows a structured multi-stage flow:
 \[
-\text{Gas Amount Determination}\rightarrow \text{Pull-down}\rightarrow \text{Other Required Tests}\rightarrow \text{Consumer Usage}.
+\text{Refrigerant Charge Determination}\rightarrow \text{Pull-down}\rightarrow \text{Other Required Tests}\rightarrow \text{Consumer Usage}.
 \]
 Stage progression is controlled by stage-based precedence rules rather than by a simple fixed predecessor list. Gas amount determination, when required, precedes pull-down testing. Pull-down acts as the release condition for downstream tests. Other required tests can start only after the pull-down phase is completed, while consumer-usage tests are released after pull-down completion and after all required downstream tests have been initiated.
 
