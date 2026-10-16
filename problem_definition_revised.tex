@@ -57,11 +57,49 @@ $^{***}$ Optional tests decided by the product engineer.
 \end{minipage}
 \end{table}
 
-Climatic class determines the ambient temperature conditions for performance testing. The considered classes are Tropical (\(43^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), Subtropical (\(38^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), Normal (\(32^\circ\mathrm{C}\)--\(16^\circ\mathrm{C}\)), and Subnormal (\(32^\circ\mathrm{C}\)--\(10^\circ\mathrm{C}\)). Energy-efficiency requirements are determined by market-specific regulations and may require either dual-point measurements, such as \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or single-point measurements at \(25^\circ\mathrm{C}\) or \(32^\circ\mathrm{C}\).
+Refrigerant charge determination, pull-down, the performance test at
+\(25^\circ\mathrm{C}\), and the three consumer-usage tests are required
+for every product.
+The temperature and humidity of each test are given in
+Table~\ref{tab:test_attributes}.
+Ambient humidity means that the test needs no humidity adjustment and
+can be run in any chamber.
+An entry of 85\% RH means that the test must be run at 85\% relative
+humidity, so it can be assigned only to a chamber with humidity control.
+Every test uses one sample, except pull-down, which is repeated on each
+sample.
+For refrigerant charge determination and pull-down, the temperature is
+the upper ambient limit of the product's climatic class.
+Products targeted for tropical, subtropical, and normal/subnormal
+climates are tested at \(43^\circ\mathrm{C}\), \(38^\circ\mathrm{C}\),
+and \(32^\circ\mathrm{C}\), respectively.
+In addition to the performance test at \(25^\circ\mathrm{C}\), the
+climatic class determines one low-temperature and one high-temperature
+performance test, as specified in Table~\ref{tab:test_attributes}.
+An additional performance test at \(16^\circ\mathrm{C}\) is required for
+products targeting tropical, subtropical, and normal climates, whereas
+the corresponding test for products targeting subnormal climates is
+performed at \(10^\circ\mathrm{C}\).
+High-temperature performance tests at \(43^\circ\mathrm{C}\),
+\(38^\circ\mathrm{C}\), and \(32^\circ\mathrm{C}\) are required for
+products targeting tropical, subtropical, and normal or subnormal
+climates, respectively.
+The applicable energy-efficiency tests are determined by the
+energy-labeling regulation of the product's target market.
+That regulation specifies exactly one of three mutually exclusive
+options: the pair of tests at \(16^\circ\mathrm{C}\) and
+\(32^\circ\mathrm{C}\), a single test at \(25^\circ\mathrm{C}\), or a
+single test at \(32^\circ\mathrm{C}\).
+The three energy-efficiency rows in Table~\ref{tab:test_attributes} are
+therefore alternatives, not a mandatory set.
+Freezing-capacity and temperature-rise tests are optional and are
+included when requested by the product engineer.
+Thus, each product generally has a different test portfolio even though
+all products follow the same stage-based testing structure.
 
 Electrical requirements also vary by region. Typical configurations include 230V--50Hz for Europe, 120V--60Hz for the USA/Canada, and 230V--60Hz for markets such as Saudi Arabia and Brazil. Voltage compatibility is modeled at the product level. If product \(p\) requires voltage-compatible execution, all operations of that product must be assigned to voltage-capable chambers; otherwise, the product can be processed in any environmentally compatible chamber.
 
-Each test type \(t\in\mathcal{T}\) is associated with an environmental requirement \(e(t)\), specifying its temperature and humidity condition. Not all test variants are required simultaneously: several test groups represent alternative operating conditions, and only the regulation-consistent variant is selected for each product. For example, performance tests at different temperatures correspond to alternative climatic-class requirements.
+Each test type \(t\in\mathcal{T}\) is associated with an environmental requirement \(e(t)\), specifying its temperature and humidity condition.
 
 As a result, product-specific test definitions generate heterogeneous workload patterns across environments and voltage-capable resources. This heterogeneity affects both feasibility and scheduling efficiency, since workload may concentrate in specific temperature-humidity environments while voltage-sensitive products compete for a restricted subset of chambers. Because required test subsets differ across products, the marginal value of an additional sample also differs across projects, reinforcing the need for project-specific rather than uniform sample decisions.
 

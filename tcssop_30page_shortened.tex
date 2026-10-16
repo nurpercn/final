@@ -385,13 +385,47 @@ The one-sided voltage rule is also important. Products requiring voltage-compati
 \subsection{Test requirement generation}
 \label{subsec:req_generation}
 
-Product-specific test sets are generated from climatic class, energy regulation, optional engineering decisions, and voltage specification. Climatic class determines which performance-temperature alternatives are required. Energy-efficiency regulation determines whether a product requires a single-point or multi-point energy test. Optional tests such as freezing capacity and temperature rise are included only when specified by the product engineer. Thus, two products may share the same due-date region and voltage requirement but still impose different workload profiles on the chamber system.
+Refrigerant charge determination, pull-down, the performance test at
+\(25^\circ\mathrm{C}\), and the three consumer-usage tests are required
+for every product.
+The temperature and humidity of each test are given in
+Table~\ref{tab:test_attributes_short}.
+Ambient humidity means that the test needs no humidity adjustment and
+can be run in any chamber.
+An entry of 85\% RH means that the test must be run at 85\% relative
+humidity, so it can be assigned only to a chamber with humidity control.
+Every test uses one sample, except pull-down, which is repeated on each
+sample.
+For refrigerant charge determination and pull-down, the temperature is
+the upper ambient limit of the product's climatic class.
+Products targeted for tropical, subtropical, and normal/subnormal
+climates are tested at \(43^\circ\mathrm{C}\), \(38^\circ\mathrm{C}\),
+and \(32^\circ\mathrm{C}\), respectively.
+In addition to the performance test at \(25^\circ\mathrm{C}\), the
+climatic class determines one low-temperature and one high-temperature
+performance test, as specified in Table~\ref{tab:test_attributes_short}.
+An additional performance test at \(16^\circ\mathrm{C}\) is required for
+products targeting tropical, subtropical, and normal climates, whereas
+the corresponding test for products targeting subnormal climates is
+performed at \(10^\circ\mathrm{C}\).
+High-temperature performance tests at \(43^\circ\mathrm{C}\),
+\(38^\circ\mathrm{C}\), and \(32^\circ\mathrm{C}\) are required for
+products targeting tropical, subtropical, and normal or subnormal
+climates, respectively.
+The applicable energy-efficiency tests are determined by the
+energy-labeling regulation of the product's target market.
+That regulation specifies exactly one of three mutually exclusive
+options: the pair of tests at \(16^\circ\mathrm{C}\) and
+\(32^\circ\mathrm{C}\), a single test at \(25^\circ\mathrm{C}\), or a
+single test at \(32^\circ\mathrm{C}\).
+The three energy-efficiency rows in Table~\ref{tab:test_attributes_short} are
+therefore alternatives, not a mandatory set.
+Freezing-capacity and temperature-rise tests are optional and are
+included when requested by the product engineer.
+Thus, each product generally has a different test portfolio even though
+all products follow the same stage-based testing structure.
 
 The environmental requirement of a test is represented by \(e(t)\). Ambient-humidity tests can be assigned to any chamber whose temperature setting matches \(e(t)\), whereas controlled-humidity tests also require humidity capability. Voltage is modeled at the product level rather than the test level because the electrical configuration follows the product's target market. If a product requires voltage-compatible execution, all of its operations must be processed on voltage-capable chambers. This one-sided condition reflects practice: a voltage-capable chamber can process a product without voltage requirements, but the reverse is not feasible.
-
-The test catalog contains several alternative variants. For example, energy-efficiency tests may be performed at \(16^\circ\mathrm{C}\), \(25^\circ\mathrm{C}\), or \(32^\circ\mathrm{C}\), while performance tests can be required at different temperatures according to climatic class. These alternatives prevent the workload from being uniformly distributed over environments. In many instances, early-stage tests concentrate at high-temperature environments, while consumer-usage and optional tests create additional demand at \(25^\circ\mathrm{C}\) and humidity-controlled environments. This uneven distribution is a main source of bottlenecks.
-
-The target-market logic also implies that not all tests in the catalog are required simultaneously. Some tests are mandatory, some are alternatives, and some are optional. For example, one performance test may be selected from a climatic-class group, while another product may require a different performance-temperature condition. This mechanism creates product-level heterogeneity even within the same benchmark scenario.
 
 \subsection{Decision-dependent workload}
 \label{subsec:workload}
@@ -1043,10 +1077,12 @@ chambers that can adjust voltage.
 These choices give nine combinations of due-date and voltage scenarios.
 For each combination we generate 10 instances with different product
 test requirements, so the study uses 90 instances in total.
-For each product, the mandatory tests are those listed in
+For each product, refrigerant charge determination, pull-down, the
+performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage
+tests are required.
+The energy-efficiency option and the remaining performance, freezing,
+and temperature-rise tests are selected as explained under
 Table~\ref{tab:test_attributes_short}.
-Among tests 6, 7, and 9--13, a subset is selected for each product
-according to the explanation under Table~\ref{tab:test_attributes_short}.
 The reported results cover all 90 instances and are also discussed
 with respect to these due-date and voltage scenarios.
 
