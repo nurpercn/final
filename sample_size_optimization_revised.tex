@@ -10,14 +10,10 @@ does the chance of overlap.
 Which direction helps is not known in advance, so both are tried
 under the same assignment.
 
-The search keeps every product between three and eleven samples.
-A single physical unit would place every test of that product on the
-same sample, so those tests cannot overlap, and a one-unit plan
-would give no replication across units.
-The laboratory therefore treats several units as the minimum for a
-valid test plan.
-Three is the industrial baseline: the local search starts there and
-does not go below it.
+The search keeps every product between \(s_{\min}\) and \(s_{\max}\)
+samples, with \(s_{\min}=3\) equal to the laboratory planning floor
+justified in the problem definition.
+The local search starts at this floor and does not go below it.
 At the other end, at most eleven tests of a product can run in
 parallel, so a twelfth sample cannot create additional concurrent
 work.

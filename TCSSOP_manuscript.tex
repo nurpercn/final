@@ -462,7 +462,7 @@ Solutions are evaluated lexicographically: total tardiness is minimized first, a
 
 A feasible solution must satisfy all operational, environmental, and stage-based requirements of the testing system. For each product \(p\), all tests in \(\mathcal{T}_p\) must be scheduled with the correct multiplicities: pull-down tests generate \(s_p\) operations, while other required tests generate one operation per product, and no non-required tests are scheduled. Each operation must be assigned to a chamber whose environment matches its test requirement \(e(t)\). Tests requiring controlled humidity can only be assigned to chambers with humidity capability \((h_c=1)\). If product \(p\) requires voltage-compatible execution \((\nu_p=1)\), all of its operations must be assigned to voltage-capable chambers \((v_c=1)\); otherwise, the product may be assigned to any environmentally compatible chamber.
 
-Feasibility also requires temporal and resource consistency. Each station can process at most one operation at a time, and each physical sample can participate in at most one operation at a time. Stage-based precedence rules must be respected: downstream tests can start only after the pull-down phase is completed, and consumer-usage tests require both completion of the pull-down phase and initiation of all required downstream tests. Sample counts must satisfy \(s_{\min}\le s_p\le s_{\max}\) for all \(p\in\mathcal{P}\). Finally, the completion time \(C_p\) of each product is the maximum completion time among all its required operations.
+Feasibility also requires temporal and resource consistency. Each station can process at most one operation at a time, and each physical sample can participate in at most one operation at a time. Stage-based precedence rules must be respected: downstream tests can start only after the pull-down phase is completed, and consumer-usage tests require both completion of the pull-down phase and initiation of all required downstream tests. The sample size of each product is restricted to the interval \([s_{\min},s_{\max}]\). The lower bound \(s_{\min}\) is the minimum number of prototypes permitted in the planning process. A single sample is not used: every remaining test of that product would occupy the same physical unit, so those tests cannot overlap, and the plan would have no replicate if a unit is damaged or a test must be repeated. Current industrial practice therefore plans with three prototypes per product; we set \(s_{\min}=3\) to this laboratory floor rather than to a statistical sample-size formula. The upper bound \(s_{\max}\) is the maximum number of tests of a product that can run concurrently. Using more than \(s_{\max}\) samples cannot create additional downstream parallelism and would only generate additional pull-down workload. Finally, the completion time \(C_p\) of each product is the maximum completion time among all its required operations.
 
 These conditions define feasibility at both structural and temporal levels. Structurally, test selection, sample counts, and chamber assignments must be compatible with environmental and capability requirements. Temporally, the generated operations must admit a schedule that satisfies station capacity, sample exclusivity, and stage-based precedence constraints.
 
@@ -761,14 +761,10 @@ does the chance of overlap.
 Which direction helps is not known in advance, so both are tried
 under the same assignment.
 
-The search keeps every product between three and eleven samples.
-A single physical unit would place every test of that product on the
-same sample, so those tests cannot overlap, and a one-unit plan
-would give no replication across units.
-The laboratory therefore treats several units as the minimum for a
-valid test plan.
-Three is the industrial baseline: the local search starts there and
-does not go below it.
+The search keeps every product between \(s_{\min}\) and \(s_{\max}\)
+samples, with \(s_{\min}=3\) equal to the laboratory planning floor
+justified in the problem definition.
+The local search starts at this floor and does not go below it.
 At the other end, at most eleven tests of a product can run in
 parallel, so a twelfth sample cannot create additional concurrent
 work.
