@@ -18,24 +18,24 @@ The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \
 \begin{algorithmic}[1]
 \State \textbf{Input:} sample vector \(\mathbf{s}\)
 \State \textbf{Output:} \(\mathbf{x}\)
-\State \(\mathbf{x}\leftarrow\mathrm{MIP\textrm{-}CCD}(\mathbf{s})\) \label{step:ca-exact}
-\State \((\Pi,T^{tot})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ca-eval}
-\Repeat \label{step:ca-loop}
-    \State \(\lambda_c\leftarrow B_c/K_c\) for all \(c\in\mathcal{C}\) using \(\Pi\) \label{step:ca-loadrank}
+\State \(\mathbf{x}\leftarrow\mathrm{MIP\textrm{-}CCD}(\mathbf{s})\)\label{step:ca-exact}
+\State \((\Pi,T^{tot})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s})\)\label{step:ca-eval}
+\Repeat
+    \State \(\lambda_c\leftarrow B_c/K_c\) for all \(c\in\mathcal{C}\) using \(\Pi\)
     \State \(\mathit{improved}\leftarrow\mathrm{false}\)
-    \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)} \label{step:ca-swap}
-        \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Swap}(\mathbf{x},c,c')\)
+    \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)}
+        \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Swap}(\mathbf{x},c,c')\)\label{step:ca-swap}
         \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
             \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
-            \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)} \label{step:ca-accept}
-                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+            \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)\label{step:ca-accept}
                 \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
             \EndIf
         \EndIf
     \EndFor
-    \If{\(\mathit{improved}=\mathrm{false}\)} \label{step:ca-move}
+    \If{\(\mathit{improved}=\mathrm{false}\)}
         \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)}
-            \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Move}(\mathbf{x},c,c')\)
+            \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Move}(\mathbf{x},c,c')\)\label{step:ca-move}
             \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
                 \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
                 \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
@@ -45,11 +45,12 @@ The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \
             \EndIf
         \EndFor
     \EndIf
-\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\)} \label{step:ca-stop}
+\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\)}
 \State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
 
-MIP-CCD(\(\mathbf{s}\)) gives the initial assignment and \(\mathrm{Schedule}\) evaluates it.
-Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\), and only then \(\mathrm{Move}\).
-The first neighbor that satisfies the lexicographic test is accepted.
+Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
+Step~\ref{step:ca-eval} evaluates that assignment.
+Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\) (Step~\ref{step:ca-swap}), and only then \(\mathrm{Move}\) (Step~\ref{step:ca-move}).
+The first neighbor that satisfies the lexicographic test is accepted (Step~\ref{step:ca-accept}).
