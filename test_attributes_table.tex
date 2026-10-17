@@ -1,0 +1,44 @@
+\begin{table}[H]
+\caption{Tests and their required environmental conditions, number of samples, and durations}
+\label{tab:test_attributes}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}cclcccc@{}}
+\toprule
+\textbf{Stage} &
+\shortstack{\textbf{Test}\\\textbf{No.}} &
+\textbf{Test Name} &
+\textbf{Temperature} &
+\textbf{Humidity} &
+\textbf{Samples} &
+\shortstack{\textbf{Duration}\\\textbf{(days)}} \\
+\midrule
+1 & 1 & \shortstack[l]{Refrigerant Charge\\Determination} & \shortstack{43/38/32\\\si{\degreeCelsius}} & Ambient & 1 & 10 \\
+2 & 2 & Pull-down & \shortstack{43/38/32\\\si{\degreeCelsius}} & Ambient & \shortstack{All\\samples} & 5 \\
+3 & 3$^{\dagger}$ & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 4$^{\dagger}$ & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 5$^{\dagger}$ & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 6$^{*}$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 7$^{*}$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 8 & Performance & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 9$^{**}$ & Performance & \SI{32}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 10$^{**}$ & Performance & \SI{38}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 11$^{**}$ & Performance & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 12$^{***}$ & Freezing Capacity & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 13$^{***}$ & Temperature Rise & \SI{25}{\degreeCelsius} & Ambient & 1 & 5 \\
+4 & 14 & Consumer Usage & \SI{10}{\degreeCelsius} & Ambient & 1 & 15 \\
+4 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+4 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+\bottomrule
+\end{tabular}
+
+\vspace{1mm}
+\begin{minipage}{0.95\textwidth}
+\footnotesize
+$^{\dagger}$ At least one of these tests is required. The energy-labeling regulation of the product's target market selects the pair at \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or a single test at \(25^\circ\mathrm{C}\) or at \(32^\circ\mathrm{C}\).\\
+$^{*}$ Low-temperature performance test of the climatic class: \(10^\circ\mathrm{C}\) for products targeted for subnormal climates and \(16^\circ\mathrm{C}\) otherwise.\\
+$^{**}$ High-temperature performance test of the climatic class: \(43^\circ\mathrm{C}\) for products targeted for tropical climates, \(38^\circ\mathrm{C}\) for subtropical climates, and \(32^\circ\mathrm{C}\) for normal and subnormal climates.\\
+$^{***}$ Optional. The product engineer may request either test, both, or neither.
+\end{minipage}
+\end{table}
