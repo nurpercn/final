@@ -27,12 +27,12 @@ the inner procedures are developed in the following subsections.
 \For{\(i\leftarrow 1\) to \(I_{\max}\)}
     \State \(\mathbf{x}\leftarrow\text{ChamberAssignment}(\mathbf{s})\) \label{step:fw-assign}
     \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s})\) \label{step:fw-ls}
-    \If{\((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\) improves the incumbent} \label{step:fw-lex}
+    \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)} \label{step:fw-lex}
         \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
     \Else
         \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{VNS}(\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-vns}
-        \If{\((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\) improves the incumbent}
+        \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
             \State \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
             \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
         \Else
@@ -53,9 +53,9 @@ Sample sizes are then improved by local search under this assignment
 That procedure evaluates each trial by an earliest-due-date (EDD)
 schedule and returns the resulting sample vector, schedule, and total
 tardiness.
-As already stated in the problem definition, a candidate replaces the
-incumbent if it reduces total tardiness, or if tardiness is unchanged
-and fewer samples are used (Step~\ref{step:fw-lex}).
+A candidate is accepted if
+\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)
+(Step~\ref{step:fw-lex}).
 The search then continues from the accepted samples, so the next
 iteration reassigns the chambers.
 If local search does not improve the incumbent, VNS is applied to
@@ -63,7 +63,7 @@ the incumbent
 \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
 (Step~\ref{step:fw-vns}): it perturbs the sample vector and repeats
 the same local search under the incumbent assignment.
-If that candidate improves the incumbent, only the incumbent
+If the same lexicographic test holds after VNS, only the incumbent
 samples, schedule, and tardiness are replaced; the next iteration
 reassigns the chambers to the new samples.
 Otherwise the search stops (Step~\ref{step:fw-stop}).

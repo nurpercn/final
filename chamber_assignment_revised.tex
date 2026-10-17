@@ -99,38 +99,59 @@ The proposed chamber configuration determination model is as follows:
 \end{align}
 In this model, objective~\eqref{eq:assign_obj} minimizes the total deviation between assigned station counts and the two target capacities. Constraint~\eqref{eq:assign_one} assigns each chamber to exactly one environmental configuration. Constraint~\eqref{eq:assign_cover} gives every configuration with a positive workload at least one chamber. Constraint~\eqref{eq:assign_volt} gives every configuration with a positive nonstandard-voltage workload at least one voltage-capable chamber. Constraint~\eqref{eq:assign_hum} forbids humidity-controlled configurations on chambers that cannot hold humidity. Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force \(z_e\) to be at least the absolute difference between the number of stations assigned to \(e\) and \(S_e\). Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the same for voltage-capable stations and \(S_e^V\). The remaining constraints specify the domains of the decision variables.
 
-After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions.
-Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) be the earliest-due-date schedule of the current assignment, and let \(B_c\) be the total processing time placed in chamber \(c\) by \(\Pi\). The \emph{normalized workload} of chamber \(c\) is
+After MIP-CCD(\(\mathbf{s}\)), we refine \(\mathbf{x}\) by local search.
+Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) and let \(B_c\) be the processing time placed in chamber \(c\) by \(\Pi\). The normalized load is
 \begin{equation}
 \label{eq:chamber_load}
 \lambda_c=\frac{B_c}{K_c}.
 \end{equation}
-Dividing by \(K_c\) makes chambers of different sizes comparable. A chamber is \emph{highly loaded} if its \(\lambda_c\) is large and \emph{lightly loaded} if its \(\lambda_c\) is small. Neighboring assignments are generated from this ranking. A swap exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\), provided both chambers can hold the other's setting. A move reassigns a lightly loaded chamber to the environment of a highly loaded chamber. Both operators are retained only if they still satisfy \eqref{eq:assign_one}--\eqref{eq:assign_hum}. The acceptance criterion is total tardiness: the first feasible neighbor whose EDD schedule has a strictly smaller \(T^{tot}\) is accepted, and the search continues from that assignment with updated loads \(\lambda_c\). Swap is tried first. Move is used only when a full scan of the swap pairs accepts nothing. Let \(B_{\mathrm{room}}\) be the evaluation budget of this local search. The search stops when a pass of swap and then move finds no improving feasible neighbor, or when \(B_{\mathrm{room}}\) schedule evaluations have been used.
-Algorithm~\ref{alg:chamber_assignment} is the procedure.
+\(\mathrm{Swap}(\mathbf{x},c,c')\) exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\).
+\(\mathrm{Move}(\mathbf{x},c,c')\) assigns \(c'\) to the environment of \(c\).
+A neighbor is evaluated only if it satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}.
+\(\mathrm{Schedule}\) is then called, and the neighbor is accepted if
+\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\).
+Swap is searched first; move is used only if no swap is accepted.
+The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\) have been used.
 
 \begin{algorithm}[H]
 \caption{ChamberAssignment}
 \label{alg:chamber_assignment}
 \begin{algorithmic}[1]
-\State \textbf{Input:} instance data, sample vector \(\mathbf{s}\)
-\State \textbf{Output:} chamber assignment \(\mathbf{x}\)
-\State Compute \(W_e(\mathbf{s})\), \(W_e^V(\mathbf{s})\), \(\phi_e\), \(\phi_e^V\), \(S_e\), and \(S_e^V\) \label{step:ca-load}
-\State \(\mathbf{x}\leftarrow\) the optimal solution of MIP-CCD(\(\mathbf{s}\)) \label{step:ca-exact}
+\State \textbf{Input:} sample vector \(\mathbf{s}\)
+\State \textbf{Output:} \(\mathbf{x}\)
+\State \(\mathbf{x}\leftarrow\mathrm{MIP\textrm{-}CCD}(\mathbf{s})\) \label{step:ca-exact}
+\State \((\Pi,T^{tot})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ca-eval}
 \Repeat \label{step:ca-loop}
-    \State Compute \(\lambda_c\) from \(\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ca-loadrank}
-    \State Try swaps of highly loaded and lightly loaded chambers that stay feasible \label{step:ca-nbhd}
-    \If{no swap reduces \(T^{tot}\)}
-        \State Try moves of a lightly loaded chamber onto a highly loaded environment
+    \State \(\lambda_c\leftarrow B_c/K_c\) for all \(c\in\mathcal{C}\) using \(\Pi\) \label{step:ca-loadrank}
+    \State \(\mathit{improved}\leftarrow\mathrm{false}\)
+    \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)} \label{step:ca-swap}
+        \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Swap}(\mathbf{x},c,c')\)
+        \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+            \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
+            \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)} \label{step:ca-accept}
+                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+                \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+            \EndIf
+        \EndIf
+    \EndFor
+    \If{\(\mathit{improved}=\mathrm{false}\)} \label{step:ca-move}
+        \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)}
+            \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Move}(\mathbf{x},c,c')\)
+            \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+                \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
+                \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                    \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+                    \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+                \EndIf
+            \EndIf
+        \EndFor
     \EndIf
-    \If{a neighbor reduces \(T^{tot}\)} \label{step:ca-accept}
-        \State Replace \(\mathbf{x}\) by that neighbor
-    \EndIf
-\Until{no improving feasible neighbor remains or \(B_{\mathrm{room}}\) evaluations have been used} \label{step:ca-stop}
+\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\)} \label{step:ca-stop}
 \State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ca-load} uses the required tests \(\mathcal{T}_p\) of each product, together with \(\mathbf{s}\), to form the two workloads, the shares, and the station targets.
 Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
-Step~\ref{step:ca-loadrank} ranks chambers by \eqref{eq:chamber_load}.
-Steps~\ref{step:ca-nbhd}--\ref{step:ca-accept} accept the first feasible swap, or move, that reduces tardiness, and stop when a pass finds none or the evaluation budget \(B_{\mathrm{room}}\) is reached (Step~\ref{step:ca-stop}).
+Step~\ref{step:ca-eval} evaluates that assignment.
+Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\), and only then \(\mathrm{Move}\) (Steps~\ref{step:ca-swap}--\ref{step:ca-move}).
+The first neighbor that satisfies the lexicographic test is accepted (Step~\ref{step:ca-accept}).

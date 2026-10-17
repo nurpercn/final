@@ -46,14 +46,14 @@ Algorithm~\ref{alg:sample_ls} states the procedure.
 \State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
 \Repeat \label{step:ls-loop}
     \For{each product \(p\in\mathcal{P}\)}
-        \State Try changing \(s_p\) by one or two samples within the bounds \label{step:ls-nbhd}
-        \If{the best of those trials improves the incumbent} \label{step:ls-accept}
-            \State Update \(s_p\) and set \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\)
+        \State For \(\delta\in\{-2,-1,+1,+2\}\), set \(\mathbf{s}_{cand}\) and \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{cand})\) \label{step:ls-nbhd}
+        \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\) for the best trial} \label{step:ls-accept}
+            \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
         \EndIf
     \EndFor
     \State \(\mathbf{s}_{reb}\leftarrow\text{LateEarlyRebalance}(\mathbf{s},K_{\mathrm{reb}})\) \label{step:ls-reb}
-    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
-    \If{the rebalance does not worsen the incumbent}
+    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
+    \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succeq_{\mathrm{lex}}(T^{tot}_{reb},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{reb})\)}
         \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
     \EndIf
 \Until{no move was accepted in this pass} \label{step:ls-stop}
@@ -69,8 +69,7 @@ moves (Step~\ref{step:ls-nbhd}) and accepts a product's best
 improving trial (Step~\ref{step:ls-accept}).
 Step~\ref{step:ls-reb} then shifts one sample from an early product
 to a late product.
-That move need only not worsen tardiness; the single-product moves
-must strictly improve the incumbent under the same rule as the outer
-framework.
+Rebalance uses \(\succeq_{\mathrm{lex}}\); the single-product moves use
+\(\succ_{\mathrm{lex}}\).
 The search stops when a pass accepts nothing
 (Step~\ref{step:ls-stop}).
