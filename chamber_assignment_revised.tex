@@ -151,7 +151,6 @@ The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
-Step~\ref{step:ca-eval} evaluates that assignment.
-Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\), and only then \(\mathrm{Move}\) (Steps~\ref{step:ca-swap}--\ref{step:ca-move}).
-The first neighbor that satisfies the lexicographic test is accepted (Step~\ref{step:ca-accept}).
+MIP-CCD(\(\mathbf{s}\)) gives the initial assignment and \(\mathrm{Schedule}\) evaluates it.
+Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\), and only then \(\mathrm{Move}\).
+The first neighbor that satisfies the lexicographic test is accepted.
