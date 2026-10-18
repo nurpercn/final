@@ -639,7 +639,7 @@ Table~\ref{tab:notation_ccd} lists the additional notation of the chamber config
 \label{tab:notation_ccd}
 \centering
 \small
-\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
+\begin{tabular}{@{}lp{0.62\textwidth}@{}}
 \toprule
 \textbf{Notation} & \textbf{Description}\\
 \midrule
@@ -658,8 +658,9 @@ Table~\ref{tab:notation_ccd} lists the additional notation of the chamber config
 \(z_e\) & Deviation between the number of assigned and targeted stations for configuration \(e\) \\
 \(z_e^V\) & Deviation between the number of assigned and targeted voltage-adjustable stations for configuration \(e\) \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
+
 
 
 Using the workload calculations explained above, we propose a mixed-integer linear program to determine the configurations of the chambers. Our goal in this model is to minimize the summation of the differences between the number of stations assigned to a configuration and the target capacity for that configuration. We define \(x_{ce}\) as a binary variable that equals 1 if chamber \(c\) is assigned to environmental configuration \(e\), and 0 otherwise. Moreover, we define \(z_e\) and \(z_e^V\) as the differences between the total number of stations assigned to environmental configuration \(e\) and the corresponding target capacities, considering all tests and only those requiring nonstandard voltage, respectively.
