@@ -37,27 +37,28 @@ Table~\ref{tab:notation_ccd} lists the additional notation of the chamber config
 \label{tab:notation_ccd}
 \centering
 \small
-\begin{tabular}{cl}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Notation} & \textbf{Description}\\
 \midrule
-\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
-\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
 \(W_e(\mathbf{s})\) & Total test duration under configuration \(e\) \\
 \(W_e^V(\mathbf{s})\) & Nonstandard-voltage test duration under configuration \(e\) \\
+\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
+\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
 \(\phi_e\) & Workload share of configuration \(e\) \\
 \(\phi_e^V\) & Nonstandard-voltage workload share of configuration \(e\) \\
 \(S_e\) & Target number of stations for configuration \(e\) \\
-\(S_e^V\) & Target number of voltage-capable stations for configuration \(e\) \\
+\(S_e^V\) & Target number of voltage-adjustable stations for configuration \(e\) \\
 \midrule
 \textbf{Decision Variables} & \\
 \midrule
-\(x_{ce}\) & 1 if chamber \(c\) is assigned to configuration \(e\); 0 otherwise \\
-\(z_e\) & Absolute deviation between assigned stations and \(S_e\) \\
-\(z_e^V\) & Absolute deviation between assigned voltage-capable stations and \(S_e^V\) \\
+\(x_{ce}\) & 1, if chamber \(c\) is assigned to configuration \(e\); 0, otherwise \\
+\(z_e\) & Deviation between the number of assigned and targeted stations for configuration \(e\) \\
+\(z_e^V\) & Deviation between the number of assigned and targeted voltage-adjustable stations for configuration \(e\) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
+
 
 Using the workload calculations explained above, we propose a mixed-integer linear program to determine the configurations of the chambers. Our goal in this model is to minimize the summation of the differences between the number of stations assigned to a configuration and the target capacity for that configuration. We define \(x_{ce}\) as a binary variable that equals 1 if chamber \(c\) is assigned to environmental configuration \(e\), and 0 otherwise. Moreover, we define \(z_e\) and \(z_e^V\) as the differences between the total number of stations assigned to environmental configuration \(e\) and the corresponding target capacities, considering all tests and only those requiring nonstandard voltage, respectively.
 The proposed chamber configuration determination model is as follows:

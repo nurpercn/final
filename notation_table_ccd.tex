@@ -5,24 +5,24 @@ Table~\ref{tab:notation_ccd} lists the additional notation of the chamber config
 \label{tab:notation_ccd}
 \centering
 \small
-\begin{tabular}{cl}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
 \toprule
 \textbf{Notation} & \textbf{Description}\\
 \midrule
-\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
-\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
 \(W_e(\mathbf{s})\) & Total test duration under configuration \(e\) \\
 \(W_e^V(\mathbf{s})\) & Nonstandard-voltage test duration under configuration \(e\) \\
+\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
+\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
 \(\phi_e\) & Workload share of configuration \(e\) \\
 \(\phi_e^V\) & Nonstandard-voltage workload share of configuration \(e\) \\
 \(S_e\) & Target number of stations for configuration \(e\) \\
-\(S_e^V\) & Target number of voltage-capable stations for configuration \(e\) \\
+\(S_e^V\) & Target number of voltage-adjustable stations for configuration \(e\) \\
 \midrule
 \textbf{Decision Variables} & \\
 \midrule
-\(x_{ce}\) & 1 if chamber \(c\) is assigned to configuration \(e\); 0 otherwise \\
-\(z_e\) & Absolute deviation between assigned stations and \(S_e\) \\
-\(z_e^V\) & Absolute deviation between assigned voltage-capable stations and \(S_e^V\) \\
+\(x_{ce}\) & 1, if chamber \(c\) is assigned to configuration \(e\); 0, otherwise \\
+\(z_e\) & Deviation between the number of assigned and targeted stations for configuration \(e\) \\
+\(z_e^V\) & Deviation between the number of assigned and targeted voltage-adjustable stations for configuration \(e\) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
