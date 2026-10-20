@@ -725,7 +725,7 @@ The proposed chamber configuration determination model is as follows:
 \end{align}
 In this model, objective~\eqref{eq:assign_obj} minimizes the total deviation between assigned station counts and the two target capacities. Constraint~\eqref{eq:assign_one} assigns each chamber to exactly one environmental configuration. Constraint~\eqref{eq:assign_cover} gives every configuration with a positive workload at least one chamber. Constraint~\eqref{eq:assign_volt} gives every configuration with a positive nonstandard-voltage workload at least one voltage-capable chamber. Constraint~\eqref{eq:assign_hum} forbids humidity-controlled configurations on chambers that cannot hold humidity. Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force \(z_e\) to be at least the absolute difference between the number of stations assigned to \(e\) and \(S_e\). Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the same for voltage-capable stations and \(S_e^V\). The remaining constraints specify the domains of the decision variables.
 
-After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions. We use the scheduling procedure to form a schedule according to the given chamber configurations and the sample-size vector. The normalized workload of chamber \(c\) is \(\lambda_c=B_c/K_c\), where \(B_c\) is the total duration of the tests assigned to that chamber and \(K_c\) is its number of stations. A chamber is \emph{highly loaded} if \(\lambda_c\) is large and \emph{lightly loaded} if \(\lambda_c\) is small. We consider exchanging the configurations of a highly loaded chamber and a lightly loaded chamber with \(\lambda_c>\lambda_{c'}\) (without violating \eqref{eq:assign_one}--\eqref{eq:assign_hum}). For each feasible swap we call the scheduling procedure and update the assignment if the solution improves. If no swap improves the solution, we reassign a lightly loaded chamber to the configuration of a highly loaded chamber. If that move improves the solution, we update it. These two moves are implemented sequentially as long as the solution improves, or until \(B_{\mathrm{room}}\) calls of the scheduling procedure have been used. The steps are provided in Algorithm~\ref{alg:chamber_assignment}.
+After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions. We use the scheduling procedure to form a schedule according to the given chamber configurations and the sample-size vector. The normalized workload of chamber \(c\) is \(\lambda_c=B_c/K_c\), where \(B_c\) is the total duration of the tests assigned to that chamber and \(K_c\) is its number of stations. A chamber is \emph{highly loaded} if \(\lambda_c\) is large and \emph{lightly loaded} if \(\lambda_c\) is small. Chambers are ranked from the largest \(\lambda_c\) to the smallest, and pairs are scanned in this heaviest--lightest order. We consider exchanging the configurations of a highly loaded chamber and a lightly loaded chamber with \(\lambda_c>\lambda_{c'}\) (without violating \eqref{eq:assign_one}--\eqref{eq:assign_hum}). For each feasible swap we call the scheduling procedure. The first neighbor that improves the lexicographic objective is accepted immediately; the remaining swap pairs in that pass are not evaluated. If no swap is accepted in that pass, we reassign a lightly loaded chamber to the configuration of a highly loaded chamber, again in the same ranked order, and accept the first improving feasible move. After an accepted move, \(\lambda_c\) is recomputed and the next pass starts again with swap. These two moves are implemented sequentially as long as the solution improves, or until \(B_{\mathrm{room}}\) calls of the scheduling procedure have been used. The steps are provided in Algorithm~\ref{alg:chamber_assignment}.
 
 \begin{algorithm}[H]
 \caption{\textsc{ChamberAssignment}()}
@@ -736,22 +736,36 @@ After the chamber configurations are determined, as a second step we implement a
 \State \(\mathbf{x}\leftarrow\Call{MIP-CCD}{\mathbf{s}}\) \label{step:ca-exact}
 \State \((\Pi,T^{tot})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}}\) \label{step:ca-eval}
 \Repeat
-    \State For pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\), set \(\mathbf{x}_{cand}\leftarrow\Call{Swap}{\mathbf{x},c,c'}\); if \(\mathbf{x}_{cand}\) is feasible, \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\) \label{step:ca-swap}
-    \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)} \label{step:ca-accept}
-        \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
-    \EndIf
-    \If{no swap was accepted}
-        \State For pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\), set \(\mathbf{x}_{cand}\leftarrow\Call{Move}{\mathbf{x},c,c'}\); if \(\mathbf{x}_{cand}\) is feasible, \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\) \label{step:ca-move}
-        \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
-            \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+    \State Rank chambers from largest \(\lambda_c=B_c/K_c\) to smallest using \(\Pi\) \label{step:ca-rank}
+    \State \(\mathit{improved}\leftarrow\mathrm{false}\)
+    \For{pairs \((c,c')\) in heaviest--lightest order with \(\lambda_c>\lambda_{c'}\)}
+        \State \(\mathbf{x}_{cand}\leftarrow\Call{Swap}{\mathbf{x},c,c'}\) \Comment{exchange the configurations of \(c\) and \(c'\)} \label{step:ca-swap}
+        \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+            \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
+            \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\) \label{step:ca-accept}
+                \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+            \EndIf
         \EndIf
+    \EndFor
+    \If{\(\mathit{improved}=\mathrm{false}\)}
+        \For{pairs \((c,c')\) in heaviest--lightest order with \(\lambda_c>\lambda_{c'}\)}
+            \State \(\mathbf{x}_{cand}\leftarrow\Call{Move}{\mathbf{x},c,c'}\) \Comment{assign \(c'\) to the configuration of \(c\)} \label{step:ca-move}
+            \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+                \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
+                \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                    \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+                    \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+                \EndIf
+            \EndIf
+        \EndFor
     \EndIf
-\Until{no improvement or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\)} \label{step:ca-stop}
+\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\)} \label{step:ca-stop}
 \State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
 
-In Algorithm~\ref{alg:chamber_assignment}, MIP-CCD(\(\mathbf{s}\)) gives the initial assignment and \(\textsc{Schedule}()\) evaluates it (Steps~\ref{step:ca-exact}--\ref{step:ca-eval}). We then try \(\textsc{Swap}\) over pairs with \(\lambda_c>\lambda_{c'}\) (Step~\ref{step:ca-swap}) and accept a feasible neighbor if it improves the lexicographic objective (Step~\ref{step:ca-accept}). If no swap is accepted, we try \(\textsc{Move}\) in the same way (Step~\ref{step:ca-move}). The search stops when a pass yields no improvement or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\) have been used (Step~\ref{step:ca-stop}).
+In Algorithm~\ref{alg:chamber_assignment}, MIP-CCD(\(\mathbf{s}\)) gives the initial assignment and \(\textsc{Schedule}()\) evaluates it (Steps~\ref{step:ca-exact}--\ref{step:ca-eval}). Chambers are ranked by \(\lambda_c\) from the largest load to the smallest (Step~\ref{step:ca-rank}). We then try \(\textsc{Swap}\) in this heaviest--lightest order (Step~\ref{step:ca-swap}) and accept the first feasible neighbor that improves the lexicographic objective (Step~\ref{step:ca-accept}). If no swap is accepted in that pass, we try \(\textsc{Move}\) in the same order (Step~\ref{step:ca-move}). After an accepted move, \(\lambda_c\) is recomputed and the next pass starts again with \(\textsc{Swap}\). The search stops when a pass yields no improvement or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\) have been used (Step~\ref{step:ca-stop}).
 
 \subsection{Sample size optimization}
 \label{subsec:sample_optimization}
