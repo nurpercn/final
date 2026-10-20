@@ -439,7 +439,7 @@ included when requested by the product engineer.
 Thus, each product generally has a different test portfolio even though
 all products follow the same stage-based testing structure.
 
-The environmental requirement of a test is represented by \(e(t)\). Ambient-humidity tests can be assigned to any chamber whose temperature setting matches \(e(t)\), whereas controlled-humidity tests also require humidity capability. Voltage is modeled at the product level rather than the test level because the electrical configuration follows the product's target market. If a product requires voltage-compatible execution, all of its operations must be processed on voltage-capable chambers. This one-sided condition reflects practice: a voltage-capable chamber can process a product without voltage requirements, but the reverse is not feasible.
+The environmental requirement of a test is represented by \(e(t)\). Ambient-humidity tests can be assigned to any chamber whose temperature setting matches \(e(t)\), whereas controlled-humidity tests also require humidity capability. Voltage is modeled at the product level rather than the test level because the electrical configuration follows the product's target market. Nonstandard voltage means a specification other than the laboratory \(230\,\mathrm{V}\)--\(50\,\mathrm{Hz}\) supply; for example, products destined for the USA require \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\). If a product requires voltage-compatible execution, all of its operations must be processed on voltage-capable chambers. This one-sided condition reflects practice: a voltage-capable chamber can process a product without voltage requirements, but the reverse is not feasible.
 
 \subsection{Decision-dependent workload}
 \label{subsec:workload}
@@ -516,7 +516,7 @@ The sets, parameters and solution measures used in the definition of RCSP-SO are
 \textbf{Sets} & \\
 \midrule
 \(\mathcal{P}\) & Set of products, indexed by \(p\) \\
-\(\mathcal{P}^v\) & Products whose target-market electrical standard differs from the laboratory supply \\
+\(\mathcal{P}^v\) & Subset of products that require nonstandard voltage (e.g., USA, \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\)) \\
 \(\mathcal{C}\) & Set of chambers, indexed by \(c\) \\
 \(\mathcal{C}^h\) & Subset of chambers that have humidity-adjustment capability \\
 \(\mathcal{C}^v\) & Subset of chambers that have voltage-adjustment capability \\
