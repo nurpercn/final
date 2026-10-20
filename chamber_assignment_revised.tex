@@ -102,46 +102,41 @@ The proposed chamber configuration determination model is as follows:
 \end{align}
 In this model, objective~\eqref{eq:assign_obj} minimizes the total deviation between assigned station counts and the two target capacities. Constraint~\eqref{eq:assign_one} assigns each chamber to exactly one environmental configuration. Constraint~\eqref{eq:assign_cover} gives every configuration with a positive workload at least one chamber. Constraint~\eqref{eq:assign_volt} gives every configuration with a positive nonstandard-voltage workload at least one voltage-capable chamber. Constraint~\eqref{eq:assign_hum} forbids humidity-controlled configurations on chambers that cannot hold humidity. Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force \(z_e\) to be at least the absolute difference between the number of stations assigned to \(e\) and \(S_e\). Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the same for voltage-capable stations and \(S_e^V\). The remaining constraints specify the domains of the decision variables.
 
-After MIP-CCD(\(\mathbf{s}\)), we refine \(\mathbf{x}\) by local search.
-Let \((\Pi,T^{tot})=\mathrm{Schedule}(\mathbf{x},\mathbf{s})\) and let \(B_c\) be the processing time placed in chamber \(c\) by \(\Pi\). The normalized load is
+After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions. We use a scheduling subroutine (\(\textsc{Schedule}()\)) to form a schedule of the tests according to the given chamber configurations and the sample-size vector. Then, we determine the normalized workload of each chamber by dividing the total duration of the tests assigned to that chamber (according to the schedule found using \(\textsc{Schedule}()\)) by the total number of stations in that chamber. A chamber is \emph{highly loaded} if its normalized workload is large and \emph{lightly loaded} if its normalized workload is small. The normalized workload of chamber \(c\) is
 \begin{equation}
 \label{eq:chamber_load}
 \lambda_c=\frac{B_c}{K_c}.
 \end{equation}
-\(\mathrm{Swap}(\mathbf{x},c,c')\) exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\).
-\(\mathrm{Move}(\mathbf{x},c,c')\) assigns \(c'\) to the environment of \(c\).
-A neighbor is evaluated only if it satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}.
-\(\mathrm{Schedule}\) is then called, and the neighbor is accepted if
+\(\textsc{Swap}(\mathbf{x},c,c')\) exchanges the environments of a highly loaded chamber \(c\) and a lightly loaded chamber \(c'\) with \(\lambda_c>\lambda_{c'}\), provided both chambers can hold the other's setting. \(\textsc{Move}(\mathbf{x},c,c')\) reassigns the lightly loaded chamber \(c'\) to the environment of the highly loaded chamber \(c\). A neighbor is evaluated only if it satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}. \(\textsc{Schedule}()\) is then called, and the neighbor is accepted if
 \((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\).
-Swap is searched first; move is used only if no swap is accepted.
-The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\) have been used.
+Swap is searched first. Move is used only when a full scan of the swap pairs accepts nothing. The search stops when a pass of swap and then move finds no improving feasible neighbor, or when \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\) have been used. The steps of the chamber configuration determination phase are presented in Algorithm~\ref{alg:chamber_assignment}.
 
 \begin{algorithm}[H]
-\caption{ChamberAssignment}
+\caption{\textsc{ChamberAssignment}()}
 \label{alg:chamber_assignment}
 \begin{algorithmic}[1]
 \State \textbf{Input:} sample vector \(\mathbf{s}\)
-\State \textbf{Output:} \(\mathbf{x}\)
-\State \(\mathbf{x}\leftarrow\mathrm{MIP\textrm{-}CCD}(\mathbf{s})\)\label{step:ca-exact}
-\State \((\Pi,T^{tot})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s})\)\label{step:ca-eval}
-\Repeat
-    \State \(\lambda_c\leftarrow B_c/K_c\) for all \(c\in\mathcal{C}\) using \(\Pi\)
+\State \textbf{Output:} chamber configuration assignment \(\mathbf{x}\)
+\State \(\mathbf{x}\leftarrow\textrm{MIP-CCD}(\mathbf{s})\) \label{step:ca-exact}
+\State \((\Pi,T^{tot})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}}\) \label{step:ca-eval}
+\Repeat \label{step:ca-loop}
+    \State \(\lambda_c\leftarrow B_c/K_c\) for all \(c\in\mathcal{C}\) using \(\Pi\) \label{step:ca-loadrank}
     \State \(\mathit{improved}\leftarrow\mathrm{false}\)
     \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)}
-        \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Swap}(\mathbf{x},c,c')\)\label{step:ca-swap}
+        \State \(\mathbf{x}_{cand}\leftarrow\Call{Swap}{\mathbf{x},c,c'}\) \label{step:ca-swap}
         \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
-            \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
+            \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
             \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
-                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)\label{step:ca-accept}
+                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\) \label{step:ca-accept}
                 \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
             \EndIf
         \EndIf
     \EndFor
     \If{\(\mathit{improved}=\mathrm{false}\)}
         \For{pairs \((c,c')\) with \(\lambda_c>\lambda_{c'}\)}
-            \State \(\mathbf{x}_{cand}\leftarrow\mathrm{Move}(\mathbf{x},c,c')\)\label{step:ca-move}
+            \State \(\mathbf{x}_{cand}\leftarrow\Call{Move}{\mathbf{x},c,c'}\) \label{step:ca-move}
             \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
-                \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x}_{cand},\mathbf{s})\)
+                \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
                 \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
                     \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
                     \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
@@ -149,12 +144,14 @@ The search stops when a pass accepts nothing or \(B_{\mathrm{room}}\) calls of \
             \EndIf
         \EndFor
     \EndIf
-\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\mathrm{Schedule}\)}
+\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\)} \label{step:ca-stop}
 \State \Return \(\mathbf{x}\)
 \end{algorithmic}
 \end{algorithm}
 
 Step~\ref{step:ca-exact} solves MIP-CCD(\(\mathbf{s}\)).
-Step~\ref{step:ca-eval} evaluates that assignment.
-Each pass ranks chambers by \eqref{eq:chamber_load}, tries \(\mathrm{Swap}\) (Step~\ref{step:ca-swap}), and only then \(\mathrm{Move}\) (Step~\ref{step:ca-move}).
-The first neighbor that satisfies the lexicographic test is accepted (Step~\ref{step:ca-accept}).
+Step~\ref{step:ca-eval} evaluates that assignment with \(\textsc{Schedule}()\).
+Each pass ranks chambers by \eqref{eq:chamber_load}.
+Steps~\ref{step:ca-swap}--\ref{step:ca-accept} try \(\textsc{Swap}\) first, calling \(\textsc{Schedule}()\) after each feasible neighbor, and use \(\textsc{Move}\) (Step~\ref{step:ca-move}) only if no swap is accepted.
+The first neighbor that satisfies the lexicographic test is accepted.
+The search stops when a pass finds no improving neighbor or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\) have been used (Step~\ref{step:ca-stop}).
