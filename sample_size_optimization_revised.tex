@@ -1,75 +1,35 @@
-\subsection{Sample size optimization}
+\subsection{Sample-Size Optimization}
 \label{subsec:sample_optimization}
+\label{subsec:sample_size_optimization}
 
-For a fixed chamber assignment \(\mathbf{x}\), this stage changes the
-sample vector \(\mathbf{s}\).
-An extra sample adds one pull-down operation but can let later tests
-of that product run in parallel.
-Removing a sample does the opposite: pull-down work falls, and so
-does the chance of overlap.
-Which direction helps is not known in advance, so both are tried
-under the same assignment.
-
-The search keeps every product between \(s_{\min}\) and \(s_{\max}\)
-samples, with \(s_{\min}=3\) equal to the laboratory planning floor
-justified in the problem definition.
-The local search starts at this floor and does not go below it.
-At the other end, at most eleven tests of a product can run in
-parallel, so a twelfth sample cannot create additional concurrent
-work.
-The upper bound is therefore \(s_{\max}=11\).
-
-The neighborhood changes one product at a time by one or two
-samples, provided the new count stays between \(s_{\min}\) and
-\(s_{\max}\).
-For each product the improving trial with the best tardiness---or,
-when tardiness is equal, the smaller sample count---is kept.
-After this single-product pass, a Late--Early Rebalance pairs late
-products, ordered by decreasing tardiness, with early products,
-ordered by decreasing slack, up to \(K_{\mathrm{reb}}\) pairs.
-Each pair moves one sample from an early product to a late product
-without leaving the bounds.
-The paired move is accepted if total tardiness does not increase;
-when tardiness is unchanged, the total number of samples must not
-increase.
-Every trial is decoded by the same earliest-due-date (EDD)
-scheduler used in the outer framework.
-Algorithm~\ref{alg:sample_ls} states the procedure.
+In this stage, we refine the sample-size vector for a given chamber configuration assignment. More specifically, we consider increasing or decreasing the number of samples for each product by up to two (without violating \(s_{\min}\) and \(s_{\max}\)). For each of these possible local moves, we use the scheduling procedure to determine the schedule and observe the effect of such a local move on the total tardiness. For each product, we update the sample size if the solution improves. Then, we check the late and early products and consider increasing the sample size of a late product and decreasing the sample size of an early product by one. If such a move improves the solution, we update it. These two local search moves (changing the sample size of a single product and changing the sample sizes of a pair of late and early products) are implemented sequentially as long as the solution improves. The steps of the local search procedure for improving the sample-size decisions are provided in Algorithm~\ref{alg:sample_ls}.
 
 \begin{algorithm}[H]
-\caption{SampleSizeLocalSearch}
+\caption{\textsc{SampleSizeLocalSearch}()}
 \label{alg:sample_ls}
 \begin{algorithmic}[1]
-\State \textbf{Input:} chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
-\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
-\State Restrict every \(s_p\) to \([s_{\min},s_{\max}]\) \label{step:ls-init}
-\State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
-\Repeat \label{step:ls-loop}
-    \For{each product \(p\in\mathcal{P}\)}
-        \State For \(\delta\in\{-2,-1,+1,+2\}\), set \(\mathbf{s}_{cand}\) and \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{cand})\) \label{step:ls-nbhd}
-        \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\) for the best trial} \label{step:ls-accept}
-            \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+\State \textbf{Input:} chamber configuration assignment \(\mathbf{x}\), sample-size vector \(\mathbf{s}\)
+\State \textbf{Output:} an improved sample-size vector and a feasible schedule \((\mathbf{s},\Pi,T^{tot})\)
+\State \((\Pi,T^{tot})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}}\) \label{step:ls-eval}
+\Repeat
+    \For{\(p\in\mathcal{P}\)} \label{step:ls-loop1}
+        \For{\(s'\in\{s_p-2,s_p-1,s_p+1,s_p+2\}\cap[s_{\min},s_{\max}]\)}
+            \State \((\Pi_{s'},T^{tot}_{s'})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}'}\) \Comment{\(\mathbf{s}'=\mathbf{s}\) with the \(p\)th component equal to \(s'\)} \label{step:ls-nbhd}
+        \EndFor
+        \State \(s^{\star}\leftarrow\arg\min\{T^{tot}_{s'}\}\), breaking ties by smaller \(s'\) \label{step:ls-nbhd2}
+        \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{s^{\star}},\mathbf{1}^{\mathsf{T}}\mathbf{s}^{\star})\)} \Comment{\(\mathbf{s}^{\star}=\mathbf{s}\) with the \(p\)th component equal to \(s^{\star}\)}
+            \State \(s_p\leftarrow s^{\star}\) \label{step:ls-accept}
+            \State \((\Pi,T^{tot})\leftarrow(\Pi_{s^{\star}},T^{tot}_{s^{\star}})\) \label{step:ls-loop1.5}
         \EndIf
-    \EndFor
-    \State \(\mathbf{s}_{reb}\leftarrow\text{LateEarlyRebalance}(\mathbf{s},K_{\mathrm{reb}})\) \label{step:ls-reb}
-    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
-    \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succeq_{\mathrm{lex}}(T^{tot}_{reb},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{reb})\)}
-        \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
+    \EndFor \label{step:ls-loop2}
+    \State \(\mathbf{s}_{reb}\leftarrow\Call{LateEarlyRebalance}{\mathbf{s},t_{\mathrm{reb}}}\) \label{step:ls-reb}
+    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}_{reb}}\) \label{step:ls-reb2}
+    \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{reb},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{reb})\)}
+        \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\) \label{step:ls-reb3}
     \EndIf
-\Until{no move was accepted in this pass} \label{step:ls-stop}
+\Until{no improvement} \label{step:ls-stop}
 \State \Return \((\mathbf{s},\Pi,T^{tot})\)
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:ls-init} enforces \(s_{\min}=3\) and \(s_{\max}=11\).
-Step~\ref{step:ls-eval} builds the EDD schedule of the current
-vector; this is the incumbent of the local search.
-Each pass (Step~\ref{step:ls-loop}) first tries the one-product
-moves (Step~\ref{step:ls-nbhd}) and accepts a product's best
-improving trial (Step~\ref{step:ls-accept}).
-Step~\ref{step:ls-reb} then shifts one sample from an early product
-to a late product.
-Rebalance uses \(\succeq_{\mathrm{lex}}\); the single-product moves use
-\(\succ_{\mathrm{lex}}\).
-The search stops when a pass accepts nothing
-(Step~\ref{step:ls-stop}).
+In Algorithm~\ref{alg:sample_ls}, we start with a schedule determined for the given chamber configuration assignment and sample-size decisions (Step~\ref{step:ls-eval}). Then, we check whether increasing or decreasing the number of samples of a product by up to two units improves the current solution (Steps~\ref{step:ls-loop1}--\ref{step:ls-loop2}). For each such feasible move we call the scheduling procedure (Step~\ref{step:ls-nbhd}). We then determine the best move for each product (Step~\ref{step:ls-nbhd2}) and update the current solution if that move improves it under the lexicographic test (Steps~\ref{step:ls-accept}--\ref{step:ls-loop1.5}). Next, \(t_{\mathrm{reb}}\) late and early product pairs are chosen and their sample sizes are increased and decreased by one unit (Step~\ref{step:ls-reb}). If the new schedule after this step is better than the current one, the current solution is updated (Steps~\ref{step:ls-reb2}--\ref{step:ls-reb3}). The two moves are repeated until a pass yields no improvement.
