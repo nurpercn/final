@@ -2,49 +2,10 @@
 \label{subsec:exp_design}
 \label{subsec:experimental_design}
 
-We generate test instances motivated by current industrial practice.
-The computational study uses a structured scenario set designed to
-capture the main sources of variability in industrial test-chamber
-operations: product test requirements, due-date pressure, and voltage
-compatibility.
-Each instance represents a multi-project testing scenario in which
-products differ in required tests, due dates, and voltage requirements.
+We generate instances motivated by current industrial practice. Each instance is a multi-project testing scenario with heterogeneous test requirements, due dates, and voltage requirements. At a given planning time the laboratory is expected to have 50 products under test, so every instance contains 50 products.
 
-At a given planning time, the system is expected to have 50 products
-under test.
-For this reason, every instance contains 50 products.
-We consider three due-date scenarios and three nonstandard-voltage
-scenarios.
-The due dates lie within a two-month planning horizon and are generated
-at three levels of tightness.
-Scenario~1 is relatively concentrated, with due dates ranging from 42
-to 57 days and a median around 50 days.
-Scenario~2 introduces stronger dispersion and earlier deadlines, with
-due dates ranging from 30 to 69 days and a median around 50 days.
-Scenario~3 is more relaxed but still heterogeneous, with due dates
-ranging from 34 to 69 days and a median around 53 days.
+The due dates lie within a two-month planning horizon and are generated at three tightness levels. Due-date scenario~1 is relatively concentrated, with due dates ranging from 42 to 57 days and a median around 50 days. Due-date scenario~2 introduces stronger dispersion and earlier deadlines, with due dates ranging from 30 to 69 days and a median around 50 days. Due-date scenario~3 is more relaxed but still heterogeneous, with due dates ranging from 34 to 69 days and a median around 53 days.
 
-The voltage scenarios control the proportion of products that require
-voltage-compatible execution, using the mix in current operations as
-the reference.
-Scenario~1 represents a low voltage-adjustment requirement, where
-approximately 15\% of the products require nonstandard voltage.
-Scenario~2 represents a medium requirement, with 30\% of the products
-requiring nonstandard voltage.
-Scenario~3 represents a higher requirement, with 45\% of the products
-requiring nonstandard voltage.
-Since voltage feasibility is one-sided, increasing this share reduces
-the effective resource pool and creates stronger competition for
-chambers that can adjust voltage.
+The voltage scenarios control the share of products that require nonstandard voltage, using the mix in current operations as the reference. Voltage scenario~1 is a low requirement (approximately 15\% of the products), voltage scenario~2 is a medium requirement (30\%), and voltage scenario~3 is a higher requirement (45\%). A larger share increases competition for voltage-capable chambers.
 
-These choices give nine combinations of due-date and voltage scenarios.
-For each combination we generate 10 instances with different product
-test requirements, so the study uses 90 instances in total.
-For each product, refrigerant charge determination, pull-down, the
-performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage
-tests are required.
-The energy-efficiency option and the remaining performance, freezing,
-and temperature-rise tests are selected as explained under
-Table~\ref{tab:test_attributes}.
-The reported results cover all 90 instances and are also discussed
-with respect to these due-date and voltage scenarios.
+These choices give nine combinations of due-date and voltage scenarios. For each combination we generate 10 instances with different product test requirements, so the study uses 90 instances in total. For each product, refrigerant charge determination, pull-down, the performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage tests are required. The energy-efficiency option, the remaining climatic-class performance tests, and the optional freezing-capacity and temperature-rise tests are selected as explained under Table~\ref{tab:test_attributes}. The reported results cover all 90 instances and are also discussed with respect to these due-date and voltage scenarios.
