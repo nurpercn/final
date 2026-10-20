@@ -109,7 +109,7 @@ included when requested by the product engineer.
 Thus, each product generally has a different test portfolio even though
 all products follow the same stage-based testing structure.
 
-Electrical requirements also vary by region. Typical configurations include 230V--50Hz for Europe, 120V--60Hz for the USA/Canada, and 230V--60Hz for markets such as Saudi Arabia and Brazil. Voltage compatibility is modeled at the product level. If product \(p\) requires voltage-compatible execution, all operations of that product must be assigned to voltage-capable chambers; otherwise, the product can be processed in any environmentally compatible chamber.
+Electrical requirements also vary by region. The laboratory supply is \(230\,\mathrm{V}\)--\(50\,\mathrm{Hz}\), which matches the European and Turkish standard; this is the default chamber setting. Products whose target market uses a different electrical configuration---\(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) for the USA and Canada, or \(230\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) for markets such as Saudi Arabia and Brazil---require voltage-capable chambers. Voltage compatibility is therefore modeled at the product level. If product \(p\) requires voltage-compatible execution, all operations of that product must be assigned to voltage-capable chambers; otherwise, the product can be processed in any environmentally compatible chamber.
 
 Each test type \(t\in\mathcal{T}\) is associated with an environmental requirement \(e(t)\), specifying its temperature and humidity condition.
 
