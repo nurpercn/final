@@ -1,0 +1,47 @@
+The main notation used in the definition of RCSP-SO is summarized in
+Table~\ref{tab:notation_RCSP-SO}.
+Objective values are evaluated lexicographically by prioritizing total
+tardiness and, among solutions with equal total tardiness, minimizing
+total sample usage.
+
+\begin{table}[H]
+\caption{Sets, parameters and solution measures used in the definition of RCSP-SO}
+\label{tab:notation_RCSP-SO}
+\centering
+\small
+\begin{tabular}{cl}
+\toprule
+\textbf{Notation} & \textbf{Description}\\
+\midrule
+\textbf{Sets} & \\
+\midrule
+\(\mathcal{P}\) & Set of products, indexed by \(p\) \\
+\(\mathcal{P}^v\) & Subset of products that require nonstandard voltage (e.g., USA, \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\)) \\
+\(\mathcal{C}\) & Set of chambers, indexed by \(c\) \\
+\(\mathcal{C}^h\) & Subset of chambers that have humidity-adjustment capability \\
+\(\mathcal{C}^v\) & Subset of chambers that have voltage-adjustment capability \\
+\(\mathcal{K}_c\) & Set of stations in chamber \(c\) \\
+\(\mathcal{E}\) & Set of environmental (temperature and humidity) configurations, indexed by \(e\) \\
+\(\mathcal{E}^H\) & Set of environmental configurations that require 85\% RH \\
+\(\mathcal{T}\) & Set of tests, indexed by \(t\) \\
+\(\mathcal{T}_p\) & Set of tests required by product \(p\) \\
+\midrule
+\textbf{Parameters} & \\
+\midrule
+\(d_p\) & Due date of product \(p\) \\
+\(e(t)\) & Environmental configuration required by test \(t\) \\
+\(\tau_t\) & Duration of test \(t\) \\
+\(K_c\) & Number of stations in chamber \(c\) \\
+\(h_c\) & 1 if chamber \(c\) can adjust humidity; 0 otherwise \\
+\(v_c\) & 1 if chamber \(c\) can adjust voltage; 0 otherwise \\
+\(s_{\min}\) & Lower bound on the sample size of a product \\
+\(s_{\max}\) & Upper bound on the sample size of a product \\
+\midrule
+\textbf{Solution measures} & \\
+\midrule
+\(C_p\) & Completion time of product \(p\) \\
+\(T_p\) & Tardiness of product \(p\), \(T_p=\max\{0,C_p-d_p\}\) \\
+\(T^{tot}\) & Total tardiness, \(T^{tot}=\sum_{p\in\mathcal{P}}T_p\) \\
+\bottomrule
+\end{tabular}
+\end{table}

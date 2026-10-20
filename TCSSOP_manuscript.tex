@@ -1,0 +1,1197 @@
+\documentclass[11pt]{article}
+
+% --- Math ---
+\usepackage{amsmath, amssymb, amsthm, amsfonts}
+\usepackage{mathrsfs}
+
+% --- Encoding and units ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{siunitx}
+
+% --- Algorithms ---
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% --- Tables ---
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{longtable}
+\usepackage{ragged2e}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+
+% --- Figures ---
+\usepackage{graphicx}
+\usepackage{float}
+
+% --- Bibliography ---
+\usepackage[authoryear]{natbib}
+
+\pagestyle{plain}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\textheight}{9.2in}
+\setlength{\topmargin}{-0.2in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\footskip}{.4in}
+\renewcommand{\baselinestretch}{1.5}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{obs}{Observation}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+
+\begin{center}
+{\Large \bf Integrated Sample Size Optimization and Test Chamber Scheduling under Environmental Constraints}\\
+\vskip 12pt
+\normalsize
+Nur Per\c{c}in$^{1}$,
+Ali Ekici$^{1}$\\[6pt]
+\footnotesize
+$^{1}$Department of Industrial Engineering, Ozyegin University, Istanbul, Turkiye\\[3pt]
+\texttt{nur.percin@ozu.edu.tr, ali.ekici@ozyegin.edu.tr}
+\end{center}
+
+\begin{abstract}
+Refrigerator R\&D testing requires the coordinated scheduling of multiple products on heterogeneous test chambers under environmental, voltage, stage-based precedence, and due-date constraints. In current practice, sample sizes are often fixed uniformly across projects, although they directly determine pull-down workload and downstream parallelization opportunities. This study introduces the Test Chamber Scheduling with Sample Optimization Problem (TCSSOP), in which project-level sample sizes, chamber-environment assignments, and feasible schedules are optimized jointly.
+
+An iterative framework is proposed. For a given sample vector, chamber environments are assigned according to workload distribution and chamber capabilities. Given chamber settings, sample sizes are improved through bounded local search and evaluated by an Earliest Due Date (EDD) based constructive scheduler with explicit feasibility validation. When local improvement stagnates, a Variable Neighborhood Search (VNS) diversification mechanism perturbs sample-size decisions to explore alternative workload structures.
+
+Computational experiments on 90 benchmark scenarios compare the proposed method with fixed uniform sample policies. Relative to the industrial three-sample baseline (150 total samples), endogenous optimization substantially reduces total tardiness. To separate allocation effects from total sample consumption, a uniform six-sample policy using the same average sample budget (300 total samples) is also benchmarked; despite equal aggregate prototype usage, it remains substantially inferior, indicating that performance gains stem from project-level sample allocation rather than from increasing sample count alone. The selected configuration, using a \(0.20\)--\(0.30\) VNS fallback strategy with \(K_{\max}=200\), achieves the strongest overall performance across all scenarios. The results show that sample size should be treated as a tactical planning decision and coordinated with chamber reconfiguration rather than fixed uniformly across projects.
+\end{abstract}
+
+\textbf{Keywords:} Test chamber scheduling; Sample size optimization; Decision-dependent workload; Resource-constrained scheduling; Variable neighborhood search; Multi-stage testing systems
+
+\section{Introduction}
+\label{sec:introduction}
+
+The refrigerator industry operates in a highly competitive global market characterized by compressed innovation cycles and increasingly stringent market-specific requirements for performance, safety, and energy efficiency \citep{IEA2021,IEC60335-1,IEC60335-2-24,IEC62552}. Since products cannot proceed to certification, production, or commercialization until design approval tests have been successfully completed, research \& development (R\&D) testing has become a critical operational bottleneck. Delays in testing postpone market entry and reduce firms' responsiveness to changing market conditions, while inefficient utilization of capital-intensive testing infrastructure diminishes the return on R\&D investment \citep{OECD_MSTI2024,OECD_MSTI2025}. Furthermore, launch timing and quality assurance are closely linked, as the trade-off between accelerated time-to-market and product quality has a direct impact on commercial performance \citep{KimKoenigsbergOfek2022}. This study is motivated by refrigerator R\&D testing operations at a white goods manufacturer located in Turkey.
+
+Refrigerator R\&D testing comprises a multi-stage portfolio of laboratory tests performed under controlled environmental conditions. The catalog includes gas amount determination, pull-down, energy-efficiency measurement, performance evaluation at climatic-class temperatures, optional freezing-capacity and temperature-rise tests, and consumer-usage tests. Because refrigerators must demonstrate compliance under the ambient conditions of their target markets, tests are executed at different temperature set-points (commonly spanning \(10^\circ\mathrm{C}\) to \(43^\circ\mathrm{C}\)), under ambient or humidity-controlled conditions (including \(85\%\) relative humidity for selected consumer-usage tests), and, when required by regional electrical standards, under voltage-compatible chamber settings. These changing conditions exist because climatic class, energy regulation, and electrical specification differ across regions; a single ambient environment cannot certify a product for all markets. Individual tests are long relative to daily planning cycles: typical durations range from about 5 days (pull-down and temperature rise) to 10--15 days (gas determination, performance, energy efficiency, and consumer usage). Consequently, each assignment occupies scarce chamber capacity for an extended period, and sequencing mistakes cannot be corrected quickly. The detailed test list and durations are presented in Section~\ref{sec:problem_definition}.
+
+Which tests are required for a given product, and when they must be completed, are determined by commercial and regulatory inputs rather than by a fixed universal checklist. Target-market region and climatic class select the applicable performance and energy-efficiency variants; electrical specifications determine whether voltage-compatible execution is mandatory; product engineers may add optional tests; and project due dates reflect planned launch windows and certification milestones. Scheduling must therefore coordinate heterogeneous, product-specific test mixes under shared due-date pressure. Sample-size determination is an integral part of this decision process. In current practice, a uniform three-sample policy is often used because it is simple to administer. With few samples, upstream pull-down workload remains limited, but downstream tests that could otherwise run in parallel on different physical prototypes are serialized, which can increase completion times for due-date-critical projects. With several samples, downstream parallelism improves and tardiness may decrease, yet each additional sample multiplies pull-down operations and intensifies congestion in temperature-constrained environments. The net effect is therefore non-monotone: increasing samples does not guarantee better on-time performance, and the value of an extra sample depends on due dates, required test mixes, chamber eligibility, and stage-based release logic.
+
+The supporting testing infrastructure consists of heterogeneous climate chambers, each containing multiple stations that operate under a shared chamber-level environment. Chambers differ in station capacity and in their technical ability to adjust temperature, humidity, and voltage. Temperature control is generally available, whereas humidity and voltage adjustment are restricted to selected chambers; thus, not every test can be executed in every chamber. Because all stations in a chamber share one environment, chamber configuration and station-level scheduling are tightly coupled. Although chambers can be reconfigured, frequent environment changes are undesirable: temperature and humidity transitions require stabilization time, interrupt ongoing tests that need a stable ambient setting, and reduce effective capacity. In practice, chamber environments are therefore treated as planning decisions that should remain stable over the scheduling horizon rather than as freely changing machine states. Chamber capabilities and the chamber--station structure are detailed in Section~\ref{sec:problem_definition}.
+
+The operational problem we seek to solve is the following. Given a portfolio of refrigerator development projects with product-specific test requirements and due dates, decide (i)~how many physical samples to allocate to each project, (ii)~which environmental configuration to assign to each chamber, and (iii)~how to schedule all resulting test operations on chamber stations so that environmental, humidity, voltage, station-capacity, sample-availability, and stage-based precedence constraints are respected. The primary goal is to minimize total tardiness; among solutions with equal total tardiness, lower total sample usage is preferred. We refer to this integrated planning problem as the \emph{Test Chamber Scheduling with Sample Optimization Problem} (TCSSOP). Unlike classical scheduling problems with a fixed job set, sample decisions endogenously generate part of the workload and simultaneously create or restrict parallelization opportunities.
+
+TCSSOP is challenging because its main decisions are interdependent and the induced workload is decision-dependent. Sample sizes change both the volume of pull-down work and the feasible degree of downstream parallelism; chamber-environment assignments determine which workloads can be processed where; and stage-based precedence means that early congestion propagates into later stages. Heterogeneous chamber capabilities create eligibility bottlenecks for humidity- and voltage-restricted tests, while long test durations amplify the cost of poor allocations. From an operations research perspective, the setting combines resource-constrained multi-project scheduling, unrelated parallel resources with eligibility restrictions, and tardiness objectives---features that are already computationally demanding and typically require specialized heuristic methods \citep{HartmannBriskorn2022,GomezSanchezLallaRuizFernandezGilCastroVoss2023,UlagaDurasevicJakobovic2022,MaeckerShenMonch2023,AfzaliradRezaeian2016}. The closest related problems arise in industrial test-laboratory scheduling, automotive prototype-test planning, and thermal-chamber scheduling, reviewed in Section~\ref{sec:literature_review}. Those studies still treat the testing workload as given, even when they jointly decide how many physical units are available. Reliability demonstration testing optimizes sample size under statistical criteria, but without chamber-level scheduling feasibility \citep{Fernandez2022}.
+
+This study makes four main contributions. First, it benchmarks fixed uniform sample policies against endogenous sample-size optimization and quantifies their effect on total tardiness. Second, it includes an equal-budget control experiment in which a uniform six-sample policy uses the same average prototype consumption as the optimized solution, thereby isolating the effect of project-level allocation from total sample quantity. Third, it develops an iterative framework that coordinates sample-size decisions, chamber-environment assignment, and feasible scheduling. Fourth, it introduces a Variable Neighborhood Search (VNS) diversification strategy that perturbs workload-defining sample-size decisions rather than only sequencing or assignment decisions.
+
+To solve TCSSOP, we propose an iterative framework. For a given sample vector, chamber environments are first generated through workload-balancing logic and further refined by local search. Based on these resulting chamber settings, sample sizes are improved through bounded local search, with each candidate evaluated by an Earliest Due Date (EDD) based constructive scheduler that explicitly validates feasibility. Since sample-size decisions change the workload distribution across environments, chamber assignments are re-optimized iteratively. When local improvement stagnates, a VNS diversification mechanism perturbs sample sizes and re-optimizes the resulting workload structure.
+
+The remainder of the paper is organized as follows. Section~\ref{sec:literature_review} reviews related literature. Section~\ref{sec:problem_definition} defines the problem and notation, including the test catalog and chamber features. Section~\ref{sec:solution_methodology} presents the solution methodology. Section~\ref{sec:computational_study} reports computational results, and Section~\ref{sec:conclusion} concludes the study.
+
+\section{Literature Review}
+\label{sec:literature_review}
+
+% Overleaf compile note: in running text write R\&D, never R&D.
+% An unescaped & is an alignment tab and raises "Misplaced alignment tab character &".
+
+Industrial scheduling problems have been widely studied because of their
+direct impact on resource utilization, delivery performance, and operational
+efficiency.
+Practical settings often involve heterogeneous resources, due-date pressure,
+precedence relations, eligibility restrictions, and setup-related effects,
+which make exact optimization difficult and motivate specialized heuristic
+and metaheuristic approaches.
+These challenges become particularly pronounced in industrial testing
+environments, where multiple projects compete for specialized test resources
+and feasibility depends not only on resource capacity but also on technical
+compatibility, test dependencies, and the availability of physical test units.
+These features are central to refrigerator {R\&D} testing, in which climatic
+chambers, physical samples, and multi-stage test portfolios must be
+coordinated.
+The closest literature can be grouped into four streams: scheduling in
+industrial test laboratories and thermal-chamber facilities; the allocation
+of expensive physical prototypes in {R\&D} testing; eligibility-restricted
+unrelated parallel-machine scheduling; and statistical reliability-test
+planning in which sample size is itself a decision.
+
+A particularly relevant stream of research concerns scheduling in industrial
+test laboratories and product-testing facilities.
+\citet{MischekMusliu2021} study a real-world Test Laboratory Scheduling
+Problem (TLSP) in which testing activities require heterogeneous equipment
+and qualified personnel and are subject to temporal and resource-related
+constraints.
+An important characteristic of this setting is that individual tasks are
+grouped into jobs before detailed scheduling.
+Building on this structure, \citet{DanzingerEtAl2020} integrate variable
+task grouping with scheduling, while \citet{MischekMusliuSchaerf2023}
+further investigate local-search approaches for the combined problem.
+These studies demonstrate that test-laboratory scheduling can require
+decisions beyond conventional assignment and sequencing, particularly when
+heterogeneous resources and the organization of testing activities interact.
+Related applications emphasize additional features of physical testing.
+\citet{MartinEtAl2022}, for example, consider the scheduling of a
+predetermined series of product tests required for products intended to
+operate under extreme environmental conditions, incorporating
+technician-related constraints.
+\citet{LittleEtAl2006} schedule temperature-cycling tests of electronic
+circuit packs in thermal chambers, constructing feasible pack configurations
+and chamber runs under shared thermal conditions.
+Oven and thermal-chamber studies similarly construct feasible batches under
+a shared processing environment: jobs may occupy the same resource only if
+their requirements are compatible
+\citep{LacknerMrkvickaMusliuWalkiewiczWinter2023,MajumderLahaSuganthan2018}.
+Such applications are closely related to climatic-chamber operations because
+test feasibility depends on specialized testing resources and test-specific
+operating conditions.
+In these studies the set of test types, and therefore the number of
+operations, is given before scheduling.
+In the present problem the required test types of each product are also
+known, but the number of operations is not: pull-down is executed once per
+physical sample, so the sample-size decision changes both the upstream
+workload and the feasible downstream parallelism.
+
+Another closely related research stream considers {R\&D} testing in which
+expensive physical prototypes must be allocated among multiple tests.
+\citet{BartelsZimmermann2009} study test scheduling in automotive {R\&D}
+projects, accounting for temporal dependencies and resource restrictions
+while seeking to reduce the number of experimental vehicles required.
+\citet{LimtanyakulSchwiegelshohn2012} similarly address the assignment and
+scheduling of dependent tests on vehicle prototypes using
+constraint-programming and hybrid approaches.
+\citet{ShiReichEpelmanKlampflCohn2017} examine prototype-vehicle test
+scheduling in an automotive product-development setting, where
+test--vehicle compatibility, timing restrictions, and the high cost of
+prototypes motivate the coordinated allocation of tests to physical vehicles.
+More recently, \citet{ClautiauxEssodaiguiNguyenSadykovYounes2025} jointly
+consider the number and configurations of prototype vehicles together with
+test assignment and sequencing.
+Their model lexicographically minimizes the number of late tests and then
+the number of prototypes used, thereby explicitly linking the planning of
+physical test resources with subsequent test execution.
+These studies establish that the number, characteristics, and allocation of
+physical test units can have a substantial effect on the resulting {R\&D}
+test schedule.
+
+Climatic-chamber testing additionally requires the coordination of
+heterogeneous test resources whose technical capabilities and operating
+environments determine test eligibility.
+This feature relates to scheduling models with eligibility and resource
+restrictions.
+For example, \citet{AfzaliradRezaeian2016} consider unrelated
+parallel-machine scheduling with resource requirements, precedence
+constraints, sequence-dependent setups, and machine-eligibility
+restrictions, while \citet{MaeckerShenMonch2023} study an
+eligibility-constrained unrelated parallel-machine problem with a
+tardiness-oriented objective.
+These models provide relevant scheduling foundations for heterogeneous
+resources on which only subsets of operations are feasible.
+In climatic-chamber testing, however, eligibility also depends on a shared
+chamber-level environmental configuration: multiple stations within the same
+chamber operate under a common temperature and humidity setting, while
+chamber capabilities may further restrict humidity- or voltage-sensitive
+tests.
+Chamber configuration therefore determines the effective processing capacity
+available for different portions of the testing workload.
+Although eligibility-dependent scheduling models capture parts of this
+interaction, they generally assume that the set of operations to be
+processed is known in advance.
+
+A separate test-planning literature treats the number of physical test units
+as an endogenous decision.
+In reliability demonstration testing, \citet{Fernandez2022} jointly
+optimizes sample size, test duration, and acceptance criteria under
+statistical risk and cost considerations.
+Such models demonstrate that sample size need not be treated as a fixed
+input to test planning.
+Their focus, however, is primarily on the statistical design of the test
+rather than on the detailed execution of multiple projects on heterogeneous
+and capacity-constrained testing resources.
+Thus, reliability test-planning models endogenize sample quantity but
+abstract from detailed resource scheduling, whereas industrial laboratory
+and prototype-test scheduling models represent operational execution in
+greater detail but take both the test types and the number of operations
+as given.
+
+The problem considered in this study connects these research streams through
+a different role of the sample-size decision.
+For each refrigerator development project, an additional physical sample
+does not merely provide another unit on which an existing set of tests can
+be performed.
+Because the pull-down test must be performed for every physical sample,
+increasing the sample count also generates additional upstream testing
+workload.
+At the same time, the additional samples can be allocated to different
+downstream tests, increasing the opportunities for parallel execution.
+Conversely, reducing the sample count decreases pull-down workload but can
+restrict downstream parallelism.
+The effect of sample size on scheduling performance is therefore
+non-monotone and depends on project due dates, test requirements,
+physical-sample availability, stage-based precedence relations, and the
+distribution of capacity across compatible chamber environments.
+
+This mechanism distinguishes the present setting from the individual
+research streams discussed above.
+Prototype-test scheduling models account for limited and costly physical
+test units and, in some cases, jointly determine their number or
+configuration, but the set of test types and the number of operations
+remain given.
+Industrial test-laboratory and thermal-test scheduling models capture
+heterogeneous resources, compatibility restrictions, and detailed execution
+constraints, but likewise treat both the test types and the number of
+operations as given.
+Reliability-test planning explicitly optimizes sample size, but does not
+represent the resulting detailed chamber-level execution.
+In the present problem, by contrast, sample allocation simultaneously
+changes the amount of upstream work and the degree of downstream
+parallelism, while chamber-environment assignments determine where the
+resulting workload can be processed.
+The reviewed literature therefore does not jointly capture this combination
+of decision-dependent workload generation, shared chamber-environment
+configuration, physical-sample availability, and detailed test scheduling
+under due dates.
+This motivates an integrated formulation in which project-specific sample
+allocation, chamber configuration, and operational scheduling are
+coordinated rather than treated as independent planning decisions.
+
+\section{Problem Definition and Notation}
+\label{sec:problem_definition}
+
+\subsection{Industrial problem setting}
+\label{subsec:industrial_problem_setting}
+
+This study is motivated by a refrigerator R\&D testing environment in which newly designed products must complete standardized laboratory tests before market release. Tests are conducted in a facility composed of climate-controlled chambers, each containing multiple parallel stations. The set of chambers is denoted by \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), and all stations in the same chamber operate under a common chamber-level environmental setting.
+
+A set of products \(\mathcal{P}\) must be processed. Each product \(p\in\mathcal{P}\) represents a development project with due date \(d_p\). The completion time \(C_p\) is defined as the finish time of the last required test of product \(p\). Required tests are product-dependent: each product has a subset \(\mathcal{T}_p\subseteq\mathcal{T}\), determined by climatic class, target-market energy regulations, electrical specifications, and optional engineering decisions.
+
+Test execution is constrained by chamber compatibility. Each test requires a specific temperature-humidity environment, and some products require voltage-compatible execution. Since a chamber can operate under only one environmental configuration at a time and chamber capabilities are heterogeneous, not every test can be processed in every chamber. Humidity-controlled tests require humidity-capable chambers, and voltage-sensitive products can only be assigned to voltage-capable chambers.
+
+The testing process follows multi-stage stage-based precedence logic. Gas amount determination precedes pull-down testing, pull-down acts as a release condition for downstream tests, and final consumer-usage tests are released according to downstream-stage conditions. Thus, readiness is governed by product-stage states rather than by a simple fixed predecessor list.
+
+A central feature of the problem is the use of physical samples. Each product is represented by a sample count \(s_p\). Pull-down tests are executed once per sample, whereas most downstream tests are executed once per product and can be assigned to available samples after release. Therefore, increasing \(s_p\) raises upstream workload but may improve downstream parallelism; reducing \(s_p\) decreases workload but may restrict parallel execution. In industrial practice, sample counts are often set uniformly across projects because such rules are easy to administer. This uniform policy ignores heterogeneity in due dates, required test mixes, and chamber eligibility. Moreover, two sample vectors with the same total consumption may induce very different workload profiles when pull-down operations are concentrated on late or environment-constrained projects. This decision-dependent workload structure differentiates TCSSOP from classical scheduling problems with fixed job sets.
+
+Overall, TCSSOP combines three coupled elements: heterogeneous chamber resources, product-dependent test requirements, and sample-size-dependent workload generation. The planner must jointly determine chamber configurations, project-level sample sizes, and feasible schedules under environmental, voltage, station-capacity, sample-availability, stage-based precedence, and due-date constraints.
+
+\subsection{Test requirements driven by climatic class and target market}
+\label{subsec:test_requirements}
+
+Test requirements are product-dependent and are determined by the target market, climatic class, energy regulation, electrical specification, and optional engineering decisions. Therefore, each product may require a different subset of tests and a different set of chamber environments. Table~\ref{tab:test_attributes} summarizes the industrial test catalog, including stage membership, environmental conditions, sample usage, and typical durations.
+
+\begin{table}[H]
+\caption{Tests and their required environmental conditions, number of samples, and durations}
+\label{tab:test_attributes}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}cclcccc@{}}
+\toprule
+\textbf{Stage} &
+\shortstack{\textbf{Test}\\\textbf{No.}} &
+\textbf{Test Name} &
+\textbf{Temperature} &
+\textbf{Humidity} &
+\textbf{Samples} &
+\shortstack{\textbf{Duration}\\\textbf{(days)}} \\
+\midrule
+1 & 1 & \shortstack[l]{Refrigerant Charge\\Determination} & \shortstack{43/38/32\\\si{\degreeCelsius}} & Ambient & 1 & 10 \\
+2 & 2 & Pull-down & \shortstack{43/38/32\\\si{\degreeCelsius}} & Ambient & \shortstack{All\\samples} & 5 \\
+3 & 3$^{\dagger}$ & Energy Efficiency & \SI{16}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 4$^{\dagger}$ & Energy Efficiency & \SI{25}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 5$^{\dagger}$ & Energy Efficiency & \SI{32}{\degreeCelsius} & Ambient & 1 & 15 \\
+3 & 6$^{*}$ & Performance & \SI{10}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 7$^{*}$ & Performance & \SI{16}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 8 & Performance & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 9$^{**}$ & Performance & \SI{32}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 10$^{**}$ & Performance & \SI{38}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 11$^{**}$ & Performance & \SI{43}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 12$^{***}$ & Freezing Capacity & \SI{25}{\degreeCelsius} & Ambient & 1 & 10 \\
+3 & 13$^{***}$ & Temperature Rise & \SI{25}{\degreeCelsius} & Ambient & 1 & 5 \\
+4 & 14 & Consumer Usage & \SI{10}{\degreeCelsius} & Ambient & 1 & 15 \\
+4 & 15 & Consumer Usage & \SI{25}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+4 & 16 & Consumer Usage & \SI{32}{\degreeCelsius} & 85\% RH & 1 & 15 \\
+\bottomrule
+\end{tabular}
+
+\vspace{1mm}
+\begin{minipage}{0.95\textwidth}
+\footnotesize
+$^{\dagger}$ At least one of these tests is required. The energy-labeling regulation of the product's target market selects the pair at \(16^\circ\mathrm{C}\) and \(32^\circ\mathrm{C}\), or a single test at \(25^\circ\mathrm{C}\) or at \(32^\circ\mathrm{C}\).\\
+$^{*}$ Low-temperature performance test of the climatic class: \(10^\circ\mathrm{C}\) for products targeted for subnormal climates and \(16^\circ\mathrm{C}\) otherwise.\\
+$^{**}$ High-temperature performance test of the climatic class: \(43^\circ\mathrm{C}\) for products targeted for tropical climates, \(38^\circ\mathrm{C}\) for subtropical climates, and \(32^\circ\mathrm{C}\) for normal and subnormal climates.\\
+$^{***}$ Optional. The product engineer may request either test, both, or neither.
+\end{minipage}
+\end{table}
+
+Refrigerant charge determination, pull-down, the performance test at
+\(25^\circ\mathrm{C}\), and the three consumer-usage tests are required
+for every product.
+The temperature and humidity of each test are given in
+Table~\ref{tab:test_attributes}.
+Ambient humidity means that the test needs no humidity adjustment and
+can be run in any chamber.
+An entry of 85\% RH means that the test must be run at 85\% relative
+humidity, so it can be assigned only to a chamber with humidity control.
+Every test uses one sample, except pull-down, which is repeated on each
+sample.
+For refrigerant charge determination and pull-down, the temperature is
+the upper ambient limit of the product's climatic class.
+Products targeted for tropical, subtropical, and normal/subnormal
+climates are tested at \(43^\circ\mathrm{C}\), \(38^\circ\mathrm{C}\),
+and \(32^\circ\mathrm{C}\), respectively.
+In addition to the performance test at \(25^\circ\mathrm{C}\), the
+climatic class determines one low-temperature and one high-temperature
+performance test, as specified in Table~\ref{tab:test_attributes}.
+An additional performance test at \(16^\circ\mathrm{C}\) is required for
+products targeting tropical, subtropical, and normal climates, whereas
+the corresponding test for products targeting subnormal climates is
+performed at \(10^\circ\mathrm{C}\).
+High-temperature performance tests at \(43^\circ\mathrm{C}\),
+\(38^\circ\mathrm{C}\), and \(32^\circ\mathrm{C}\) are required for
+products targeting tropical, subtropical, and normal or subnormal
+climates, respectively.
+The applicable energy-efficiency tests are determined by the
+energy-labeling regulation of the product's target market.
+That regulation specifies exactly one of three mutually exclusive
+options: the pair of tests at \(16^\circ\mathrm{C}\) and
+\(32^\circ\mathrm{C}\), a single test at \(25^\circ\mathrm{C}\), or a
+single test at \(32^\circ\mathrm{C}\).
+The three energy-efficiency rows in Table~\ref{tab:test_attributes} are
+therefore alternatives, not a mandatory set.
+Freezing-capacity and temperature-rise tests are optional and are
+included when requested by the product engineer.
+Thus, each product generally has a different test portfolio even though
+all products follow the same stage-based testing structure.
+
+Electrical requirements also vary by region. Typical configurations include \(230\,\mathrm{V}\)--\(50\,\mathrm{Hz}\) for Europe and Turkey, \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) for the USA and Canada, and \(230\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) for markets such as Saudi Arabia and Brazil. Nonstandard voltage means a target-market specification other than the laboratory supply of \(230\,\mathrm{V}\)--\(50\,\mathrm{Hz}\); for example, a product destined for the USA requires \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) and must be tested in a voltage-capable chamber. Voltage compatibility is modeled at the product level. If product \(p\) requires voltage-compatible execution, all operations of that product must be assigned to voltage-capable chambers; otherwise, the product can be processed in any environmentally compatible chamber.
+
+Each test type \(t\in\mathcal{T}\) is associated with an environmental requirement \(e(t)\), specifying its temperature and humidity condition.
+
+As a result, product-specific test definitions generate heterogeneous workload patterns across environments and voltage-capable resources. This heterogeneity affects both feasibility and scheduling efficiency, since workload may concentrate in specific temperature-humidity environments while voltage-sensitive products compete for a restricted subset of chambers. Because required test subsets differ across products, the marginal value of an additional sample also differs across projects, reinforcing the need for project-specific rather than uniform sample decisions.
+
+\subsection{Chamber structure and capability constraints}
+\label{subsec:chamber_structure}
+
+The testing facility consists of a heterogeneous set of chambers \(\mathcal{C}\). Each chamber \(c\in\mathcal{C}\) contains a fixed station set \(\mathcal{K}_c\), with capacity \(M_c=|\mathcal{K}_c|\). The industrial system considered in this study includes 28 environmental chambers and 240 testing stations. Chamber capacities range from 6 to 12 stations. Figure~\ref{fig:chamber_structure} illustrates the chamber--station structure: each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ across the facility.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{chamber_structure.png}
+\caption{Schematic representation of test chambers and station allocation. Each chamber consists of multiple stations operating under shared environmental conditions, while chamber capabilities may differ.}
+\label{fig:chamber_structure}
+\end{figure}
+
+All stations within a chamber operate under a common chamber-level environment. Therefore, environmental compatibility is enforced at the chamber level rather than independently for each station. Detailed chamber capacities and technical adjustment capabilities are summarized in Table~\ref{tab:chamber_capabilities}.
+
+\begin{table}[H]
+\centering
+\caption{Chamber capacities and technical adjustment capabilities}
+\label{tab:chamber_capabilities}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{lccccc}
+\hline
+\textbf{Chambers} &
+\shortstack{\textbf{No. of}\\\textbf{Chambers}} &
+\shortstack{\textbf{Stations}\\\textbf{per Chamber}} &
+\shortstack{\textbf{Temperature}\\\textbf{Adjustment}} &
+\shortstack{\textbf{Humidity}\\\textbf{Adjustment}} &
+\shortstack{\textbf{Voltage}\\\textbf{Adjustment}} \\
+\hline
+T001, T006--T007 & 3 & 8  & 1 & 0 & 0 \\
+T002--T005, T025 & 5 & 8  & 1 & 1 & 1 \\
+T008, T026--T028 & 4 & 12 & 1 & 0 & 1 \\
+T009              & 1 & 12 & 1 & 0 & 0 \\
+T010--T013        & 4 & 12 & 1 & 1 & 0 \\
+T014--T015        & 2 & 6  & 1 & 1 & 0 \\
+T016--T023        & 8 & 6  & 1 & 0 & 1 \\
+T024              & 1 & 8  & 1 & 1 & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+The indicators in Table~\ref{tab:chamber_capabilities} show whether a chamber group supports temperature, humidity, and voltage adjustment. Temperature adjustment is available in all chambers, whereas humidity and voltage adjustment are available only in selected chambers. Let \(h_c\in\{0,1\}\) and \(v_c\in\{0,1\}\) denote the humidity and voltage capability indicators of chamber \(c\), respectively, and let \(\mathcal{C}^v=\{c\in\mathcal{C}:v_c=1\}\) be the set of voltage-capable chambers.
+
+Let \(\mathcal{E}\) denote the set of feasible environment configurations, where each environment corresponds to a temperature-humidity combination. For each chamber \(c\), a single environment \(X_c\in\mathcal{E}\) is selected. A test operation \(t\) can be assigned to chamber \(c\) only if the chamber environment matches the required environment:
+\[
+X_c=e(t).
+\]
+In addition, tests requiring controlled humidity, such as 85\% relative humidity, can only be assigned to chambers with \(h_c=1\). Voltage compatibility is required when the product's target-market electrical standard is nonstandard relative to the laboratory supply of \(230\,\mathrm{V}\)--\(50\,\mathrm{Hz}\). For example, a product destined for the USA requires \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\) and must be tested in a voltage-capable chamber. Let \(\mathcal{P}^v\) denote the set of such products (equivalently, those with \(\nu_p=1\)). If \(p\in\mathcal{P}^v\), all operations of product \(p\) must be assigned to a chamber in \(\mathcal{C}^v\). Products not in \(\mathcal{P}^v\) can be processed in any environmentally compatible chamber.
+
+Because chamber capacities and capabilities are not uniformly distributed, the effective capacity available for a specific environment may be much smaller than the total station capacity. Thus, bottlenecks may arise not only from workload concentration but also from limited humidity- or voltage-capable resources. Moreover, although chambers can be reconfigured, frequent environment changes are operationally undesirable due to stabilization delays and disruption of ongoing tests; chamber environments are therefore treated as planning decisions that remain fixed over the scheduling horizon. Feasible schedules must therefore jointly satisfy environmental compatibility, humidity feasibility, voltage feasibility, station-capacity constraints, and sample-dependent workload requirements.
+
+\subsection{Test flow, stage logic, and workload generation}
+\label{subsec:test_flow}
+
+The test process follows a structured multi-stage flow:
+\[
+\text{Refrigerant Charge Determination}\rightarrow \text{Pull-down}\rightarrow \text{Other Required Tests}\rightarrow \text{Consumer Usage}.
+\]
+Stage progression is controlled by stage-based precedence rules rather than by a simple fixed predecessor list. Gas amount determination, when required, precedes pull-down testing. Pull-down acts as the release condition for downstream tests. Other required tests can start only after the pull-down phase is completed, while consumer-usage tests are released after pull-down completion and after all required downstream tests have been initiated.
+
+The required test set is product-specific. For each product \(p\), the set \(\mathcal{T}_p\subseteq\mathcal{T}\) is determined by climatic class, electrical specifications, target-market energy regulations, and optional engineering decisions. Since several test groups represent alternative operating conditions, only the regulation-consistent variants are selected for each product.
+
+A central feature of TCSSOP is decision-dependent workload generation through sample counts. Each product \(p\) has a sample-size decision \(s_p\). Pull-down tests are executed once per sample, whereas other required tests are executed once per product. The multiplicity of test \(t\) for product \(p\) is therefore
+\[
+m_{pt}(s_p)=
+\begin{cases}
+s_p, & \text{if }t\text{ is a pull-down test,}\\
+1, & \text{otherwise.}
+\end{cases}
+\]
+For environment \(e\), the induced workload is
+\[
+W_e(S)=
+\sum_{p\in\mathcal{P}}
+\sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
+m_{pt}(s_p)\tau_t .
+\]
+
+This structure creates the main trade-off of the problem. Increasing \(s_p\) increases upstream pull-down workload and may create congestion in specific environments, but it can also enable downstream tests to run in parallel on different physical samples. Reducing \(s_p\) lowers workload but may restrict downstream parallelism. Hence, the effect of sample size on tardiness is non-monotone and depends on chamber assignment, sample availability, due dates, and stage-based precedence release conditions.
+
+Unlike classical scheduling problems with a fixed job set, the number and distribution of operations in TCSSOP are induced by both the required test set \(\mathcal{T}_p\) and the sample vector \(S=\{s_p\}_{p\in\mathcal{P}}\). This decision-dependent workload generation is the main source of complexity and motivates the integrated solution framework.
+
+\subsection{Objective and feasibility conditions}
+\label{subsec:objective_feasibility}
+
+The objective is to determine feasible test plans that complete products on time while using limited testing resources effectively. For each product \(p\in\mathcal{P}\), let \(C_p\) denote its completion time, defined as the finish time of its last required test operation. Given due date \(d_p\), product tardiness is
+\[
+T_p=\max(0,C_p-d_p).
+\]
+The primary objective is to minimize total tardiness:
+\[
+\min T^{tot}=\sum_{p\in\mathcal{P}}T_p.
+\]
+Sample usage is considered as a secondary criterion. Let \(s_p\) be the number of samples assigned to product \(p\). Total sample usage is
+\[
+S^{tot}=\sum_{p\in\mathcal{P}}s_p.
+\]
+Solutions are evaluated lexicographically: total tardiness is minimized first, and among solutions with equal total tardiness, the solution with the smaller total sample usage is preferred.
+
+A feasible solution must satisfy all operational, environmental, and stage-based requirements of the testing system. For each product \(p\), all tests in \(\mathcal{T}_p\) must be scheduled with the correct multiplicities: pull-down tests generate \(s_p\) operations, while other required tests generate one operation per product, and no non-required tests are scheduled. Each operation must be assigned to a chamber whose environment matches its test requirement \(e(t)\). Tests requiring controlled humidity can only be assigned to chambers with humidity capability \((h_c=1)\). If product \(p\) requires voltage-compatible execution \((\nu_p=1)\), all of its operations must be assigned to voltage-capable chambers \((v_c=1)\); otherwise, the product may be assigned to any environmentally compatible chamber.
+
+Feasibility also requires temporal and resource consistency. Each station can process at most one operation at a time, and each physical sample can participate in at most one operation at a time. Stage-based precedence rules must be respected: downstream tests can start only after the pull-down phase is completed, and consumer-usage tests require both completion of the pull-down phase and initiation of all required downstream tests. The sample size of each product is restricted to the interval \([s_{\min},s_{\max}]\). The lower bound \(s_{\min}\) is the minimum number of prototypes permitted in the planning process. A single sample is not used: every remaining test of that product would occupy the same physical unit, so those tests cannot overlap, and the plan would have no replicate if a unit is damaged or a test must be repeated. Current industrial practice therefore plans with three prototypes per product; we set \(s_{\min}=3\) to this laboratory floor rather than to a statistical sample-size formula. The upper bound \(s_{\max}\) is the maximum number of tests of a product that can run concurrently. Using more than \(s_{\max}\) samples cannot create additional downstream parallelism and would only generate additional pull-down workload. Finally, the completion time \(C_p\) of each product is the maximum completion time among all its required operations.
+
+These conditions define feasibility at both structural and temporal levels. Structurally, test selection, sample counts, and chamber assignments must be compatible with environmental and capability requirements. Temporally, the generated operations must admit a schedule that satisfies station capacity, sample exclusivity, and stage-based precedence constraints.
+
+\subsection{Notation}
+\label{subsec:notation}
+
+The main notation used in the definition of RCSP-SO is summarized in Table~\ref{tab:notation_RCSP-SO}. Objective values are evaluated lexicographically by prioritizing total tardiness and, among solutions with equal total tardiness, minimizing total sample usage.
+
+\begin{table}[H]
+\caption{Sets, parameters and solution measures used in the definition of RCSP-SO}
+\label{tab:notation_RCSP-SO}
+\label{tab:notation_tcssop}
+\centering
+\small
+\begin{tabular}{cl}
+\toprule
+\textbf{Notation} & \textbf{Description}\\
+\midrule
+\textbf{Sets} & \\
+\midrule
+\(\mathcal{P}\) & Set of products, indexed by \(p\) \\
+\(\mathcal{P}^v\) & Subset of products that require nonstandard voltage (e.g., USA, \(120\,\mathrm{V}\)--\(60\,\mathrm{Hz}\)) \\
+\(\mathcal{C}\) & Set of chambers, indexed by \(c\) \\
+\(\mathcal{C}^h\) & Subset of chambers that have humidity-adjustment capability \\
+\(\mathcal{C}^v\) & Subset of chambers that have voltage-adjustment capability \\
+\(\mathcal{K}_c\) & Set of stations in chamber \(c\) \\
+\(\mathcal{E}\) & Set of environmental (temperature and humidity) configurations, indexed by \(e\) \\
+\(\mathcal{E}^H\) & Set of environmental configurations that require 85\% RH \\
+\(\mathcal{T}\) & Set of tests, indexed by \(t\) \\
+\(\mathcal{T}_p\) & Set of tests required by product \(p\) \\
+\midrule
+\textbf{Parameters} & \\
+\midrule
+\(d_p\) & Due date of product \(p\) \\
+\(e(t)\) & Environmental configuration required by test \(t\) \\
+\(\tau_t\) & Duration of test \(t\) \\
+\(K_c\) & Number of stations in chamber \(c\) \\
+\(h_c\) & 1 if chamber \(c\) can adjust humidity; 0 otherwise \\
+\(v_c\) & 1 if chamber \(c\) can adjust voltage; 0 otherwise \\
+\(s_{\min}\) & Lower bound on the sample size of a product \\
+\(s_{\max}\) & Upper bound on the sample size of a product \\
+\midrule
+\textbf{Solution measures} & \\
+\midrule
+\(C_p\) & Completion time of product \(p\) \\
+\(T_p\) & Tardiness of product \(p\), \(T_p=\max\{0,C_p-d_p\}\) \\
+\(T^{tot}\) & Total tardiness, \(T^{tot}=\sum_{p\in\mathcal{P}}T_p\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Solution Methodology}
+\label{sec:solution_methodology}
+
+\subsection{Overall Solution Framework}
+\label{subsec:framework}
+\label{subsec:overall_framework}
+
+The method is built around a simple observation: sample sizes and
+chamber settings cannot be chosen independently.
+Increasing the number of samples of a product creates one additional
+pull-down operation for each extra unit, so the upstream workload
+grows.
+At the same time, extra samples allow later tests to run in parallel,
+which can reduce completion times when due dates are tight.
+Which of these two effects dominates depends on how chamber capacity
+is currently allocated across environments.
+The search therefore alternates between assigning chambers to a given
+sample vector and improving that sample vector under a fixed
+assignment.
+Algorithm~\ref{alg:framework} records this outer coordination;
+the inner procedures are developed in the following subsections.
+
+\begin{algorithm}[H]
+\caption{Overall Solution Framework}
+\label{alg:framework}
+\label{alg:overall_framework}
+\begin{algorithmic}[1]
+\State \textbf{Input:} instance data
+\State \textbf{Output:} \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State Set \(s_p\leftarrow s_{\min}\) for all \(p\in\mathcal{P}\); \(\mathbf{s}\leftarrow(s_p)_{p\in\mathcal{P}}\) \label{step:fw-init}
+\State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\emptyset,\mathbf{s},\emptyset,+\infty)\)
+\For{\(i\leftarrow 1\) to \(I_{\max}\)}
+    \State \(\mathbf{x}\leftarrow\text{ChamberAssignment}(\mathbf{s})\) \label{step:fw-assign}
+    \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s})\) \label{step:fw-ls}
+    \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)} \label{step:fw-lex}
+        \State \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{x},\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+        \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
+    \Else
+        \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\text{VNS}(\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-vns}
+        \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
+            \State \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+            \State \(\mathbf{s}\leftarrow\mathbf{s}_{cand}\)
+        \Else
+            \State \Return \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\) \label{step:fw-stop}
+        \EndIf
+    \EndIf
+\EndFor
+\State \Return \((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\end{algorithmic}
+\end{algorithm}
+
+We start from the minimum feasible sample count for every product
+(Step~\ref{step:fw-init}).
+At each outer iteration the chambers are first assigned to the
+current sample vector (Step~\ref{step:fw-assign}).
+Sample sizes are then improved by local search under this assignment
+(Step~\ref{step:fw-ls}).
+That procedure evaluates each trial by an earliest-due-date (EDD)
+schedule and returns the resulting sample vector, schedule, and total
+tardiness.
+A candidate is accepted if
+\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)
+(Step~\ref{step:fw-lex}).
+The search then continues from the accepted samples, so the next
+iteration reassigns the chambers.
+If local search does not improve the incumbent, VNS is applied to
+the incumbent
+\((\mathbf{x}_{inc},\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+(Step~\ref{step:fw-vns}): it perturbs the sample vector and repeats
+the same local search under the incumbent assignment.
+If the same lexicographic test holds after VNS, only the incumbent
+samples, schedule, and tardiness are replaced; the next iteration
+reassigns the chambers to the new samples.
+Otherwise the search stops (Step~\ref{step:fw-stop}).
+It also stops when the iteration limit \(I_{\max}\) is reached.
+
+\subsection{Chamber assignment under environment constraints}
+\label{subsec:chamber_assignment}
+
+In this section, we explain how the chamber configurations are determined based on the test workload. We use \(\mathbf{s}=(s_p)_{p\in\mathcal{P}}\) to represent the sample-size vector. For a fixed sample-size vector \(\mathbf{s}\), we determine the environmental configuration of each chamber solving a mixed-integer linear program. We implement this chamber configuration phase in two steps. Since sample counts affect the workload of environmental configurations, chamber assignment must be updated when \(\mathbf{s}\) changes. We use \(m_{pt}(s_p)\) to represent the number of samples on which test \(t\) of product \(p\) has to be executed. We first determine the total test workload for each environmental configuration based on voltage-adjustment requirement. More specifically, for each environmental configuration \(e \in \mathcal{E}\) we calculate the overall total test duration and total test duration with nonstandard voltage as follows:
+\begin{align*}
+W_e(\mathbf{s}) &=
+\sum_{p\in\mathcal{P}}
+\sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
+m_{pt}(s_p)\tau_t,
+\\
+W_e^V(\mathbf{s}) &=
+\sum_{p\in\mathcal{P}^v}
+\sum_{\substack{t\in\mathcal{T}_p\\e(t)=e}}
+m_{pt}(s_p)\tau_t.
+\end{align*}
+\(W_e(\mathbf{s})\) denotes the total test duration under environmental configuration \(e\), and \(W_e^V(\mathbf{s})\) denotes the total duration of the tests requiring nonstandard voltage under environmental configuration \(e\). The workload shares of each environmental configuration, considering all tests and only those requiring nonstandard voltage, respectively, are defined as follows:
+\[
+\phi_e=\frac{W_e(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e(\mathbf{s})},\qquad
+\phi_e^V=\frac{W_e^V(\mathbf{s})}{\sum\limits_{e\in\mathcal{E}}W_e^V(\mathbf{s})}.
+\]
+The target capacities (in terms of number of stations required) are calculated as follows:
+\[
+S_e=\phi_e \sum_{c\in\mathcal{C}}K_c,\qquad
+S_e^V=\phi_e^V \sum_{c\in\mathcal{C}^v}K_c.
+\]
+We define \(\mathcal{E}_\mathbf{s}\) and \(\mathcal{E}^V_\mathbf{s}\) as the set environmental conditions for which nonzero test durations are needed considering all tests and the ones requiring nonstandard voltage only. That is,
+\[
+\mathcal{E}_\mathbf{s}=\{e\in\mathcal{E}:\ W_e(\mathbf{s})>0\},
+\]
+\[
+\mathcal{E}^V_\mathbf{s}=\{e\in\mathcal{E}:W_e^V(\mathbf{s})>0\}.
+\]
+Table~\ref{tab:notation_ccd} lists the additional notation of the chamber configuration model. Symbols already defined in Table~\ref{tab:notation_RCSP-SO} are omitted.
+
+\begin{table}[H]
+\caption{Additional notation used in the integer programming model for determining chamber configurations}
+\label{tab:notation_ccd}
+\centering
+\small
+\begin{tabular}{cl}
+\toprule
+\textbf{Notation} & \textbf{Description}\\
+\midrule
+\(W_e(\mathbf{s})\) & Total test duration under configuration \(e\) \\
+\(W_e^V(\mathbf{s})\) & Nonstandard-voltage test duration under configuration \(e\) \\
+\(\mathcal{E}_\mathbf{s}\) & Set of configurations with \(W_e(\mathbf{s})>0\) \\
+\(\mathcal{E}^V_\mathbf{s}\) & Set of configurations with \(W_e^V(\mathbf{s})>0\) \\
+\(\phi_e\) & Workload share of configuration \(e\) \\
+\(\phi_e^V\) & Nonstandard-voltage workload share of configuration \(e\) \\
+\(S_e\) & Target number of stations for configuration \(e\) \\
+\(S_e^V\) & Target number of voltage-adjustable stations for configuration \(e\) \\
+\midrule
+\textbf{Decision Variables} & \\
+\midrule
+\(x_{ce}\) & 1, if chamber \(c\) is assigned to configuration \(e\); 0, otherwise \\
+\(z_e\) & \shortstack[l]{Deviation between the number of assigned and\\targeted stations for configuration \(e\)} \\
+\(z_e^V\) & \shortstack[l]{Deviation between the number of assigned and\\targeted voltage-adjustable stations for configuration \(e\)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+Using the workload calculations explained above, we propose a mixed-integer linear program to determine the configurations of the chambers. Our goal in this model is to minimize the summation of the differences between the number of stations assigned to a configuration and the target capacity for that configuration. We define \(x_{ce}\) as a binary variable that equals 1 if chamber \(c\) is assigned to environmental configuration \(e\), and 0 otherwise. Moreover, we define \(z_e\) and \(z_e^V\) as the differences between the total number of stations assigned to environmental configuration \(e\) and the corresponding target capacities, considering all tests and only those requiring nonstandard voltage, respectively.
+The proposed chamber configuration determination model is as follows:
+\begin{align}
+\textrm{MIP-CCD($\mathbf{s}$)}: \min\quad
+& \sum_{e\in\mathcal{E}}z_e+\sum_{e\in\mathcal{E}}z_e^V
+\label{eq:assign_obj}\\
+\text{s.t.}\quad
+& \sum_{e\in\mathcal{E}}x_{ce}=1,
+&& \forall c\in\mathcal{C},
+\label{eq:assign_one}\\
+& \sum_{c\in\mathcal{C}}x_{ce}\ge 1,
+&& \forall e\in\mathcal{E}_\mathbf{s},
+\label{eq:assign_cover}\\
+& \sum_{c\in\mathcal{C}^v}x_{ce}\ge 1,
+&& \forall e\in\mathcal{E}^V_\mathbf{s},
+\label{eq:assign_volt}\\
+& x_{ce}\le h_c,
+&& \forall c\in\mathcal{C},\ e\in\mathcal{E}^H,
+\label{eq:assign_hum}\\
+& z_e\ge \sum_{c\in\mathcal{C}}K_cx_{ce}-S_e,
+&& \forall e\in\mathcal{E},
+\label{eq:assign_z1}\\
+& z_e\ge S_e-\sum_{c\in\mathcal{C}}K_cx_{ce},
+&& \forall e\in\mathcal{E},
+\label{eq:assign_z2}\\
+& z_e^V\ge \sum_{c\in\mathcal{C}^v}K_cx_{ce}-S_e^V,
+&& \forall e\in\mathcal{E},
+\label{eq:assign_zv1}\\
+& z_e^V\ge S_e^V-\sum_{c\in\mathcal{C}^v}K_cx_{ce},
+&& \forall e\in\mathcal{E},
+\label{eq:assign_zv2}\\
+& x_{ce}\in\{0,1\},
+&& \forall c \in \mathcal{C}, e \in \mathcal{E},
+\label{eq:assign_bin}\\
+& z_e,z_e^V\ge 0,
+&& \forall e \in \mathcal{E}.
+\label{eq:assign_dom}
+\end{align}
+In this model, objective~\eqref{eq:assign_obj} minimizes the total deviation between assigned station counts and the two target capacities. Constraint~\eqref{eq:assign_one} assigns each chamber to exactly one environmental configuration. Constraint~\eqref{eq:assign_cover} gives every configuration with a positive workload at least one chamber. Constraint~\eqref{eq:assign_volt} gives every configuration with a positive nonstandard-voltage workload at least one voltage-capable chamber. Constraint~\eqref{eq:assign_hum} forbids humidity-controlled configurations on chambers that cannot hold humidity. Constraints~\eqref{eq:assign_z1}--\eqref{eq:assign_z2} force \(z_e\) to be at least the absolute difference between the number of stations assigned to \(e\) and \(S_e\). Constraints~\eqref{eq:assign_zv1}--\eqref{eq:assign_zv2} do the same for voltage-capable stations and \(S_e^V\). The remaining constraints specify the domains of the decision variables.
+
+After the chamber configurations are determined, as a second step we implement a local search phase to fine-tune the chamber configuration decisions. We use the scheduling procedure to form a schedule according to the given chamber configurations and the sample-size vector. The normalized workload of chamber \(c\) is \(\lambda_c=B_c/K_c\), where \(B_c\) is the total duration of the tests assigned to that chamber and \(K_c\) is its number of stations. A chamber is \emph{highly loaded} if \(\lambda_c\) is large and \emph{lightly loaded} if \(\lambda_c\) is small. Chambers are ranked from the largest \(\lambda_c\) to the smallest, and pairs are scanned in this heaviest--lightest order. We consider exchanging the configurations of a highly loaded chamber and a lightly loaded chamber with \(\lambda_c>\lambda_{c'}\) (without violating \eqref{eq:assign_one}--\eqref{eq:assign_hum}). For each feasible swap we call the scheduling procedure. The first neighbor that improves the lexicographic objective is accepted immediately; the remaining swap pairs in that pass are not evaluated. If no swap is accepted in that pass, we reassign a lightly loaded chamber to the configuration of a highly loaded chamber, again in the same ranked order, and accept the first improving feasible move. After an accepted move, \(\lambda_c\) is recomputed and the next pass starts again with swap. These two moves are implemented sequentially as long as the solution improves, or until \(B_{\mathrm{room}}\) calls of the scheduling procedure have been used. The steps are provided in Algorithm~\ref{alg:chamber_assignment}.
+
+\begin{algorithm}[H]
+\caption{\textsc{ChamberAssignment}()}
+\label{alg:chamber_assignment}
+\begin{algorithmic}[1]
+\State \textbf{Input:} sample-size vector \(\mathbf{s}\)
+\State \textbf{Output:} chamber configuration assignment \(\mathbf{x}\)
+\State \(\mathbf{x}\leftarrow\Call{MIP-CCD}{\mathbf{s}}\) \label{step:ca-exact}
+\State \((\Pi,T^{tot})\leftarrow\Call{Schedule}{\mathbf{x},\mathbf{s}}\) \label{step:ca-eval}
+\Repeat
+    \State Rank chambers from largest \(\lambda_c=B_c/K_c\) to smallest using \(\Pi\) \label{step:ca-rank}
+    \State \(\mathit{improved}\leftarrow\mathrm{false}\)
+    \For{pairs \((c,c')\) in heaviest--lightest order with \(\lambda_c>\lambda_{c'}\)}
+        \State \(\mathbf{x}_{cand}\leftarrow\Call{Swap}{\mathbf{x},c,c'}\) \Comment{exchange the configurations of \(c\) and \(c'\)} \label{step:ca-swap}
+        \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+            \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
+            \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\) \label{step:ca-accept}
+                \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+            \EndIf
+        \EndIf
+    \EndFor
+    \If{\(\mathit{improved}=\mathrm{false}\)}
+        \For{pairs \((c,c')\) in heaviest--lightest order with \(\lambda_c>\lambda_{c'}\)}
+            \State \(\mathbf{x}_{cand}\leftarrow\Call{Move}{\mathbf{x},c,c'}\) \Comment{assign \(c'\) to the configuration of \(c\)} \label{step:ca-move}
+            \If{\(\mathbf{x}_{cand}\) satisfies \eqref{eq:assign_one}--\eqref{eq:assign_hum}}
+                \State \((\Pi_{cand},T^{tot}_{cand})\leftarrow\Call{Schedule}{\mathbf{x}_{cand},\mathbf{s}}\)
+                \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s})\)}
+                    \State \((\mathbf{x},\Pi,T^{tot})\leftarrow(\mathbf{x}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+                    \State \(\mathit{improved}\leftarrow\mathrm{true}\); \textbf{break}
+                \EndIf
+            \EndIf
+        \EndFor
+    \EndIf
+\Until{\(\mathit{improved}=\mathrm{false}\) or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\)} \label{step:ca-stop}
+\State \Return \(\mathbf{x}\)
+\end{algorithmic}
+\end{algorithm}
+
+In Algorithm~\ref{alg:chamber_assignment}, MIP-CCD(\(\mathbf{s}\)) gives the initial assignment and \(\textsc{Schedule}()\) evaluates it (Steps~\ref{step:ca-exact}--\ref{step:ca-eval}). Chambers are ranked by \(\lambda_c\) from the largest load to the smallest (Step~\ref{step:ca-rank}). We then try \(\textsc{Swap}\) in this heaviest--lightest order (Step~\ref{step:ca-swap}) and accept the first feasible neighbor that improves the lexicographic objective (Step~\ref{step:ca-accept}). If no swap is accepted in that pass, we try \(\textsc{Move}\) in the same order (Step~\ref{step:ca-move}). After an accepted move, \(\lambda_c\) is recomputed and the next pass starts again with \(\textsc{Swap}\). The search stops when a pass yields no improvement or \(B_{\mathrm{room}}\) calls of \(\textsc{Schedule}()\) have been used (Step~\ref{step:ca-stop}).
+
+\subsection{Sample size optimization}
+\label{subsec:sample_optimization}
+\label{subsec:sample_size_optimization}
+
+For a fixed chamber assignment \(\mathbf{x}\), this stage changes the
+sample vector \(\mathbf{s}\).
+An extra sample adds one pull-down operation but can let later tests
+of that product run in parallel.
+Removing a sample does the opposite: pull-down work falls, and so
+does the chance of overlap.
+Which direction helps is not known in advance, so both are tried
+under the same assignment.
+
+The search keeps every product between \(s_{\min}\) and \(s_{\max}\)
+samples, with \(s_{\min}=3\) equal to the laboratory planning floor
+justified in the problem definition.
+The local search starts at this floor and does not go below it.
+At the other end, at most eleven tests of a product can run in
+parallel, so a twelfth sample cannot create additional concurrent
+work.
+The upper bound is therefore \(s_{\max}=11\).
+
+The neighborhood changes one product at a time by one or two
+samples, provided the new count stays between \(s_{\min}\) and
+\(s_{\max}\).
+For each product the improving trial with the best tardiness---or,
+when tardiness is equal, the smaller sample count---is kept.
+After this single-product pass, a Late--Early Rebalance pairs late
+products, ordered by decreasing tardiness, with early products,
+ordered by decreasing slack, up to \(K_{\mathrm{reb}}\) pairs.
+Each pair moves one sample from an early product to a late product
+without leaving the bounds.
+The paired move is accepted if total tardiness does not increase;
+when tardiness is unchanged, the total number of samples must not
+increase.
+Every trial is decoded by the same earliest-due-date (EDD)
+scheduler used in the outer framework.
+Algorithm~\ref{alg:sample_ls} states the procedure.
+
+\begin{algorithm}[H]
+\caption{SampleSizeLocalSearch}
+\label{alg:sample_ls}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\State Restrict every \(s_p\) to \([s_{\min},s_{\max}]\) \label{step:ls-init}
+\State \((\Pi,T^{tot})\leftarrow\text{Schedule}(\mathbf{x},\mathbf{s})\) \label{step:ls-eval}
+\Repeat \label{step:ls-loop}
+    \For{each product \(p\in\mathcal{P}\)}
+        \State For \(\delta\in\{-2,-1,+1,+2\}\), set \(\mathbf{s}_{cand}\) and \((\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{cand})\) \label{step:ls-nbhd}
+        \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\) for the best trial} \label{step:ls-accept}
+            \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+        \EndIf
+    \EndFor
+    \State \(\mathbf{s}_{reb}\leftarrow\text{LateEarlyRebalance}(\mathbf{s},K_{\mathrm{reb}})\) \label{step:ls-reb}
+    \State \((\Pi_{reb},T^{tot}_{reb})\leftarrow\mathrm{Schedule}(\mathbf{x},\mathbf{s}_{reb})\)
+    \If{\((T^{tot},\mathbf{1}^{\mathsf{T}}\mathbf{s})\succeq_{\mathrm{lex}}(T^{tot}_{reb},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{reb})\)}
+        \State \((\mathbf{s},\Pi,T^{tot})\leftarrow(\mathbf{s}_{reb},\Pi_{reb},T^{tot}_{reb})\)
+    \EndIf
+\Until{no move was accepted in this pass} \label{step:ls-stop}
+\State \Return \((\mathbf{s},\Pi,T^{tot})\)
+\end{algorithmic}
+\end{algorithm}
+
+Step~\ref{step:ls-init} enforces \(s_{\min}=3\) and \(s_{\max}=11\).
+Step~\ref{step:ls-eval} builds the EDD schedule of the current
+vector; this is the incumbent of the local search.
+Each pass (Step~\ref{step:ls-loop}) first tries the one-product
+moves (Step~\ref{step:ls-nbhd}) and accepts a product's best
+improving trial (Step~\ref{step:ls-accept}).
+Step~\ref{step:ls-reb} then shifts one sample from an early product
+to a late product.
+Rebalance uses \(\succeq_{\mathrm{lex}}\); the single-product moves use
+\(\succ_{\mathrm{lex}}\).
+The search stops when a pass accepts nothing
+(Step~\ref{step:ls-stop}).
+
+\subsection{Scheduling procedure}
+\label{subsec:scheduling_procedure}
+\label{subsec:scheduling}
+
+An integral component of the proposed solution approach is to evaluate the quality of a solution. We need to determine the schedule of the tests and the total tardiness of the schedule for a given chamber configuration assignment \(\mathbf{x}\) and a sample-size vector \(\mathbf{s}\). For that purpose we use a constructive scheduling subroutine, called \(\textsc{Schedule}{}\), that assigns tests to stations. Such constructive heuristics are particularly attractive for unrelated parallel-machine problems with eligibility constraints and due-date pressure, where repeated implementation must remain computationally efficient \citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019,WangHeKerkhoveVanhoucke2017}.
+
+The main idea in the proposed scheduling procedure is to form a set of tests (called the \emph{candidate test pool}) and update this set at every iteration. This set includes the tests whose precedence relationships are satisfied and that can be scheduled on a station of a compatible chamber whenever a sample is available. At each iteration the procedure rebuilds a candidate pool \(\mathcal{O}^{\mathrm{cand}}\). For each product \(p\), \(\textsc{ReadyTests}(p)\) returns the set of such tests; this set may contain more than one test of the same product, and all of them enter \(\mathcal{O}^{\mathrm{cand}}\). The tests in the pool are then considered in earliest-due-date order. If two tests have the same due date, the one with the earlier feasible start is chosen. If the feasible start times are also equal, the test with the smaller product index, and then the smaller test index, is chosen. The earliest feasible start of a test is the maximum of (i)~the time its precedence constraints are satisfied, (ii)~the time a sample becomes available, and (iii)~the time a station of a compatible chamber becomes available. Only one test is assigned in each iteration. Unselected tests occupy no resource; if they remain ready, they re-enter the pool at the next iteration. The procedure terminates when \(\mathcal{O}^{\mathrm{cand}}=\emptyset\), which for a feasible instance means that all tests have been assigned. The resulting schedule and the total tardiness of the products are returned. We present the steps of the scheduling algorithm in Algorithm~\ref{alg:schedule}.
+
+\begin{algorithm}[H]
+\caption{\textsc{Schedule}()}
+\label{alg:schedule}
+\label{alg:scheduling}
+\label{alg:scheduling_procedure}
+\label{alg:scheduler_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber configuration assignment \(\mathbf{x}\), sample-size vector \(\mathbf{s}\)
+\State \textbf{Output:} a feasible schedule \(\Pi\), total tardiness \(T^{tot}\)
+\State \(\Pi\leftarrow\emptyset\) \label{step:sch-init}
+\Repeat \label{step:sch-loop}
+    \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\emptyset\) \label{step:sch-pool}
+    \For{\(p\in\mathcal{P}\)} \label{step:sch-loop1}
+        \State \(\mathcal{S}\leftarrow\Call{ReadyTests}{p}\) \label{step:sch-ready}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\mathcal{S}\)
+    \EndFor \label{step:sch-loop2}
+    \If{\(\mathcal{O}^{\mathrm{cand}}\neq\emptyset\)} \label{step:sch-select}
+        \State \(o^{\star}\leftarrow\Call{EarliestDueDate}{\mathcal{O}^{\mathrm{cand}}}\) \label{step:sch-select2}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\setminus\{o^{\star}\}\) \label{step:sch-select3}
+        \State \(\Pi\leftarrow\Pi\cup\Call{Assign}{o^{\star}}\) \label{step:sch-assign}
+    \EndIf
+\Until{\(\mathcal{O}^{\mathrm{cand}}=\emptyset\)} \label{step:sch-stop}
+\State Compute \(C_p\), \(T_p\), and \(T^{tot}\) \label{step:sch-obj}
+\State \Return \((\Pi,T^{tot})\)
+\end{algorithmic}
+\end{algorithm}
+
+In Algorithm~\ref{alg:schedule}, we start with an empty schedule (Step~\ref{step:sch-init}). Then, at each iteration we rebuild the candidate test pool: for each product we determine the set of ready tests and add them to \(\mathcal{O}^{\mathrm{cand}}\) (Steps~\ref{step:sch-loop1}--\ref{step:sch-loop2}). \(\textsc{ReadyTests}(p)\) may return more than one test of product \(p\). We then choose a single test from the pool by earliest due date (Steps~\ref{step:sch-select2}--\ref{step:sch-select3}); ties are broken by the earliest feasible start and, if those times are also equal, by the smaller product and test indices. The chosen test is scheduled on a compatible station given the earliest available times of that station and a sample and the time the precedence requirements are fulfilled (Step~\ref{step:sch-assign}). The algorithm terminates when the rebuilt pool is empty (Step~\ref{step:sch-stop}).
+
+\subsection{Variable Neighborhood Search Mechanism}
+\label{subsec:vns}
+\label{subsec:vns_diversification}
+
+If \(\mathrm{SampleSizeLocalSearch}\) does not improve the incumbent,
+Algorithm~\ref{alg:framework} calls \(\mathrm{VNS}\) on the incumbent
+chamber assignment and sample vector (Step~\ref{step:fw-vns}).
+Following the classical VNS principle of changing neighborhood
+intensity after local stagnation \citep{LiaoCheng2007}, and unlike
+conventional VNS approaches that perturb sequencing or assignment
+decisions, this mechanism perturbs sample-size decisions and therefore
+changes the workload structure itself.
+
+We present the main steps of the proposed VNS procedure in
+Algorithm~\ref{alg:vns}.
+It takes the incumbent solution as the initial solution.
+The shake intensity is controlled by two destroy ratios
+\(R=[0.20,0.30]\).
+The smaller ratio is tried first: it changes enough sample counts to
+leave the current local basin, while still keeping much of the
+incumbent allocation.
+If that phase finds no improvement, the larger ratio destroys a
+greater share of the sample vector.
+For each ratio \(r\in R\) and for \(K_{\max}\) iterations, the
+algorithm visits the two neighborhoods sequentially
+(Steps~\ref{VNS:step1}--\ref{VNS:step7}).
+In each neighborhood, \(\mathrm{Shake}\) selects a proportion \(r\) of
+products and changes their sample sizes.
+The first neighborhood (\(l=1\)) decreases the number of samples of
+the selected products to \(s_{\min}\), while the second neighborhood
+(\(l=2\)) increases the number of samples to \(u_{\max}\)
+(Step~\ref{VNS:step2}).
+The perturbed solution is then improved using the sample-size local
+search in Algorithm~\ref{alg:sample_ls}.
+The VNS follows a first-improvement policy: as soon as a locally
+improved candidate improves the incumbent under the lexicographic
+objective, it is returned to the main framework.
+If no improvement is found within the shake budget of a ratio phase,
+the method proceeds to the next destroy ratio.
+If both phases fail, the incumbent is returned.
+
+\begin{algorithm}[H]
+\caption{VNS}
+\label{alg:vns}
+\label{alg:vns_fixed_destroy}
+\label{alg:vns_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber assignment \(\mathbf{x}\), incumbent solution \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\State \textbf{Output:} \((\mathbf{s},\Pi,T^{tot})\)
+\For{each \(r\in R\)}
+    \For{\(k\leftarrow 1\) to \(K_{\max}\)}
+        \For{\(l\leftarrow 1\) to \(2\)} \label{VNS:step1}
+            \State \(\mathbf{s}_{cand}\leftarrow\mathrm{Shake}(\mathbf{s}_{inc},l,r)\) \label{VNS:step2}
+            \State \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\leftarrow\mathrm{SampleSizeLocalSearch}(\mathbf{x},\mathbf{s}_{cand})\)
+            \If{\((T^{tot}_{inc},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{inc})\succ_{\mathrm{lex}}(T^{tot}_{cand},\mathbf{1}^{\mathsf{T}}\mathbf{s}_{cand})\)}
+                \State \Return \((\mathbf{s}_{cand},\Pi_{cand},T^{tot}_{cand})\)
+            \EndIf
+        \EndFor \label{VNS:step7}
+    \EndFor
+\EndFor
+\State \Return \((\mathbf{s}_{inc},\Pi_{inc},T^{tot}_{inc})\)
+\end{algorithmic}
+\end{algorithm}
+
+Together, the chamber-assignment, sample-size optimization, scheduling, and VNS components form an iterative framework in which workload generation, resource configuration, and schedule feasibility are updated jointly. The next section evaluates the contribution of these components through computational experiments.
+
+\section{Computational Study}
+\label{sec:computational_study}
+
+In this section, we present the results of the computational experiments conducted to evaluate the effectiveness of the proposed solution approach. We compare the solutions with benchmark methods, including current industrial practice. The proposed approach and the benchmark methods were implemented in Java. All experiments were executed on an Apple MacBook Air (13.6-inch) with an Apple M2 chip, an 8-core CPU, and an 8-core GPU.
+
+\subsection{Instance Generation}
+\label{subsec:exp_design}
+\label{subsec:experimental_design}
+
+We generate instances motivated by current industrial practice. Each instance is a multi-project testing scenario with heterogeneous test requirements, due dates, and voltage requirements. At a given planning time the laboratory is expected to have 50 products under test, so every instance contains 50 products.
+
+The due dates lie within a two-month planning horizon and are generated at three tightness levels. Due-date scenario~1 is relatively concentrated, with due dates ranging from 42 to 57 days and a median around 50 days. Due-date scenario~2 introduces stronger dispersion and earlier deadlines, with due dates ranging from 30 to 69 days and a median around 50 days. Due-date scenario~3 is more relaxed but still heterogeneous, with due dates ranging from 34 to 69 days and a median around 53 days.
+
+The voltage scenarios control the share of products that require nonstandard voltage, using the mix in current operations as the reference. Voltage scenario~1 is a low requirement (approximately 15\% of the products), voltage scenario~2 is a medium requirement (30\%), and voltage scenario~3 is a higher requirement (45\%). A larger share increases competition for voltage-capable chambers.
+
+These choices give nine combinations of due-date and voltage scenarios. For each combination we generate 10 instances with different product test requirements, so the study uses 90 instances in total. For each product, refrigerant charge determination, pull-down, the performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage tests are required. The energy-efficiency option, the remaining climatic-class performance tests, and the optional freezing-capacity and temperature-rise tests are selected as explained under Table~\ref{tab:test_attributes}. The reported results cover all 90 instances and are also discussed with respect to these due-date and voltage scenarios.
+
+\subsection{Compared solution variants}
+\label{subsec:compared_variants}
+
+Six solution variants are compared to evaluate the proposed framework, isolate the contribution of its main components, and separate the effect of project-level sample allocation from total sample consumption.
+
+\textbf{Fixed uniform sample benchmarks.} These variants treat sample size as exogenous and represent common industrial practice or an equal-budget control policy.
+\begin{itemize}
+    \item \textbf{FS(3) (Fixed Three-Sample):} All products use the fixed industrial baseline \(s_p=3\) for all \(p\in\mathcal{P}\), yielding \(S^{tot}=3|\mathcal{P}|\) (150 samples in the benchmark instances with 50 projects). Chamber assignment is performed once, and no sample-size optimization is applied. This variant represents current practice in which workload is treated as fixed.
+    \item \textbf{FS(6) (Fixed Six-Sample, Equal Budget Control):} All products use a uniform six-sample policy \(s_p=6\) for all \(p\in\mathcal{P}\), yielding \(S^{tot}=6|\mathcal{P}|\) (300 samples in the benchmark instances). Chamber assignment is performed once, and no sample-size optimization is applied. This variant is included to test whether performance gains can be achieved simply by increasing the uniform sample level to match the average consumption of the proposed method, rather than by optimizing project-level allocation.
+\end{itemize}
+
+\textbf{Optimization-based variants.} These variants apply the proposed sample-size and chamber-assignment logic with different components enabled.
+\begin{itemize}
+    \item \textbf{SO-noOuter (Sample Optimization without Outer Iteration):} Sample sizes are optimized using the local search procedure in Section~\ref{subsec:sample_size_optimization}, but the initial chamber assignment is kept fixed. This variant isolates the effect of sample-size optimization without chamber reassignment feedback.
+    \item \textbf{SO-noVNS (Sample Optimization without VNS):} Sample-size optimization and chamber reassignment are applied iteratively, but VNS diversification is disabled. This variant evaluates the contribution of assignment-scheduling feedback without diversification.
+    \item \textbf{Proposed Framework:} The full method combines sample-size optimization, iterative chamber reassignment, and VNS-based diversification. VNS uses the fixed fallback perturbation ratios \([0.20,0.30]\) with \(K_{\max}=200\), followed by sample-size local search and Late--Early Rebalance.
+\end{itemize}
+
+The comparison serves two purposes. The fixed-sample benchmarks FS(3) and FS(6) evaluate whether optimized allocation outperforms uniform policies with lower and equal aggregate prototype usage, respectively. The ablation variants SO-noOuter and SO-noVNS decompose the proposed method into its main components: endogenous workload generation through sample-size optimization, feedback between chamber assignment and scheduling, and diversification through VNS. All variants use the same scheduling procedure, feasibility validation logic, and lexicographic evaluation rule \((T^{tot},S^{tot})\) to ensure consistent comparison.
+
+\subsection{Parameter settings}
+\label{subsec:parameter_settings}
+
+A common parameterization protocol was used for all solution variants to ensure a fair and reproducible comparison. Parameter values were selected once during preliminary pilot experiments and then fixed for the complete benchmark set. No instance-specific tuning was performed. Therefore, performance differences among the variants reflect algorithmic design choices rather than scenario-dependent parameter adjustment.
+
+The same feasibility checks, scheduling logic, and lexicographic evaluation rule were used across all variants. Components intentionally removed in the ablation variants, such as outer reconfiguration or VNS diversification, were the only differences among the compared methods. All accepted solutions were evaluated using the same schedule-construction procedure and validated with respect to required-test consistency, chamber-environment compatibility, humidity feasibility, voltage feasibility, station non-overlap, sample non-overlap, and stage-based precedence logic.
+
+For all optimization-based variants, the initial sample vector was set to the industrial baseline:
+\[
+s_p^{(0)}=3,\qquad \forall p\in\mathcal{P}.
+\]
+During the search, sample counts were restricted by engineering bounds:
+\[
+s_{\min}\le s_p\le s_{\max},\qquad \forall p\in\mathcal{P}.
+\]
+The sample-size neighborhood was
+\[
+\Delta_p\subseteq\{-2,-1,+1,+2\},
+\]
+subject to bound feasibility. Unit moves provide fine adjustment, while two-unit moves allow the search to cross small local barriers caused by sample availability and downstream parallelism.
+
+The VNS diversification phase used the fixed fallback ratio sequence
+\[
+R_{\mathrm{VNS}}=[0.20,0.30].
+\]
+For each ratio, selected products were reset either to \(s_{\min}\) in neighborhood \(l=1\) or to \(u_{\max}\) in neighborhood \(l=2\), followed by sample-size local search. A first-improvement policy was used: the VNS phase terminated as soon as an improving candidate was found.
+
+Solutions were compared lexicographically:
+\[
+Eval(x)=\left(T^{tot}(x),S^{tot}(x)\right).
+\]
+A candidate solution \(x'\) was accepted if
+\[
+Eval(x')\prec Eval(x),
+\]
+that is, if it reduced total tardiness or, under equal tardiness, reduced total sample usage. For Late--Early Rebalance moves, a non-worsening rule was applied: total tardiness was not allowed to increase, and under equal tardiness, total sample usage was not allowed to increase.
+
+Table~\ref{tab:param_settings_final} reports the fixed parameter values used in the computational study.
+
+\begin{table}[H]
+\centering
+\caption{Parameter settings used in the computational study}
+\label{tab:param_settings_final}
+\small
+\begin{tabular}{lll}
+\hline
+\textbf{Parameter} & \textbf{Description} & \textbf{Value} \\
+\hline
+\(s_p^{(0)}\) & Initial sample policy per product & 3 \\
+\(s_{\min}\) & Minimum feasible sample count & 3 \\
+\(u_{\max}\) & VNS upper sample level (\(l=2\)) & 8 \\
+\(s_{\max}\) & Maximum feasible sample count & 11 \\
+\(\Delta_p\) & Sample-size neighborhood & \(\{-2,-1,+1,+2\}\) \\
+\(R_{\mathrm{VNS}}\) & VNS fallback perturbation ratios & \([0.20,0.30]\) \\
+\(I_{\max}\) & Maximum outer-loop iterations & 100 \\
+\(K_{\mathrm{reb}}\) & Maximum Late--Early Rebalance pairs & 10 \\
+\(K_{\max}\) & Maximum shakes per VNS ratio phase & 200 \\
+\(B_{\mathrm{room}}\) & Chamber-assignment local-search budget & 200 \\
+\(\rho\) & Random seed for VNS shake selection & 42 \\
+\hline
+\end{tabular}
+\end{table}
+
+The fixed parameter protocol supports reproducibility and avoids overfitting to individual scenarios. Since the benchmark includes different due-date regimes, voltage-intensity levels, and test-matrix structures, using a single parameter setting provides a stricter assessment of robustness across heterogeneous operating conditions.
+
+\subsection{Performance measures}
+\label{subsec:performance_measures}
+
+The computational study evaluates solution quality using total tardiness and total sample usage. For each product \(p\in\mathcal{P}\), let \(C_p\) denote the completion time and \(d_p\) the due date. Product tardiness is
+\[
+T_p=\max(0,C_p-d_p),
+\]
+and total tardiness is
+\[
+T^{tot}=\sum_{p\in\mathcal{P}}T_p.
+\]
+This is the primary performance measure because it directly captures aggregate project delay. Total sample usage is used as a secondary measure:
+\[
+S^{tot}=\sum_{p\in\mathcal{P}}s_p.
+\]
+It represents prototype consumption and the additional testing burden associated with sample-size decisions.
+
+Solutions are compared lexicographically using the tuple
+\[
+Eval=(T^{tot},S^{tot}).
+\]
+For two feasible solutions \(x_1\) and \(x_2\),
+\[
+x_1\prec x_2
+\Longleftrightarrow
+\left(T^{tot}(x_1)<T^{tot}(x_2)\right)
+\vee
+\left(T^{tot}(x_1)=T^{tot}(x_2)\wedge S^{tot}(x_1)<S^{tot}(x_2)\right).
+\]
+Thus, a solution is preferred if it reduces total tardiness, or under equal tardiness, if it uses fewer samples.
+
+Runtime is reported separately as a measure of computational effort. It is measured from algorithm initialization to final solution output under the same computing environment for all methods. Since the algorithms are deterministic under fixed implementation rules and tie-breaking, one run per instance is reported.
+
+\subsection{Overall performance comparison}
+\label{subsec:overall_performance}
+
+This section first reports the VNS parameter analysis used to select the proposed configuration and then compares the selected configuration with the benchmark variants. Since the objective is lexicographic, \(Eval=(T^{tot},S^{tot})\), percentage gaps are computed using the primary objective \(T^{tot}\). For method \(m\) and instance \(i\),
+\[
+Gap_{im}=
+\frac{T^{tot}_{im}-T^{tot,best}_{i}}{T^{tot,best}_{i}}
+\times 100,
+\]
+where \(T^{tot,best}_{i}\) is the best total tardiness observed for instance \(i\) in the corresponding comparison. Average gaps are computed over all 90 instances, that is, over the ten replicates of each of the nine due-date and voltage combinations. The best-instance count indicates how many of the 90 instances are won by each method. A method is counted as best for an instance if it attains the lowest total tardiness; if multiple methods have the same total tardiness, the one with lower total sample usage is preferred according to the lexicographic objective. Because the proposed configuration attains the best lexicographic solution in every instance, this ranking does not reverse under any of the three due-date tightness levels or any of the three voltage-intensity levels.
+
+\textbf{VNS ratio analysis.} Table~\ref{tab:vns_ratio_comparison} compares alternative VNS perturbation-ratio policies under \(K_{\max}=100\). The results show that perturbation intensity has a non-monotone effect. Increasing the ratio from 0.10 to 0.20 improves the average gap, but using 0.30 alone worsens performance. This indicates that moderate perturbation preserves useful workload structure better than either too small or too disruptive moves. The \(0.20\)--\(0.30\) fallback policy obtains the lowest average gap and standard deviation among the tested \(K_{\max}=100\) variants; therefore, it is selected as the VNS ratio policy.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of VNS perturbation-ratio policies with \(K_{\max}=100\).}
+\label{tab:vns_ratio_comparison}
+\small
+\begin{tabular}{lccccc}
+\hline
+\textbf{Measure}
+&
+\shortstack{\textbf{0.10}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.20}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.30}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.10--0.20}\\\textbf{--0.30}\\\textbf{VNS (100)}}
+&
+\shortstack{\textbf{0.20--0.30}\\\textbf{VNS}\\\textbf{(100)}} \\
+\hline
+Average gap (\%) & 29.62 & 18.11 & 23.44 & 22.06 & 14.93 \\
+Std. dev. (\%) & 44.09 & 31.52 & 30.10 & 33.25 & 27.35 \\
+\shortstack[l]{Best-instance\\count} & 25 & 27 & 18 & 38 & 36 \\
+\shortstack[l]{Average runtime\\(min)} & 41.3 & 32.1 & 30.4 & 66.0 & 49.7 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{VNS shake-budget analysis.} After selecting the \(0.20\)--\(0.30\) fallback policy, the shake budget was tested with \(K_{\max}=50,100,200\). Table~\ref{tab:vns_budget_comparison} shows that increasing the shake budget improves both average performance and robustness. The average gap decreases from 13.79\% at \(K_{\max}=50\) to 0.31\% at \(K_{\max}=200\), while the standard deviation decreases from 29.07\% to 1.65\%. The best-instance count also increases from 18 to 82. Although runtime increases, \(K_{\max}=200\) is selected because the setting is tactical rather than real-time and the additional search effort yields substantially more reliable solution quality.
+
+\begin{table}[H]
+\centering
+\caption{Effect of shake budget for the \(0.20\)--\(0.30\) VNS policy.}
+\label{tab:vns_budget_comparison}
+\small
+\begin{tabular}{lccc}
+\hline
+\textbf{Measure}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (50)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (100)}}
+& \shortstack{\textbf{0.20--0.30}\\\textbf{VNS (200)}} \\
+\hline
+Average gap (\%) & 13.79 & 5.65 & 0.31 \\
+Std. dev. (\%) & 29.07 & 20.06 & 1.65 \\
+\shortstack[l]{Best-instance\\count} & 18 & 47 & 82 \\
+\shortstack[l]{Average runtime\\(min)} & 32.6 & 49.7 & 85.1 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Uniform sample policies versus optimized allocation.} Table~\ref{tab:sample_policy_comparison} compares the two fixed uniform benchmarks with the proposed configuration. The main purpose of this comparison is to determine whether performance improvements require only a higher uniform sample level or genuinely depend on optimized project-level allocation.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of uniform sample policies and the proposed configuration.}
+\label{tab:sample_policy_comparison}
+\small
+\begin{tabular}{lccccc}
+\hline
+\textbf{Method}
+& \shortstack{\textbf{Average}\\\textbf{sample count}}
+& \shortstack{\textbf{Average}\\\textbf{gap (\%)}}
+& \shortstack{\textbf{Std.}\\\textbf{dev. (\%)}}
+& \shortstack{\textbf{Best-instance}\\\textbf{count}}
+& \shortstack{\textbf{Average}\\\textbf{runtime (min)}} \\
+\hline
+FS(3) & 150 & 361.93 & 198.43 & 0 & 0.1 \\
+FS(6) & 300 & 198.05 & 121.36 & 0 & 0.2 \\
+Proposed & 300 & 0.00 & 0.00 & 90 & 85.1 \\
+\hline
+\end{tabular}
+\end{table}
+
+Three findings follow from Table~\ref{tab:sample_policy_comparison}. First, the proposed configuration achieves the best lexicographic solution in all 90 benchmark instances. Second, FS(3) performs worst, confirming that a uniform three-sample rule is not robust under heterogeneous due dates, test portfolios, and chamber eligibility restrictions. Third, and most importantly, FS(6) consumes the same average number of prototypes as the proposed method--300 samples in total across 50 projects--yet remains substantially inferior, with an average tardiness gap of 198.05\%. Uniform escalation from three to six samples per project therefore reduces tardiness relative to FS(3), but it does not approach the performance of optimized allocation.
+
+These results show that the benefit of the proposed method is not explained by aggregate prototype consumption alone. Instead, performance depends on how samples are distributed across projects with different due dates, required test mixes, pull-down workloads, and chamber compatibility requirements. The lexicographic objective further ensures that sample usage is not increased unnecessarily: among solutions with equal total tardiness, the method prefers the one with lower \(S^{tot}\).
+
+\textbf{Component ablation.} Table~\ref{tab:ablation_comparison} evaluates the optimization-based variants against the full proposed framework using the same gap definition. This analysis identifies which algorithmic components are necessary once sample allocation is already endogenous.
+
+\begin{table}[H]
+\centering
+\caption{Ablation comparison of optimization-based variants.}
+\label{tab:ablation_comparison}
+\small
+\begin{tabular}{lcccc}
+\hline
+\textbf{Method}
+& \shortstack{\textbf{Average}\\\textbf{gap (\%)}}
+& \shortstack{\textbf{Std.}\\\textbf{dev. (\%)}}
+& \shortstack{\textbf{Best-instance}\\\textbf{count}}
+& \shortstack{\textbf{Average}\\\textbf{runtime (min)}} \\
+\hline
+SO-noOuter & 140.07 & 90.32 & 0 & 17.1 \\
+SO-noVNS & 178.67 & 113.52 & 0 & 0.5 \\
+Proposed & 0.00 & 0.00 & 90 & 85.1 \\
+\hline
+\end{tabular}
+\end{table}
+
+The ablation results indicate that the framework components are complementary rather than redundant. SO-noOuter shows that optimizing sample sizes under a fixed chamber configuration is not enough: when pull-down workload changes, chamber environments must be reassigned to reflect the new environment-level demand. SO-noVNS shows that iterative reassignment and local sample improvement alone can remain trapped in unfavorable workload structures; VNS diversification is needed to escape these regions by perturbing sample-size decisions directly. The full proposed configuration integrates all three mechanisms and dominates the ablation variants on every benchmark instance.
+
+\textbf{Summary of computational findings.} The computational evidence supports three conclusions. First, sample size should be treated as a tactical planning decision rather than a fixed uniform rule. Second, optimized project-level allocation dominates uniform policies even when total prototype usage is held equal at the aggregate level. Third, sample optimization, iterative chamber reconfiguration, and VNS diversification jointly drive the observed performance; removing any one component leads to substantial deterioration in solution quality.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This study introduced the Test Chamber Scheduling with Sample Optimization Problem (TCSSOP), motivated by refrigerator R\&D testing operations. The problem combines heterogeneous chamber resources, temperature-humidity requirements, voltage and humidity eligibility, stage-based precedence logic, due dates, and sample-size-dependent workload generation. Unlike classical scheduling problems with fixed job sets, TCSSOP treats project-level sample counts as decision variables that affect both upstream pull-down workload and downstream parallelization opportunities.
+
+To address this problem, an iterative framework was proposed. For a given sample vector, chamber environments are assigned according to workload distribution and chamber capabilities, then refined by local search. Given chamber settings, sample sizes are optimized through bounded local search and evaluated by an EDD-based constructive scheduler with explicit feasibility validation. Because sample decisions alter environment-level workload, chamber assignments are updated iteratively. When local improvement stagnates, a VNS diversification mechanism perturbs sample-size decisions to explore alternative workload structures rather than perturbing sequencing or assignment alone.
+
+Computational experiments on 90 benchmark scenarios demonstrate that optimized sample allocation yields substantial tardiness reductions relative to uniform industrial policies. The selected configuration, using a \(0.20\)--\(0.30\) VNS fallback policy with \(K_{\max}=200\), obtains the best lexicographic solution in all 90 instances. Relative to the fixed three-sample baseline FS(3), the average tardiness gap is 361.93\%. More importantly, the uniform six-sample control policy FS(6) uses the same average prototype budget as the proposed method--300 total samples across 50 projects--yet still exhibits an average gap of 198.05\%. This confirms that performance gains are driven primarily by project-level sample allocation and coordinated chamber reconfiguration, rather than by increasing aggregate prototype usage alone. Component-level ablation further shows that sample optimization without chamber reassignment (SO-noOuter), and iterative improvement without VNS diversification (SO-noVNS), yield average gaps of 140.07\% and 178.67\%, respectively. Together, these results indicate that sample-size optimization, iterative chamber reconfiguration, and VNS diversification are complementary rather than substitutable.
+
+From a managerial perspective, prototype sample size should be treated as a tactical planning decision rather than a fixed convention applied uniformly across projects. Raising the sample level for all products is not a reliable substitute for selective allocation: even with twice the industrial sample budget, a uniform six-sample rule remains substantially inferior to optimized assignment. Additional samples should therefore be directed to projects for which downstream parallelism and due-date pressure justify the upstream pull-down cost, while chamber configurations should be reassessed whenever sample decisions change. The lexicographic objective also discourages unnecessary prototype consumption by preferring lower total sample usage among tardiness-equivalent solutions. Finally, the results emphasize the importance of feasibility validation, since schedules that violate chamber compatibility, station capacity, sample exclusivity, or stage-based precedence logic are not operationally implementable.
+
+This study has several limitations. The benchmark instances are synthetically generated to preserve confidentiality while reflecting industrial structure; validation on anonymized real project portfolios remains desirable. Chamber environments are treated as fixed over the planning horizon, and test durations are deterministic. Setup times for chamber reconfiguration are not modeled explicitly, and the reported gaps measure relative performance among the evaluated methods rather than optimality gaps against an exact benchmark.
+
+Future research can extend TCSSOP in several directions. Stochastic test durations, test failures, retesting requirements, and chamber breakdowns can be incorporated to improve robustness. Chamber setup times can be modeled explicitly if chambers are allowed to change environments over time. Multi-objective extensions may consider energy consumption, labor availability, prototype cost, and testing cost together with tardiness and sample usage. Exact or matheuristic methods on smaller instances could provide optimality gaps for the proposed heuristic. Finally, rolling-horizon versions of the problem could support dynamic project arrivals in industrial R\&D environments.
+
+\bibliographystyle{plainnat}
+\bibliography{References}
+
+\end{document}

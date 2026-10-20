@@ -1,0 +1,36 @@
+\subsection{Scheduling procedure}
+\label{subsec:scheduling_procedure}
+\label{subsec:scheduling}
+
+An integral component of the proposed solution approach is to evaluate the quality of a solution. We need to determine the schedule of the tests and the total tardiness of the schedule for a given chamber configuration assignment \(\mathbf{x}\) and a sample-size vector \(\mathbf{s}\). For that purpose we use a constructive scheduling subroutine, called \(\textsc{Schedule}{}\), that assigns tests to stations. Such constructive heuristics are particularly attractive for unrelated parallel-machine problems with eligibility constraints and due-date pressure, where repeated implementation must remain computationally efficient \citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019,WangHeKerkhoveVanhoucke2017}.
+
+The main idea in the proposed scheduling procedure is to form a set of tests (called the \emph{candidate test pool}) and update this set at every iteration. This set includes the tests whose precedence relationships are satisfied and that can be scheduled on a station of a compatible chamber whenever a sample is available. At each iteration the procedure rebuilds a candidate pool \(\mathcal{O}^{\mathrm{cand}}\). For each product \(p\), \(\textsc{ReadyTests}(p)\) returns the set of such tests; this set may contain more than one test of the same product, and all of them enter \(\mathcal{O}^{\mathrm{cand}}\). The tests in the pool are then considered in earliest-due-date order. If two tests have the same due date, the one with the earlier feasible start is chosen. If the feasible start times are also equal, the test with the smaller product index, and then the smaller test index, is chosen. The earliest feasible start of a test is the maximum of (i)~the time its precedence constraints are satisfied, (ii)~the time a sample becomes available, and (iii)~the time a station of a compatible chamber becomes available. Only one test is assigned in each iteration. Unselected tests occupy no resource; if they remain ready, they re-enter the pool at the next iteration. The procedure terminates when \(\mathcal{O}^{\mathrm{cand}}=\emptyset\), which for a feasible instance means that all tests have been assigned. The resulting schedule and the total tardiness of the products are returned. We present the steps of the scheduling algorithm in Algorithm~\ref{alg:schedule}.
+
+\begin{algorithm}[H]
+\caption{\textsc{Schedule}()}
+\label{alg:schedule}
+\label{alg:scheduling}
+\label{alg:scheduling_procedure}
+\label{alg:scheduler_short}
+\begin{algorithmic}[1]
+\State \textbf{Input:} chamber configuration assignment \(\mathbf{x}\), sample-size vector \(\mathbf{s}\)
+\State \textbf{Output:} a feasible schedule \(\Pi\), total tardiness \(T^{tot}\)
+\State \(\Pi\leftarrow\emptyset\) \label{step:sch-init}
+\Repeat \label{step:sch-loop}
+    \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\emptyset\) \label{step:sch-pool}
+    \For{\(p\in\mathcal{P}\)} \label{step:sch-loop1}
+        \State \(\mathcal{S}\leftarrow\Call{ReadyTests}{p}\) \label{step:sch-ready}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\mathcal{S}\)
+    \EndFor \label{step:sch-loop2}
+    \If{\(\mathcal{O}^{\mathrm{cand}}\neq\emptyset\)} \label{step:sch-select}
+        \State \(o^{\star}\leftarrow\Call{EarliestDueDate}{\mathcal{O}^{\mathrm{cand}}}\) \label{step:sch-select2}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\setminus\{o^{\star}\}\) \label{step:sch-select3}
+        \State \(\Pi\leftarrow\Pi\cup\Call{Assign}{o^{\star}}\) \label{step:sch-assign}
+    \EndIf
+\Until{\(\mathcal{O}^{\mathrm{cand}}=\emptyset\)} \label{step:sch-stop}
+\State Compute \(C_p\), \(T_p\), and \(T^{tot}\) \label{step:sch-obj}
+\State \Return \((\Pi,T^{tot})\)
+\end{algorithmic}
+\end{algorithm}
+
+In Algorithm~\ref{alg:schedule}, we start with an empty schedule (Step~\ref{step:sch-init}). Then, at each iteration we rebuild the candidate test pool: for each product we determine the set of ready tests and add them to \(\mathcal{O}^{\mathrm{cand}}\) (Steps~\ref{step:sch-loop1}--\ref{step:sch-loop2}). \(\textsc{ReadyTests}(p)\) may return more than one test of product \(p\). We then choose a single test from the pool by earliest due date (Steps~\ref{step:sch-select2}--\ref{step:sch-select3}); ties are broken by the earliest feasible start and, if those times are also equal, by the smaller product and test indices. The chosen test is scheduled on a compatible station given the earliest available times of that station and a sample and the time the precedence requirements are fulfilled (Step~\ref{step:sch-assign}). The algorithm terminates when the rebuilt pool is empty (Step~\ref{step:sch-stop}).
