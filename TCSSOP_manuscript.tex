@@ -843,109 +843,30 @@ The search stops when a pass accepts nothing
 \label{subsec:scheduling_procedure}
 \label{subsec:scheduling}
 
-We represent the chamber settings returned by
-\(\mathrm{ChamberAssignment}\) by \(\mathbf{x}\) and the
-sample-size vector by \(\mathbf{s}\).
-An integral component of the proposed solution approach is to
-evaluate the quality of a solution.
-We need the total tardiness of a given pair
-\((\mathbf{x},\mathbf{s})\).
-For that purpose we use an earliest-due-date (EDD) constructive
-scheduler, called \(\mathrm{Schedule}\) in the outer framework,
-that assigns tests to stations.
-Such constructive heuristics are particularly attractive for
-unrelated parallel-machine problems with eligibility constraints
-and due-date pressure, where repeated implementation must remain
-computationally efficient
-\citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019,WangHeKerkhoveVanhoucke2017}.
+An integral component of the proposed solution approach is to evaluate the quality of a solution. We need to determine the schedule of the tests and the total tardiness of the schedule for a given chamber configuration assignment \(\mathbf{x}\) and a sample-size vector \(\mathbf{s}\). For that purpose we use a constructive scheduling subroutine, called \(\textsc{Schedule}{}\), that assigns tests to stations. Such constructive heuristics are particularly attractive for unrelated parallel-machine problems with eligibility constraints and due-date pressure, where repeated implementation must remain computationally efficient \citep{PerezGonzalezFernandezViagasZamoraGarciaFraminan2019,WangHeKerkhoveVanhoucke2017}.
 
-Readiness follows the stage logic of the problem definition.
-Gas amount determination, when required, is executed once per
-product and may start at time zero.
-Pull-down is executed once per sample and can start only after
-gas amount determination of that product has finished.
-Third-stage tests are released after every pull-down of that
-product has finished.
-A consumer-usage test is released after every pull-down of that
-product has finished and every required third-stage test has
-started.
-
-At each iteration the procedure rebuilds a candidate pool
-\(\mathcal{O}^{\mathrm{cand}}\) with at most one operation per
-product.
-That operation is returned by \(\mathrm{BestReady}(p)\).
-The inputs of \(\mathrm{BestReady}(p)\) are the required tests
-\(\mathcal{T}_p\) of product \(p\) together with their durations
-and environments, the voltage requirement of \(p\), the current
-stage state of \(p\), the \(s_p\) sample-availability clocks
-induced by \(\mathbf{s}\), and the stations made eligible by
-\(\mathbf{x}\).
-It does not read the full schedule \(\Pi\).
-It inspects only the currently released tests of \(p\).
-Let \(\rho_{pt}\) denote the stage-release time of test \(t\) of
-product \(p\), let \(\alpha_{p\ell}\) denote the availability time
-of sample \(\ell\) of \(p\), and let \(\beta_{cr}\) denote the
-availability time of station \(r\) in chamber \(c\).
-For each released test, \(\mathrm{BestReady}\) enumerates
-compatible stations and samples and records the earliest feasible
-start
-\[
-\max\{\rho_{pt},\alpha_{p\ell},\beta_{cr}\}.
-\]
-A station is compatible if its chamber matches the test
-environment, is humidity-capable when the test is
-humidity-controlled, and is voltage-capable when the product
-requires it.
-Among those released tests it returns the operation with the
-earliest planned start, already paired with that station and
-sample, or reports that \(p\) has nothing ready.
-
-A candidate in \(\mathcal{O}^{\mathrm{cand}}\) is therefore not an
-unbound test waiting only on a sample and a station.
-Stage release is required before the test can enter the pool, and
-that release time is included in the planned start.
-The candidate already carries one compatible station and one
-sample; its start is the first time at which the stage, the
-sample, and the station are all free.
-While it sits in the pool it waits only to be selected.
-The next operation in the system is the candidate with the
-earliest due date; ties are broken by the earliest feasible start.
-Only that winner is written onto its planned station and sample.
-Station and sample clocks, and the stage state of its product,
-are then updated, and the pool is rebuilt from the new state.
-Unselected candidates occupy no resource.
-When no product has a ready operation, the completion time
-\(C_p\) is the finish time of product \(p\)'s last scheduled
-test, and \(T^{tot}\) is computed as in the problem definition.
-When a full schedule is stored, an independent check audits
-required-test multiplicity, environment, humidity and voltage
-eligibility, station non-overlap, sample non-overlap, and stage
-release.
-Algorithm~\ref{alg:schedule} is the procedure.
+The main idea in the proposed scheduling procedure is to form a set of tests (called the \emph{candidate test pool}) and update this set at every iteration. This set includes the tests whose precedence relationships are satisfied and that can be scheduled on a station of a compatible chamber whenever a sample is available. At each iteration the procedure rebuilds a candidate pool \(\mathcal{O}^{\mathrm{cand}}\). For each product \(p\), \(\textsc{ReadyTests}(p)\) returns the set of such tests; this set may contain more than one test of the same product, and all of them enter \(\mathcal{O}^{\mathrm{cand}}\). The tests in the pool are then considered in earliest-due-date order. If two tests have the same due date, the one with the earlier feasible start is chosen. If the feasible start times are also equal, the test with the smaller product index, and then the smaller test index, is chosen. The earliest feasible start of a test is the maximum of (i)~the time its precedence constraints are satisfied, (ii)~the time a sample becomes available, and (iii)~the time a station of a compatible chamber becomes available. Only one test is assigned in each iteration. Unselected tests occupy no resource; if they remain ready, they re-enter the pool at the next iteration. The procedure terminates when \(\mathcal{O}^{\mathrm{cand}}=\emptyset\), which for a feasible instance means that all tests have been assigned. The resulting schedule and the total tardiness of the products are returned. We present the steps of the scheduling algorithm in Algorithm~\ref{alg:schedule}.
 
 \begin{algorithm}[H]
-\caption{Schedule}
+\caption{\textsc{Schedule}()}
 \label{alg:schedule}
 \label{alg:scheduling}
 \label{alg:scheduling_procedure}
 \label{alg:scheduler_short}
 \begin{algorithmic}[1]
-\State \textbf{Input:} instance data, chamber assignment \(\mathbf{x}\), sample vector \(\mathbf{s}\)
-\State \textbf{Output:} schedule \(\Pi\), total tardiness \(T^{tot}\)
-\State \(\Pi\leftarrow\emptyset\); initialize station availability, sample availability, and stage states \label{step:sch-init}
+\State \textbf{Input:} chamber configuration assignment \(\mathbf{x}\), sample-size vector \(\mathbf{s}\)
+\State \textbf{Output:} a feasible schedule \(\Pi\), total tardiness \(T^{tot}\)
+\State \(\Pi\leftarrow\emptyset\) \label{step:sch-init}
 \Repeat \label{step:sch-loop}
     \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\emptyset\) \label{step:sch-pool}
-    \For{each product \(p\in\mathcal{P}\)}
-        \State \(o_p\leftarrow\mathrm{BestReady}(p)\) \label{step:sch-ready}
-        \If{\(o_p\) exists}
-            \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\{o_p\}\)
-        \EndIf
-    \EndFor
+    \For{\(p\in\mathcal{P}\)} \label{step:sch-loop1}
+        \State \(\mathcal{S}\leftarrow\Call{ReadyTests}{p}\) \label{step:sch-ready}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\cup\mathcal{S}\)
+    \EndFor \label{step:sch-loop2}
     \If{\(\mathcal{O}^{\mathrm{cand}}\neq\emptyset\)} \label{step:sch-select}
-        \State Choose \(o^{\star}\in\mathcal{O}^{\mathrm{cand}}\) with the earliest due date; break ties by the earliest feasible start
-        \State Assign \(o^{\star}\) to its planned compatible station and sample \label{step:sch-assign}
-        \State Update station availability, sample availability, and the stage state of its product \label{step:sch-update}
-        \State Append \(o^{\star}\) to \(\Pi\)
+        \State \(o^{\star}\leftarrow\Call{EarliestDueDate}{\mathcal{O}^{\mathrm{cand}}}\) \label{step:sch-select2}
+        \State \(\mathcal{O}^{\mathrm{cand}}\leftarrow\mathcal{O}^{\mathrm{cand}}\setminus\{o^{\star}\}\) \label{step:sch-select3}
+        \State \(\Pi\leftarrow\Pi\cup\Call{Assign}{o^{\star}}\) \label{step:sch-assign}
     \EndIf
 \Until{\(\mathcal{O}^{\mathrm{cand}}=\emptyset\)} \label{step:sch-stop}
 \State Compute \(C_p\), \(T_p\), and \(T^{tot}\) \label{step:sch-obj}
@@ -953,22 +874,7 @@ Algorithm~\ref{alg:schedule} is the procedure.
 \end{algorithmic}
 \end{algorithm}
 
-Step~\ref{step:sch-init} starts from an empty schedule and zero
-availability clocks.
-Each pass (Step~\ref{step:sch-loop}) rebuilds the candidate pool
-(Step~\ref{step:sch-pool}).
-Step~\ref{step:sch-ready} returns, for each product, at most one
-released operation, already bound to a station and a sample, whose
-planned start is \(\max\{\rho_{pt},\alpha_{p\ell},\beta_{cr}\}\).
-Step~\ref{step:sch-select} applies EDD to the pool, and
-Step~\ref{step:sch-assign} writes the winner onto the station and
-sample already chosen by \(\mathrm{BestReady}\).
-Step~\ref{step:sch-update} advances the clocks so that later
-passes see the new stage state.
-The remaining candidates of that pass are discarded.
-The loop stops when no product has a ready operation
-(Step~\ref{step:sch-stop}).
-Step~\ref{step:sch-obj} records tardiness.
+In Algorithm~\ref{alg:schedule}, we start with an empty schedule (Step~\ref{step:sch-init}). Then, at each iteration we rebuild the candidate test pool: for each product we determine the set of ready tests and add them to \(\mathcal{O}^{\mathrm{cand}}\) (Steps~\ref{step:sch-loop1}--\ref{step:sch-loop2}). \(\textsc{ReadyTests}(p)\) may return more than one test of product \(p\). We then choose a single test from the pool by earliest due date (Steps~\ref{step:sch-select2}--\ref{step:sch-select3}); ties are broken by the earliest feasible start and, if those times are also equal, by the smaller product and test indices. The chosen test is scheduled on a compatible station given the earliest available times of that station and a sample and the time the precedence requirements are fulfilled (Step~\ref{step:sch-assign}). The algorithm terminates when the rebuilt pool is empty (Step~\ref{step:sch-stop}).
 
 \subsection{Variable Neighborhood Search Mechanism}
 \label{subsec:vns}
