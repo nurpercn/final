@@ -944,8 +944,7 @@ Table~\ref{tab:scenario_design} summarizes the two experimental factors.
 \centering
 \caption{Due-date and voltage scenarios.}
 \label{tab:scenario_design}
-\small
-\begin{tabular}{llp{7.2cm}}
+\begin{tabular}{llp{8.5cm}}
 \hline
 \textbf{Factor} & \textbf{Level} & \textbf{Definition} \\
 \hline
@@ -992,22 +991,21 @@ The procedure is deterministic under the fixed seed. One run is reported for eac
 \centering
 \caption{Parameter settings used in the computational study.}
 \label{tab:param_settings_final}
-\small
-\begin{tabular}{llp{7.4cm}}
+\begin{tabular}{lll}
 \hline
-\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
+\textbf{Parameter} & \textbf{Description} & \textbf{Value} \\
 \hline
-\(s_p^{(0)}\) & 3 & Initial sample count per product \\
-\(s_{\min}\) & 3 & Minimum sample count \\
-\(u_{\max}\) & 8 & Sample count used by an upward VNS move \\
-\(s_{\max}\) & 11 & Maximum sample count \\
-\(\Delta_p\) & \(\{-2,-1,+1,+2\}\) & Sample-count moves \\
-\(r\) & 0.20 & VNS destroy ratio \\
-\(I_{\max}\) & 100 & Maximum outer-loop iterations \\
-\(K_{\mathrm{reb}}\) & 10 & Maximum Late--Early Rebalance pairs \\
-\(K_{\max}\) & 100 & VNS iterations; each iteration applies the downward neighborhood and then the upward neighborhood \\
-\(B_{\mathrm{room}}\) & 200 & Chamber-assignment local-search budget \\
-\(\rho\) & 42 & Random seed for VNS product selection \\
+\(s_p^{(0)}\) & Initial sample count per product & 3 \\
+\(s_{\min}\) & Minimum sample count & 3 \\
+\(u_{\max}\) & Sample count in an upward VNS move & 8 \\
+\(s_{\max}\) & Maximum sample count & 11 \\
+\(\Delta_p\) & Sample-count moves & \(\{-2,-1,+1,+2\}\) \\
+\(r\) & VNS destroy ratio & 0.20 \\
+\(I_{\max}\) & Maximum outer-loop iterations & 100 \\
+\(K_{\mathrm{reb}}\) & Maximum Late--Early Rebalance pairs & 10 \\
+\(K_{\max}\) & VNS iterations (downward move, then upward move) & 100 \\
+\(B_{\mathrm{room}}\) & Chamber-assignment local-search budget & 200 \\
+\(\rho\) & Random seed for VNS product selection & 42 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1033,13 +1031,13 @@ We fix \(K_{\max}=100\) and compare three destroy ratios, \(0.10\), \(0.20\), an
 
 \begin{table}[H]
 \centering
-\caption{Destroy-ratio comparison at \(K_{\max}=100\). Best count includes ties.}
+\caption{Comparison of VNS destroy ratios with \(K_{\max}=100\).}
 \label{tab:vns_ratio_comparison}
 \begin{tabular}{lcc}
 \hline
-\textbf{Destroy ratio}
-& \textbf{Average deviation (\%)}
-& \textbf{Best count} \\
+\textbf{\(r\)}
+& \textbf{Average Deviation (\%)}
+& \textbf{Best Count} \\
 \hline
 0.10 & 27.69 & 30 \\
 0.20 & 12.83 & 42 \\
@@ -1057,18 +1055,17 @@ Table~\ref{tab:sample_policy_comparison} compares FS(3) and FS(6) with ICS-SSO. 
 
 \begin{table}[H]
 \centering
-\caption{Uniform sample policies and ICS-SSO. Deviation is measured from the best method in this table.}
+\caption{Comparison of ICS-SSO against uniform sample policies.}
 \label{tab:sample_policy_comparison}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \hline
 \textbf{Method}
-& \textbf{Average total tardiness}
-& \textbf{Average deviation (\%)}
-& \textbf{Best count} \\
+& \textbf{Average Deviation (\%)}
+& \textbf{Best Count} \\
 \hline
-FS(3) & 721.01 & 360.32 & 0 \\
-FS(6) & 472.83 & 196.95 & 0 \\
-ICS-SSO & 189.64 & 0.00 & 90 \\
+FS(3) & 360.32 & 0 \\
+FS(6) & 196.95 & 0 \\
+ICS-SSO & 0.00 & 90 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1086,18 +1083,17 @@ Table~\ref{tab:ablation_comparison} removes one component at a time. CS-SSO-noFM
 
 \begin{table}[H]
 \centering
-\caption{Component comparison. Deviation is measured from the best method in this table.}
+\caption{Comparison of ICS-SSO against simpler variants.}
 \label{tab:ablation_comparison}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \hline
 \textbf{Method}
-& \textbf{Average total tardiness}
-& \textbf{Average deviation (\%)}
-& \textbf{Best count} \\
+& \textbf{Average Deviation (\%)}
+& \textbf{Best Count} \\
 \hline
-CS-SSO-noFM & 386.27 & 133.61 & 0 \\
-ICS-SSO-noVNS & 444.91 & 177.67 & 0 \\
-ICS-SSO & 189.64 & 0.00 & 90 \\
+CS-SSO-noFM & 133.61 & 0 \\
+ICS-SSO-noVNS & 177.67 & 0 \\
+ICS-SSO & 0.00 & 90 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1107,13 +1103,12 @@ ICS-SSO attains the lowest total tardiness on all 90 instances. CS-SSO-noFM show
 \subsubsection{Due date and voltage}
 \label{subsec:scenarios}
 
-Tables~\ref{tab:scenario_marginal} and~\ref{tab:scenario_joint} report average total tardiness by due-date scenario, by voltage scenario, and for the nine combinations. Each entry is the mean over the ten test portfolios at that factor level, or over the ten portfolios in that cell.
+Tables~\ref{tab:scenario_marginal} and~\ref{tab:scenario_joint} report average total tardiness by due-date scenario, by voltage scenario, and for the nine combinations. Each entry is the mean over the ten test portfolios at that factor level, or over the ten portfolios in that cell. In both tables, noFM denotes CS-SSO-noFM and noVNS denotes ICS-SSO-noVNS.
 
 \begin{table}[H]
 \centering
 \caption{Average total tardiness by due-date scenario and by voltage scenario.}
 \label{tab:scenario_marginal}
-\small
 \begin{tabular}{llrrrrr}
 \hline
 \textbf{Factor} & \textbf{Level}
@@ -1132,9 +1127,8 @@ Voltage & 3 & 726.40 & 485.53 & 360.87 & 426.77 & 179.47 \\
 
 \begin{table}[H]
 \centering
-\caption{Average total tardiness for each due-date and voltage combination. noFM is CS-SSO-noFM and noVNS is ICS-SSO-noVNS.}
+\caption{Average total tardiness for each due-date and voltage combination.}
 \label{tab:scenario_joint}
-\small
 \begin{tabular}{llrrrrr}
 \hline
 \textbf{Due} & \textbf{Voltage}
