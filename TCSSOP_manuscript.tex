@@ -944,13 +944,13 @@ Table~\ref{tab:scenario_design} summarizes the two experimental factors.
 \centering
 \caption{Due-date and voltage scenarios.}
 \label{tab:scenario_design}
-\begin{tabular}{llp{8.5cm}}
+\begin{tabular}{llp{0.55\textwidth}}
 \hline
 \textbf{Factor} & \textbf{Level} & \textbf{Definition} \\
 \hline
-Due date & 1 & Concentrated due dates, from 42 to 57 days, median about 50 days \\
-Due date & 2 & Dispersed due dates with earlier deadlines, from 30 to 69 days, median about 50 days \\
-Due date & 3 & More relaxed due dates, from 34 to 69 days, median about 53 days \\
+Due date & 1 & Concentrated, 42 to 57 days, median about 50 days \\
+Due date & 2 & Dispersed, with earlier deadlines, 30 to 69 days, median about 50 days \\
+Due date & 3 & More relaxed, 34 to 69 days, median about 53 days \\
 Voltage & 1 & About 15\% of products require nonstandard voltage \\
 Voltage & 2 & About 30\% of products require nonstandard voltage \\
 Voltage & 3 & About 45\% of products require nonstandard voltage \\
@@ -1022,7 +1022,7 @@ We compare the methods by total tardiness. The recorded total lateness is this q
 \frac{T^{tot}_{im}-T^{tot,\mathrm{best}}_{i}}{T^{tot,\mathrm{best}}_{i}}
 \times 100,
 \end{equation}
-where \(T^{tot,\mathrm{best}}_{i}\) is the lowest total tardiness among the methods included in that comparison. Average deviation is the arithmetic mean of these instance-level values over the 90 instances. The best count is the number of instances on which a method attains that lowest total tardiness. If two methods tie, both are counted, so the best counts in a table need not sum to 90. In every comparison below, the best total tardiness is strictly positive, so the denominator in \eqref{eq:deviation} is never zero.
+where \(T^{tot,\mathrm{best}}_{i}\) is the lowest total tardiness among the methods included in that comparison. The tables report this quantity as the gap. Average gap is the arithmetic mean of the instance-level gaps. The standard deviation is the standard deviation of those same gaps. The best count is the number of instances on which a method attains the lowest total tardiness. If two methods tie, both are counted, so the best counts in a table need not sum to 90. In every comparison below, the best total tardiness is strictly positive, so the denominator in \eqref{eq:deviation} is never zero.
 
 \subsubsection{Destroy ratio}
 \label{subsec:ratio}
@@ -1033,20 +1033,21 @@ We fix \(K_{\max}=100\) and compare three destroy ratios, \(0.10\), \(0.20\), an
 \centering
 \caption{Comparison of VNS destroy ratios with \(K_{\max}=100\).}
 \label{tab:vns_ratio_comparison}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \hline
 \textbf{\(r\)}
-& \textbf{Average Deviation (\%)}
+& \textbf{Average gap (\%)}
+& \textbf{Std. dev. (\%)}
 & \textbf{Best Count} \\
 \hline
-0.10 & 27.69 & 30 \\
-0.20 & 12.83 & 42 \\
-0.30 & 21.46 & 20 \\
+0.10 & 27.69 & 43.36 & 30 \\
+0.20 & 12.83 & 21.92 & 42 \\
+0.30 & 21.46 & 27.82 & 20 \\
 \hline
 \end{tabular}
 \end{table}
 
-The effect of the ratio is not monotone. Moving from \(0.10\) to \(0.20\) lowers the average deviation from \(27.69\%\) to \(12.83\%\). Moving further to \(0.30\) raises it to \(21.46\%\). A ratio of \(0.10\) attains the best tardiness on 30 instances, but its average deviation is the largest of the three. Those wins do not compensate for the instances on which it is far from the best ratio. We select \(0.20\) because it has the lowest average deviation. It is best, alone or tied, on 42 of the 90 instances. It is not best on every instance. In the remainder of this section, ICS-SSO denotes the method with this ratio and with \(K_{\max}=100\).
+The effect of the ratio is not monotone. Moving from \(0.10\) to \(0.20\) lowers the average gap from \(27.69\%\) to \(12.83\%\). Moving further to \(0.30\) raises it to \(21.46\%\). The standard deviation moves in the same direction: \(43.36\%\) at \(0.10\), \(21.92\%\) at \(0.20\), and \(27.82\%\) at \(0.30\). A ratio of \(0.10\) attains the best tardiness on 30 instances, but its average gap and its dispersion are the largest of the three. Those wins do not compensate for the instances on which it is far from the best ratio. We select \(0.20\) because it has the lowest average gap and the lowest standard deviation. It is best, alone or tied, on 42 of the 90 instances. It is not best on every instance. In the remainder of this section, ICS-SSO denotes the method with this ratio and with \(K_{\max}=100\).
 
 \subsubsection{Fixed sample policies}
 \label{subsec:fixed_sample}
@@ -1057,15 +1058,16 @@ Table~\ref{tab:sample_policy_comparison} compares FS(3) and FS(6) with ICS-SSO. 
 \centering
 \caption{Comparison of ICS-SSO against uniform sample policies.}
 \label{tab:sample_policy_comparison}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \hline
 \textbf{Method}
-& \textbf{Average Deviation (\%)}
+& \textbf{Average gap (\%)}
+& \textbf{Std. dev. (\%)}
 & \textbf{Best Count} \\
 \hline
-FS(3) & 360.32 & 0 \\
-FS(6) & 196.95 & 0 \\
-ICS-SSO & 0.00 & 90 \\
+FS(3) & 360.32 & 198.59 & 0 \\
+FS(6) & 196.95 & 121.44 & 0 \\
+ICS-SSO & 0.00 & 0.00 & 90 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1085,15 +1087,16 @@ Table~\ref{tab:ablation_comparison} removes one component at a time. CS-SSO-noFM
 \centering
 \caption{Comparison of ICS-SSO against simpler variants.}
 \label{tab:ablation_comparison}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \hline
 \textbf{Method}
-& \textbf{Average Deviation (\%)}
+& \textbf{Average gap (\%)}
+& \textbf{Std. dev. (\%)}
 & \textbf{Best Count} \\
 \hline
-CS-SSO-noFM & 133.61 & 0 \\
-ICS-SSO-noVNS & 177.67 & 0 \\
-ICS-SSO & 0.00 & 90 \\
+CS-SSO-noFM & 133.61 & 86.67 & 0 \\
+ICS-SSO-noVNS & 177.67 & 113.54 & 0 \\
+ICS-SSO & 0.00 & 0.00 & 90 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1103,24 +1106,30 @@ ICS-SSO attains the lowest total tardiness on all 90 instances. CS-SSO-noFM show
 \subsubsection{Due date and voltage}
 \label{subsec:scenarios}
 
-Tables~\ref{tab:scenario_marginal} and~\ref{tab:scenario_joint} report average total tardiness by due-date scenario, by voltage scenario, and for the nine combinations. Each entry is the mean over the ten test portfolios at that factor level, or over the ten portfolios in that cell. In both tables, noFM denotes CS-SSO-noFM and noVNS denotes ICS-SSO-noVNS.
+Table~\ref{tab:scenario_marginal} reports the average gap from ICS-SSO, and the standard deviation of that gap, for each due-date scenario and each voltage scenario. Table~\ref{tab:scenario_joint} reports average total tardiness for the nine combinations. Each entry is computed over the ten test portfolios in that cell. In both tables, noFM denotes CS-SSO-noFM and noVNS denotes ICS-SSO-noVNS.
 
 \begin{table}[H]
 \centering
-\caption{Average total tardiness by due-date scenario and by voltage scenario.}
+\caption{Average gap and standard deviation by due-date scenario and by voltage scenario. The gap is measured from ICS-SSO.}
 \label{tab:scenario_marginal}
-\begin{tabular}{llrrrrr}
+\small
+\begin{tabular}{llrrrr}
 \hline
-\textbf{Factor} & \textbf{Level}
-& \textbf{FS(3)} & \textbf{FS(6)}
-& \textbf{noFM} & \textbf{noVNS} & \textbf{ICS-SSO} \\
+\textbf{Scenario} & \textbf{Measure}
+& \textbf{FS(3)} & \textbf{FS(6)} & \textbf{noFM} & \textbf{noVNS} \\
 \hline
-Due date & 1 & 744.17 & 480.20 & 378.67 & 462.03 & 199.97 \\
-Due date & 2 & 803.37 & 559.67 & 485.83 & 518.13 & 272.27 \\
-Due date & 3 & 615.50 & 378.63 & 294.30 & 354.57 & 96.70 \\
-Voltage & 1 & 716.07 & 462.77 & 410.33 & 460.07 & 199.50 \\
-Voltage & 2 & 720.57 & 470.20 & 387.60 & 447.90 & 189.97 \\
-Voltage & 3 & 726.40 & 485.53 & 360.87 & 426.77 & 179.47 \\
+Due date 1 & Average gap (\%) & 292.40 & 154.17 & 97.30 & 144.64 \\
+ & Std. dev. (\%) & 88.74 & 61.02 & 47.07 & 71.60 \\
+Due date 2 & Average gap (\%) & 211.10 & 117.19 & 86.89 & 100.54 \\
+ & Std. dev. (\%) & 64.66 & 46.75 & 41.66 & 48.65 \\
+Due date 3 & Average gap (\%) & 577.46 & 319.50 & 216.65 & 287.83 \\
+ & Std. dev. (\%) & 179.98 & 123.86 & 91.35 & 110.59 \\
+Voltage 1 & Average gap (\%) & 337.93 & 177.02 & 142.68 & 173.98 \\
+ & Std. dev. (\%) & 175.48 & 101.72 & 85.76 & 106.39 \\
+Voltage 2 & Average gap (\%) & 389.25 & 214.19 & 138.28 & 190.33 \\
+ & Std. dev. (\%) & 265.80 & 164.91 & 105.76 & 134.47 \\
+Voltage 3 & Average gap (\%) & 353.79 & 199.64 & 119.87 & 168.70 \\
+ & Std. dev. (\%) & 134.76 & 83.63 & 64.87 & 99.49 \\
 \hline
 \end{tabular}
 \end{table}
@@ -1148,7 +1157,7 @@ Voltage & 3 & 726.40 & 485.53 & 360.87 & 426.77 & 179.47 \\
 \end{tabular}
 \end{table}
 
-The ordering of the methods does not change across due-date scenarios or voltage scenarios. ICS-SSO has the lowest average total tardiness in every row of Table~\ref{tab:scenario_marginal} and in every cell of Table~\ref{tab:scenario_joint}.
+The ordering of the methods does not change across due-date scenarios or voltage scenarios. Every gap in Table~\ref{tab:scenario_marginal} is positive, and ICS-SSO has the lowest average total tardiness in every cell of Table~\ref{tab:scenario_joint}.
 
 Due-date tightness changes the level of tardiness. Under ICS-SSO the averages are 199.97, 272.27, and 96.70 in due-date scenarios 1, 2, and 3. Scenario 2, with more dispersed and earlier due dates, leaves the highest tardiness. Scenario 3, the more relaxed setting, leaves the lowest. The absolute reduction from FS(3) to ICS-SSO is 544.20, 531.10, and 518.80 days in the three scenarios. Percentage deviations are larger in scenario 3 because the denominator is smaller. The absolute reductions are of the same order.
 
