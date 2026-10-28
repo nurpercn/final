@@ -890,6 +890,9 @@ The first neighborhood (\(l=1\)) decreases the number of samples of
 the selected products to \(s_{\min}\), while the second neighborhood
 (\(l=2\)) increases the number of samples to \(u_{\max}\)
 (Step~\ref{VNS:step2}).
+If the current sample count of a product is larger than \(u_{\max}\),
+the upward neighborhood does not select that product and leaves the
+count unchanged.
 The perturbed solution is then improved using the sample-size local
 search in Algorithm~\ref{alg:sample_ls}.
 The VNS follows a first-improvement policy: as soon as a locally
