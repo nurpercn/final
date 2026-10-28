@@ -65,7 +65,7 @@ Refrigerator R\&D testing requires the coordinated scheduling of multiple produc
 
 An iterative framework is proposed. For a given sample vector, chamber environments are assigned according to workload distribution and chamber capabilities. Given chamber settings, sample sizes are improved through bounded local search and evaluated by an Earliest Due Date (EDD) based constructive scheduler with explicit feasibility validation. When local improvement stagnates, a Variable Neighborhood Search (VNS) diversification mechanism perturbs sample-size decisions to explore alternative workload structures.
 
-Computational experiments on 90 benchmark scenarios compare the proposed method with fixed uniform sample policies and with variants that remove chamber-assignment feedback or VNS. The destroy ratio is selected by comparing \(0.10\), \(0.20\), and \(0.30\) at \(K_{\max}=100\). The selected setting is a single ratio of \(0.20\). It attains the lowest total tardiness in all 90 instances. Relative to the industrial three-sample policy, the average deviation is \(360.32\%\). A uniform six-sample policy reduces tardiness but remains substantially inferior, with an average deviation of \(196.95\%\). Removing feedback or VNS leaves average deviations of \(133.61\%\) and \(177.67\%\). The results show that sample size should be treated as a tactical planning decision and coordinated with chamber reconfiguration rather than fixed uniformly across projects.
+Computational experiments on 90 benchmark scenarios compare the proposed method with fixed uniform sample policies and with variants that remove chamber-assignment feedback or VNS. The destroy ratio is selected by comparing \(0.10\), \(0.20\), and \(0.30\) at \(K_{\max}=100\). The selected setting is a single ratio of \(0.20\). It attains the lowest total tardiness in all 90 instances. Relative to the industrial three-sample policy, the average deviation is \(360.32\%\). A uniform six-sample policy reduces tardiness but remains substantially inferior, with an average deviation of \(196.95\%\). Removing feedback or VNS leaves average deviations of \(139.16\%\) and \(177.67\%\). The results show that sample size should be treated as a tactical planning decision and coordinated with chamber reconfiguration rather than fixed uniformly across projects.
 \end{abstract}
 
 \textbf{Keywords:} Test chamber scheduling; Sample size optimization; Decision-dependent workload; Resource-constrained scheduling; Variable neighborhood search; Multi-stage testing systems
@@ -927,68 +927,40 @@ Together, the chamber-assignment, sample-size optimization, scheduling, and VNS 
 \section{Computational Study}
 \label{sec:computational_study}
 
-In this section, we present the results of the computational experiments conducted to evaluate the effectiveness of the proposed solution approach. We compare the solutions with benchmark methods, including current industrial practice. The proposed approach and the benchmark methods were implemented in Java. All experiments were executed on a computer equipped with an Apple M2 chip. Its 8-core CPU consists of four performance cores with a maximum clock rate of 3.49~GHz and four efficiency cores with a maximum clock rate of 2.42~GHz, together with an 8-core GPU.
+This section evaluates the computational performance of the proposed Integrated Chamber Setting and Sample Size Optimization (ICS-SSO) approach. We first describe the generated problem instances, the benchmark methods, and the algorithmic settings and performance measures. We then select the VNS perturbation ratio, assess the benefits of product-specific sample allocation and the individual algorithmic components, and examine the performance of the final method under different due-date and voltage-requirement scenarios. All methods were implemented in Java. The experiments were executed on a computer equipped with an Apple M2 chip. Its 8-core CPU consists of four performance cores with a maximum clock rate of 3.49~GHz and four efficiency cores with a maximum clock rate of 2.42~GHz, together with an 8-core GPU.
 
 \subsection{Instance Generation}
 \label{subsec:exp_design}
-\label{subsec:experimental_design}
 
-We generate instances motivated by current industrial practice. Each instance is a multi-project testing scenario with heterogeneous test requirements, due dates, and voltage requirements. At a given planning time the laboratory is expected to have 50 products under test, so every instance contains 50 products.
+The computational instances are motivated by the industrial testing environment considered in this study. Each instance represents a multi-project testing problem in which products have heterogeneous test requirements, due dates, and voltage requirements. At a given planning point, approximately 50 products are expected to be under test in the laboratory; accordingly, each instance contains 50 products.
 
-The due dates lie within a two-month planning horizon and are generated at three tightness levels. Due-date scenario~1 is relatively concentrated, with due dates ranging from 42 to 57 days and a median around 50 days. Due-date scenario~2 introduces stronger dispersion and earlier deadlines, with due dates ranging from 30 to 69 days and a median around 50 days. Due-date scenario~3 is more relaxed but still heterogeneous, with due dates ranging from 34 to 69 days and a median around 53 days.
+Three due-date scenarios are considered to capture differences in deadline tightness and dispersion within an approximately two-month planning horizon. In due-date scenario~1, due dates are relatively concentrated, ranging from 42 to 57 days, with a median of approximately 50 days. Due-date scenario~2 introduces earlier deadlines and greater dispersion, with due dates ranging from 30 to 69 days and a median of approximately 50 days. Due-date scenario~3 is comparatively relaxed while remaining heterogeneous; its due dates range from 34 to 69 days, with a median of approximately 53 days.
 
-The voltage scenarios control the share of products that require nonstandard voltage, using the mix in current operations as the reference. Voltage scenario~1 is a low requirement (approximately 15\% of the products), voltage scenario~2 is a medium requirement (30\%), and voltage scenario~3 is a higher requirement (45\%).
+The three voltage scenarios differ in the proportion of products requiring a nonstandard supply voltage. Based on the composition observed in industrial practice, approximately 15\%, 30\%, and 45\% of the products require nonstandard voltage in voltage scenarios~1, 2, and 3, respectively. Such requirements restrict the set of chambers eligible to perform certain tests and may create competition for voltage-capable chambers. The implications for total tardiness, however, also depend on the remaining characteristics of the instance and the decisions made by the solution method.
 
-These factors are varied inside a fixed test portfolio. For a given test scenario, the required tests of each product are held fixed. For a given test scenario and due-date scenario, the due dates are held fixed across the three voltage scenarios. Only the set of products that require nonstandard voltage changes from one voltage scenario to another. A larger share increases the number of products that must be tested on voltage-capable chambers. It does not change the test list or the due dates.
-
-Table~\ref{tab:scenario_design} summarizes the two experimental factors.
-
-\begin{table}[H]
-\centering
-\caption{Due-date and voltage scenarios.}
-\label{tab:scenario_design}
-\begin{tabular}{llp{0.55\textwidth}}
-\hline
-\textbf{Factor} & \textbf{Level} & \textbf{Definition} \\
-\hline
-Due date & 1 & Concentrated, 42 to 57 days, median about 50 days \\
-Due date & 2 & Dispersed, with earlier deadlines, 30 to 69 days, median about 50 days \\
-Due date & 3 & More relaxed, 34 to 69 days, median about 53 days \\
-Voltage & 1 & About 15\% of products require nonstandard voltage \\
-Voltage & 2 & About 30\% of products require nonstandard voltage \\
-Voltage & 3 & About 45\% of products require nonstandard voltage \\
-\hline
-\end{tabular}
-\end{table}
-
-These choices give nine combinations of due-date and voltage scenarios. For each combination we generate 10 instances with different product test requirements, so the study uses 90 instances in total. For each product, refrigerant charge determination, pull-down, the performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage tests are required. The energy-efficiency option, the remaining climatic-class performance tests, and the optional freezing-capacity and temperature-rise tests are selected as explained under Table~\ref{tab:test_attributes}.
+Ten test-requirement scenarios are evaluated for each combination of the three due-date and three voltage scenarios. Thus, the experiments comprise \(10\times3\times3=90\) instances. For every product, refrigerant charge determination, pull-down, the performance test at \(25^\circ\mathrm{C}\), and the three consumer-usage tests are required. Energy-efficiency tests, the remaining climatic-class performance tests, and the optional freezing-capacity and temperature-rise tests are selected according to the rules described in Table~\ref{tab:test_attributes}. The resulting instance set enables comparisons across heterogeneous test portfolios, deadline patterns, and voltage requirements.
 
 \subsection{Benchmark Methods}
 \label{subsec:methods}
-\label{subsec:compared_variants}
 
-We compare the proposed method with benchmark methods of two kinds: fixed sample policies taken from industrial practice, and simplified versions of the proposed method that remove one of its components. All methods schedule the tests with the same scheduling procedure.
+We compare ICS-SSO with two uniform sample-size policies and two reduced variants of the proposed method. All approaches use the same test-scheduling procedure and respect the same feasibility requirements. The differences concern whether sample counts are fixed or optimized and whether feedback and diversification are enabled.
 
-A common industrial practice is to use the same number of samples for every product. The manufacturer uses three samples per product. Fewer than three samples is not accepted, because at least three samples are needed before the test results can be treated as reliable. We call this benchmark FS(3). Every product is fixed at three samples, so each instance uses 150 samples in total. The chamber temperatures and humidity levels are determined once, by the chamber-assignment procedure in Section~\ref{subsec:chamber_assignment}. The assignment is not repeated, because the sample counts do not change. No sample-size optimization is applied.
+The first benchmark, \emph{FS(3)}, represents the current industrial policy of assigning three samples to every product. Three samples are also the minimum accepted in the considered setting. Sample counts remain fixed throughout the procedure; chamber temperature and humidity settings are established once using the chamber-assignment procedure described in Section~\ref{subsec:chamber_assignment}. No sample-size optimization is performed.
 
-We also consider a uniform six-sample policy, denoted by FS(6). Every product is fixed at six samples, so each instance uses 300 samples in total. FS(6) asks whether doubling the industrial sample count, with the same count given to every product, produces a schedule comparable to the proposed method. As in FS(3), the chamber assignment is performed once by the procedure in Section~\ref{subsec:chamber_assignment}, and the sample counts are not optimized.
+The second benchmark, \emph{FS(6)}, assigns six samples to each product, yielding 300 samples for the 50 products in an instance. This benchmark tests whether a uniform increase in sample availability is sufficient to obtain schedules comparable to those of the proposed optimization approach. As in FS(3), the chamber settings are established once and the sample counts are not subsequently modified. FS(6) is used as a uniform-allocation reference; it does not imply that ICS-SSO uses exactly 300 samples in every instance.
 
-We then remove individual components of the proposed method. We refer to the full method as \emph{Integrated Chamber Setting and Sample Size Optimization} (ICS-SSO). In ICS-SSO the VNS destroy ratio is \(0.20\) and the iteration limit is \(K_{\max}=100\), the setting selected in Section~\ref{subsec:ratio}.
+The complete method, \emph{ICS-SSO}, jointly explores sample-size decisions and chamber settings through the feedback mechanism described earlier in the paper, together with VNS-based diversification. To assess the feedback mechanism, we consider \emph{CS-SSO-noFM} (Chamber Setting and Sample Size Optimization without Feedback Mechanism). This variant determines chamber settings once and optimizes sample sizes without revisiting those settings. It corresponds to the \emph{no outer} configuration in the computational experiments.
 
-In the first variant, there is no feedback between chamber setting and sample-size search. The chamber temperatures and humidity levels are determined once by the procedure in Section~\ref{subsec:chamber_assignment}. The sample counts are then chosen by the local search in Section~\ref{subsec:sample_optimization}. Neither decision is revisited. We call this variant \emph{Chamber Setting and Sample Size Optimization without Feedback Mechanism} (CS-SSO-noFM).
+To assess diversification, we consider \emph{ICS-SSO-noVNS} (Integrated Chamber Setting and Sample Size Optimization without Diversification). This variant retains the interaction between chamber-setting and sample-size decisions, but removes the VNS perturbation phase. It therefore relies on feedback and local improvement without diversification of the sample-size vector. These two reduced variants are used separately to identify the contribution associated with each component.
 
-In the second variant, we keep the feedback between chamber setting and sample-size search, and we remove the variable neighborhood search used for diversification (Section~\ref{subsec:vns}). When the local search stops, the sample vector is not perturbed. We call this variant \emph{Integrated Chamber Setting and Sample Size Optimization without Diversification} (ICS-SSO-noVNS).
-
-\subsection{Parameter Settings}
+\subsection{Parameter Settings and Performance Measures}
 \label{subsec:parameter_settings}
 
-The same parameter values are used for every method and every instance. They were chosen once in pilot runs and then held fixed. No instance is tuned separately, so differences among the methods come from the components that are included or removed. Every method uses the same scheduling procedure, the same feasibility checks, and the same lexicographic rule \((T^{tot},S^{tot})\).
+All methods use common parameter values for the components they share. For ICS-SSO, the search begins with three samples per product, consistent with current industrial practice. The sample count of each product is bounded by \(s_{\min}=3\) and \(s_{\max}=11\); the latter reflects the maximum number of tests of a product that can be performed in parallel in the considered setting. A local sample-size move increases or decreases the sample count of one product by one or two units, subject to these bounds.
 
-The search starts from the industrial sample policy: three samples for every product. During the search, the sample count of a product stays between \(s_{\min}\) and \(s_{\max}\). The lower bound is three because that is the industrial practice. The upper bound is 11 because at most 11 tests of a product can be executed in parallel. A move changes the sample count of one product by one or two units, provided the result stays inside these bounds.
+In the VNS phase, a proportion \(R_{\mathrm{VNS}}\) of the products is selected for perturbation. A downward perturbation resets the selected sample counts to \(s_{\min}\), whereas an upward perturbation resets them to \(u_{\max}=8\); local improvement follows the perturbation. The iteration counter is defined at the VNS iteration level, rather than counting the upward and downward perturbation directions as separate iterations. The maximum VNS iteration budget is fixed at \(K_{\max}=100\). Three fixed perturbation ratios, 0.10, 0.20, and 0.30, are examined in Section~\ref{subsubsec:vns_ratio}; the selected ratio for the final method is 0.20. No switching between perturbation ratios is used within a run.
 
-In the VNS phase the destroy ratio is a single value, \(r=0.20\). Selected products are reset to \(s_{\min}\) in a downward move and to \(u_{\max}\) in an upward move, and the local search is applied again. One VNS iteration consists of both moves, in that order. \(K_{\max}\) counts these iterations. It does not count the downward move and the upward move as two iterations. The phase stops at the first improvement. If no improvement is found within \(K_{\max}\) iterations, the incumbent is kept. A Late--Early Rebalance move is accepted only when total tardiness does not increase and, if tardiness is unchanged, total sample usage does not increase.
-
-The procedure is deterministic under the fixed seed. One run is reported for each instance. Table~\ref{tab:param_settings_final} lists the fixed values.
+The lexicographic objective gives priority to minimizing total tardiness. If two solutions have identical total tardiness, the solution with fewer samples is preferred. The Late--Early Rebalance procedure respects this ordering: a move is accepted only if total tardiness does not increase and, when tardiness remains unchanged, total sample usage does not increase. The fixed settings used in the experiments are reported in Table~\ref{tab:param_settings_final}.
 
 \begin{table}[H]
 \centering
@@ -1000,175 +972,197 @@ The procedure is deterministic under the fixed seed. One run is reported for eac
 \hline
 \(s_p^{(0)}\) & Initial sample count per product & 3 \\
 \(s_{\min}\) & Minimum sample count & 3 \\
-\(u_{\max}\) & Sample count in an upward VNS move & 8 \\
+\(u_{\max}\) & Upper sample count in a VNS upward move & 8 \\
 \(s_{\max}\) & Maximum sample count & 11 \\
 \(\Delta_p\) & Sample-count moves & \(\{-2,-1,+1,+2\}\) \\
-\(r\) & VNS destroy ratio & 0.20 \\
+\(R_{\mathrm{VNS}}\) & Selected VNS perturbation ratio & 0.20 \\
 \(I_{\max}\) & Maximum outer-loop iterations & 100 \\
 \(K_{\mathrm{reb}}\) & Maximum Late--Early Rebalance pairs & 10 \\
-\(K_{\max}\) & VNS iterations (downward move, then upward move) & 100 \\
+\(K_{\max}\) & Maximum VNS iterations & 100 \\
 \(B_{\mathrm{room}}\) & Chamber-assignment local-search budget & 200 \\
 \(\rho\) & Random seed for VNS product selection & 42 \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{Results}
-\label{subsec:overall_results}
-\label{subsec:overall_performance}
-
-We compare the methods by total tardiness. The recorded total lateness is this quantity. For each product, completion time is compared with the due date, a negative value is replaced by zero, and the product values are summed. For method \(m\) on instance \(i\),
+The computational results are evaluated using four measures. \emph{Average tardiness} is the mean total tardiness over the instances in the corresponding comparison. \emph{Average gap} and \emph{gap standard deviation} summarize the instance-level percentage deviations from the best total-tardiness value within the comparison set. For instance \(i\) and method \(m\), let \(T_{i,m}\) denote the obtained total tardiness and let \(T_i^{\mathrm{best}}\) denote the smallest total tardiness among the alternatives compared for that instance. The percentage gap is
 \begin{equation}
-\label{eq:deviation}
-\mathrm{Deviation}_{im}
-=
-\frac{T^{tot}_{im}-T^{tot,\mathrm{best}}_{i}}{T^{tot,\mathrm{best}}_{i}}
-\times 100,
+\label{eq:gap}
+\mathrm{Gap}_{i,m}(\%) = \frac{T_{i,m}-T_i^{\mathrm{best}}}{T_i^{\mathrm{best}}}\times 100.
 \end{equation}
-where \(T^{tot,\mathrm{best}}_{i}\) is the lowest total tardiness among the methods included in that comparison. The tables report this quantity as the gap. Average gap is the arithmetic mean of the instance-level gaps. The standard deviation is the standard deviation of those same gaps. The best count is the number of instances on which a method attains the lowest total tardiness. If two methods tie, both are counted, so the best counts in a table need not sum to 90. In every comparison below, the best total tardiness is strictly positive, so the denominator in \eqref{eq:deviation} is never zero.
+The average gap is the arithmetic mean of the instance-level gap values, and the gap standard deviation is their sample standard deviation. These statistics are therefore \emph{not} obtained by calculating the percentage difference between overall mean tardiness values. Finally, \emph{best count} is the number of instances for which a method attains the lowest tardiness in its comparison set. Ties are counted for every method attaining that value, so the sum of best counts may exceed the number of instances. Because gaps are measured relative to the best method within a given comparison, zero gaps and zero gap dispersion for a consistently best-performing method follow from the definition; they do not imply that its total tardiness is constant across instances.
 
-\subsubsection{Destroy ratio}
+\subsection{Computational Results}
+\label{subsec:overall_results}
+
+\subsubsection{Selection of the VNS Perturbation Ratio}
+\label{subsubsec:vns_ratio}
 \label{subsec:ratio}
 
-We fix \(K_{\max}=100\) and compare three destroy ratios, \(0.10\), \(0.20\), and \(0.30\). Each run uses only that ratio until it stops. Ratios are not combined, and the iteration limit is not varied. Table~\ref{tab:vns_ratio_comparison} reports the average deviation from the best of the three ratios, together with the best count.
+We first investigate the sensitivity of ICS-SSO to the VNS perturbation ratio. The algorithm is evaluated with the three fixed ratios \(R_{\mathrm{VNS}}=0.10\), 0.20, and 0.30 on all 90 instances. The iteration budget is held at \(K_{\max}=100\), and the remaining parameters are unchanged. For this comparison, the best tardiness on each instance is the smallest of the values obtained with the three ratios. Table~\ref{tab:vns_ratio_comparison} presents the resulting statistics.
 
 \begin{table}[H]
 \centering
-\caption{Comparison of VNS destroy ratios with \(K_{\max}=100\).}
+\caption{Comparison of VNS perturbation ratios over 90 instances.}
 \label{tab:vns_ratio_comparison}
-\begin{tabular}{lccc}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
 \hline
-\textbf{\(r\)}
-& \textbf{Average gap (\%)}
-& \textbf{Std. dev. (\%)}
-& \textbf{Best Count} \\
+\textbf{Ratio} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
 \hline
-0.10 & 27.69 & 43.36 & 30 \\
-0.20 & 12.83 & 21.92 & 42 \\
-0.30 & 21.46 & 27.82 & 20 \\
+0.10 & 203.62 & 27.68 & 43.37 & 30 \\
+0.20 & 189.64 & 12.83 & 21.91 & 42 \\
+0.30 & 201.49 & 21.46 & 27.83 & 20 \\
 \hline
 \end{tabular}
 \end{table}
 
-The effect of the ratio is not monotone. Moving from \(0.10\) to \(0.20\) lowers the average gap from \(27.69\%\) to \(12.83\%\). Moving further to \(0.30\) raises it to \(21.46\%\). The standard deviation moves in the same direction: \(43.36\%\) at \(0.10\), \(21.92\%\) at \(0.20\), and \(27.82\%\) at \(0.30\). A ratio of \(0.10\) attains the best tardiness on 30 instances, but its average gap and its dispersion are the largest of the three. Those wins do not compensate for the instances on which it is far from the best ratio. We select \(0.20\) because it has the lowest average gap and the lowest standard deviation. It is best, alone or tied, on 42 of the 90 instances. It is not best on every instance. In the remainder of this section, ICS-SSO denotes the method with this ratio and with \(K_{\max}=100\).
+The intermediate perturbation ratio offers the most favorable overall performance among the settings considered, not only in terms of mean solution quality but also in terms of the dispersion of relative gaps. This suggests that a moderate perturbation is better suited to the search than either a more conservative or a more disruptive change to the current sample allocation. A small perturbation may leave the search close to its current local solution, whereas a large perturbation may discard too much of a promising allocation. These are plausible explanations of the observed pattern rather than independently established mechanisms. Since no single ratio dominates every instance, we select \(R_{\mathrm{VNS}}=0.20\) on the basis of its aggregate performance and use it throughout the remaining experiments.
 
-\subsubsection{Fixed sample policies}
-\label{subsec:fixed_sample}
+\subsubsection{Comparison with Fixed Sample-Size Policies}
+\label{subsubsec:fixed_sample}
 
-Table~\ref{tab:sample_policy_comparison} compares FS(3) and FS(6) with ICS-SSO. The deviation is computed inside this set of three methods. ICS-SSO has the lowest total tardiness on every instance, so its average deviation is zero and its best count is 90.
+We next compare the final ICS-SSO configuration with the two uniform sample-size policies. FS(3) reflects the existing industrial rule, while FS(6) examines the effect of providing twice as many samples uniformly to each product. The instance-wise best tardiness for this comparison is determined from FS(3), FS(6), and ICS-SSO. Table~\ref{tab:sample_policy_comparison} reports the results over all 90 instances.
 
 \begin{table}[H]
 \centering
-\caption{Comparison of ICS-SSO against uniform sample policies.}
+\caption{Comparison of ICS-SSO with uniform sample-size policies over 90 instances.}
 \label{tab:sample_policy_comparison}
-\begin{tabular}{lccc}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
 \hline
-\textbf{Method}
-& \textbf{Average gap (\%)}
-& \textbf{Std. dev. (\%)}
-& \textbf{Best Count} \\
+\textbf{Method} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
 \hline
-FS(3) & 360.32 & 198.59 & 0 \\
-FS(6) & 196.95 & 121.44 & 0 \\
-ICS-SSO & 0.00 & 0.00 & 90 \\
-\hline
-\end{tabular}
-\end{table}
-
-FS(3) is the weakest of the three. Raising the uniform sample count from three to six reduces average total tardiness from 721.01 to 472.83, but FS(6) remains far from ICS-SSO. The average deviation of FS(6), \(196.95\%\), is the mean of the instance-level deviations in \eqref{eq:deviation}. The ratio of the two average tardiness values is smaller:
-\[
-\frac{472.83-189.64}{189.64}\times 100 = 149.33.
-\]
-Table~\ref{tab:sample_policy_comparison} reports the first of these quantities. Giving every product the same larger sample count does not reproduce the schedules obtained when sample counts are chosen project by project and coordinated with chamber assignment.
-
-\subsubsection{Feedback and diversification}
-\label{subsec:components}
-
-Table~\ref{tab:ablation_comparison} removes one component at a time. CS-SSO-noFM keeps sample-size search and drops the revision of chamber settings. ICS-SSO-noVNS keeps that revision and drops VNS. The deviation is again computed inside the table.
-
-\begin{table}[H]
-\centering
-\caption{Comparison of ICS-SSO against simpler variants.}
-\label{tab:ablation_comparison}
-\begin{tabular}{lccc}
-\hline
-\textbf{Method}
-& \textbf{Average gap (\%)}
-& \textbf{Std. dev. (\%)}
-& \textbf{Best Count} \\
-\hline
-CS-SSO-noFM & 133.61 & 86.67 & 0 \\
-ICS-SSO-noVNS & 177.67 & 113.54 & 0 \\
-ICS-SSO & 0.00 & 0.00 & 90 \\
+FS(3) & 721.01 & 360.32 & 198.59 & 0 \\
+FS(6) & 472.83 & 196.95 & 121.44 & 0 \\
+ICS-SSO & 189.64 & 0.00 & 0.00 & 90 \\
 \hline
 \end{tabular}
 \end{table}
 
-ICS-SSO attains the lowest total tardiness on all 90 instances. CS-SSO-noFM shows that choosing sample sizes under a fixed chamber configuration is not sufficient. When the sample vector changes, the pull-down workload changes, and the chamber operating conditions have to be revised. ICS-SSO-noVNS shows that feedback between chamber setting and local sample search can still stop in an unfavorable workload structure. Perturbing the sample vector is what leaves those structures. The two components are not substitutes. Removing either one leaves an average deviation above \(130\%\).
+Increasing the number of samples under a uniform policy improves scheduling performance, indicating that additional opportunities for parallel testing can alleviate some delays. Nevertheless, uniformly increasing sample counts does not close the performance gap with ICS-SSO. The results suggest that the value of additional samples depends on where they are allocated: products differ in their due dates, test sequences, and demands for compatible chamber environments, so providing the same number of samples to every product does not necessarily address the most consequential scheduling bottlenecks.
 
-\subsubsection{Due date and voltage}
-\label{subsec:scenarios}
+This comparison establishes the limitations of uniform sample-size policies, but it does not isolate sample allocation as the sole source of the gain, because ICS-SSO also includes chamber-setting feedback and VNS diversification. The following ablation experiments investigate these additional components. Moreover, the present results do not support a claim of lower total sample consumption by ICS-SSO, since its realized sample totals are not reported.
 
-Table~\ref{tab:scenario_marginal} reports the average gap from ICS-SSO, and the standard deviation of that gap, for each due-date scenario and each voltage scenario. Table~\ref{tab:scenario_joint} reports average total tardiness for the nine combinations. Each entry is computed over the ten test portfolios in that cell. In both tables, noFM denotes CS-SSO-noFM and noVNS denotes ICS-SSO-noVNS.
+\subsubsection{Contribution of the Feedback Mechanism}
+\label{subsubsec:feedback}
+
+To quantify the contribution of the feedback mechanism, the final ICS-SSO method is compared with CS-SSO-noFM. In this variant, chamber settings are fixed after the initial assignment and are not reconsidered when the sample-size decisions change. The comparison therefore evaluates the value of revisiting chamber conditions as sample allocation evolves. Table~\ref{tab:feedback_comparison} summarizes the results.
 
 \begin{table}[H]
 \centering
-\caption{Average gap and standard deviation by due-date scenario and by voltage scenario. The gap is measured from ICS-SSO.}
-\label{tab:scenario_marginal}
-\small
+\caption{Effect of the feedback mechanism over 90 instances.}
+\label{tab:feedback_comparison}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Method} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
+\hline
+CS-SSO-noFM & 394.36 & 139.16 & 90.22 & 0 \\
+ICS-SSO & 189.64 & 0.00 & 0.00 & 90 \\
+\hline
+\end{tabular}
+\end{table}
+
+The deterioration observed when feedback is removed indicates that treating chamber settings as a one-time decision can be restrictive, even when sample sizes are subsequently optimized. Sample-size changes modify the workload assigned to different environmental conditions, including workload associated with pull-down tests. A chamber configuration that is appropriate for an earlier sample allocation may therefore become less suitable as the search progresses. Revisiting chamber settings allows these interdependent decisions to be adjusted together.
+
+The consistent advantage of the full method across the test set supports the inclusion of feedback as part of the integrated search. However, the comparison evaluates the resulting scheduling performance; without chamber-configuration histories, it does not identify which individual setting changes account for the improvement.
+
+\subsubsection{Contribution of VNS Diversification}
+\label{subsubsec:vns_contribution}
+
+The role of VNS diversification is examined by comparing ICS-SSO with ICS-SSO-noVNS. Both methods preserve feedback between chamber-setting and sample-size optimization, but ICS-SSO-noVNS omits the perturbation phase after local improvement. This comparison isolates the performance contribution associated with diversification of sample-size decisions. The corresponding results are given in Table~\ref{tab:diversification_comparison}.
+
+\begin{table}[H]
+\centering
+\caption{Effect of VNS diversification over 90 instances.}
+\label{tab:diversification_comparison}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Method} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
+\hline
+ICS-SSO-noVNS & 444.91 & 177.67 & 113.53 & 0 \\
+ICS-SSO & 189.64 & 0.00 & 0.00 & 90 \\
+\hline
+\end{tabular}
+\end{table}
+
+Removing VNS diversification leads to a pronounced deterioration in solution quality despite retaining the feedback mechanism. This suggests that repeatedly optimizing sample sizes and chamber settings from the current solution may not provide sufficient exploration of the feasible search space. By perturbing the sample-size vector and then restarting local improvement, VNS introduces alternative allocation patterns that the unperturbed search may not reach.
+
+The dispersion of the relative gaps also indicates that the extent of the performance loss without VNS varies among instances. The experiment therefore supports diversification as a useful complement to feedback and local improvement, rather than implying that it provides a fixed amount of improvement in every case. The effects of removing feedback and removing VNS are separate ablations and should not be added as if they were independent percentage contributions.
+
+\subsubsection{Performance Across Due-Date Scenarios}
+\label{subsubsec:due_effect}
+
+We next evaluate how the final ICS-SSO method performs across the three due-date scenarios. Each scenario comprises 30 instances, corresponding to the ten test scenarios and three voltage scenarios. In this analysis, the comparisons are restricted to the two fixed-sample policies and ICS-SSO, as shown in Table~\ref{tab:due_scenario_comparison}. For each group, the gaps are computed at the instance level relative to the smallest tardiness among these three methods.
+
+\begin{table}[H]
+\centering
+\caption{Performance under different due-date scenarios (30 instances per scenario).}
+\label{tab:due_scenario_comparison}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{llrrrr}
 \hline
-\textbf{Scenario} & \textbf{Measure}
-& \textbf{FS(3)} & \textbf{FS(6)} & \textbf{noFM} & \textbf{noVNS} \\
+\textbf{Scenario} & \textbf{Method} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
 \hline
-Due date 1 & Average gap (\%) & 292.40 & 154.17 & 97.30 & 144.64 \\
- & Std. dev. (\%) & 88.74 & 61.02 & 47.07 & 71.60 \\
-Due date 2 & Average gap (\%) & 211.10 & 117.19 & 86.89 & 100.54 \\
- & Std. dev. (\%) & 64.66 & 46.75 & 41.66 & 48.65 \\
-Due date 3 & Average gap (\%) & 577.46 & 319.50 & 216.65 & 287.83 \\
- & Std. dev. (\%) & 179.98 & 123.86 & 91.35 & 110.59 \\
-Voltage 1 & Average gap (\%) & 337.93 & 177.02 & 142.68 & 173.98 \\
- & Std. dev. (\%) & 175.48 & 101.72 & 85.76 & 106.39 \\
-Voltage 2 & Average gap (\%) & 389.25 & 214.19 & 138.28 & 190.33 \\
- & Std. dev. (\%) & 265.80 & 164.91 & 105.76 & 134.47 \\
-Voltage 3 & Average gap (\%) & 353.79 & 199.64 & 119.87 & 168.70 \\
- & Std. dev. (\%) & 134.76 & 83.63 & 64.87 & 99.49 \\
+Due 1 & FS(3) & 744.17 & 292.40 & 88.75 & 0 \\
+ & FS(6) & 480.20 & 154.16 & 61.02 & 0 \\
+ & ICS-SSO & 199.97 & 0.00 & 0.00 & 30 \\
+\hline
+Due 2 & FS(3) & 803.37 & 211.10 & 64.66 & 0 \\
+ & FS(6) & 559.67 & 117.19 & 46.76 & 0 \\
+ & ICS-SSO & 272.27 & 0.00 & 0.00 & 30 \\
+\hline
+Due 3 & FS(3) & 615.50 & 577.46 & 179.98 & 0 \\
+ & FS(6) & 378.63 & 319.49 & 123.87 & 0 \\
+ & ICS-SSO & 96.70 & 0.00 & 0.00 & 30 \\
 \hline
 \end{tabular}
 \end{table}
+
+The due-date scenarios exhibit a clear difference in scheduling difficulty. The scenario with earlier and more dispersed deadlines yields the highest average tardiness, whereas the comparatively relaxed scenario yields the lowest. The same ordering appears under both fixed-sample policies and ICS-SSO, suggesting that the deadline structure affects the underlying scheduling problem rather than only one particular solution procedure.
+
+ICS-SSO remains the best-performing approach within every due-date group, including the more demanding conditions. Its relative advantage is especially pronounced under the relaxed scenario, where the optimized solutions have relatively small tardiness values. Because the percentage-gap measure uses those values as its denominator, large relative gaps need not correspond to equally large absolute differences. Considering absolute tardiness alongside the gaps avoids overstating the effect of due-date conditions on the size of the improvement.
+
+\subsubsection{Performance Across Voltage Scenarios}
+\label{subsubsec:voltage_effect}
+
+Finally, we investigate the performance of ICS-SSO for different proportions of products requiring nonstandard voltage. Voltage scenarios~1, 2, and 3 correspond to approximately 15\%, 30\%, and 45\% of the products, respectively. Each voltage group contains 30 instances, covering the ten test scenarios and three due-date scenarios. Table~\ref{tab:voltage_scenario_comparison} compares the two fixed-sample policies with the final ICS-SSO method and reports gaps relative to the instance-wise best of these three methods.
 
 \begin{table}[H]
 \centering
-\caption{Average total tardiness for each due-date and voltage combination.}
-\label{tab:scenario_joint}
-\begin{tabular}{llrrrrr}
+\caption{Performance under different voltage scenarios (30 instances per scenario).}
+\label{tab:voltage_scenario_comparison}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{llrrrr}
 \hline
-\textbf{Due} & \textbf{Voltage}
-& \textbf{FS(3)} & \textbf{FS(6)}
-& \textbf{noFM} & \textbf{noVNS} & \textbf{ICS-SSO} \\
+\textbf{Scenario} & \textbf{Method} & \textbf{Avg. Tardiness} & \textbf{Avg. Gap (\%)} & \textbf{Gap Std. Dev. (\%)} & \textbf{Best Count} \\
 \hline
-1 & 1 & 725.10 & 468.50 & 403.80 & 487.90 & 204.60 \\
-1 & 2 & 751.90 & 482.60 & 400.50 & 468.90 & 225.70 \\
-1 & 3 & 755.50 & 489.50 & 331.70 & 429.30 & 169.60 \\
-2 & 1 & 803.80 & 552.70 & 493.20 & 540.40 & 297.50 \\
-2 & 2 & 799.00 & 552.80 & 509.70 & 523.20 & 260.70 \\
-2 & 3 & 807.30 & 573.50 & 454.60 & 490.80 & 258.60 \\
-3 & 1 & 619.30 & 367.10 & 334.00 & 351.90 & 96.40 \\
-3 & 2 & 610.80 & 375.20 & 252.60 & 351.60 & 83.50 \\
-3 & 3 & 616.40 & 393.60 & 296.30 & 360.20 & 110.20 \\
+Volt 1 (15\%) & FS(3) & 716.07 & 337.92 & 175.48 & 0 \\
+ & FS(6) & 462.77 & 177.01 & 101.71 & 0 \\
+ & ICS-SSO & 199.50 & 0.00 & 0.00 & 30 \\
+\hline
+Volt 2 (30\%) & FS(3) & 720.57 & 389.25 & 265.81 & 0 \\
+ & FS(6) & 470.20 & 214.20 & 164.91 & 0 \\
+ & ICS-SSO & 189.97 & 0.00 & 0.00 & 30 \\
+\hline
+Volt 3 (45\%) & FS(3) & 726.40 & 353.79 & 134.76 & 0 \\
+ & FS(6) & 485.53 & 199.64 & 83.64 & 0 \\
+ & ICS-SSO & 179.47 & 0.00 & 0.00 & 30 \\
 \hline
 \end{tabular}
 \end{table}
 
-The ordering of the methods does not change across due-date scenarios or voltage scenarios. Every gap in Table~\ref{tab:scenario_marginal} is positive, and ICS-SSO has the lowest average total tardiness in every cell of Table~\ref{tab:scenario_joint}.
+The fixed-sample policies show a gradual increase in average tardiness as the proportion of products requiring nonstandard voltage rises. This pattern is consistent with the additional competition for voltage-capable chambers that can arise when chamber eligibility becomes more restrictive. The full ICS-SSO method, however, maintains its advantage across all voltage groups and exhibits a different trend in group-average tardiness.
 
-Due-date tightness changes the level of tardiness. Under ICS-SSO the averages are 199.97, 272.27, and 96.70 in due-date scenarios 1, 2, and 3. Scenario 2, with more dispersed and earlier due dates, leaves the highest tardiness. Scenario 3, the more relaxed setting, leaves the lowest. The absolute reduction from FS(3) to ICS-SSO is 544.20, 531.10, and 518.80 days in the three scenarios. Percentage deviations are larger in scenario 3 because the denominator is smaller. The absolute reductions are of the same order.
-
-The voltage share moves the averages much less. Under ICS-SSO they are 199.50, 189.97, and 179.47 as the share of products that require nonstandard voltage goes from about 15\% to about 45\%. Average tardiness does not increase with that share. Because the test list and the due dates are held fixed within a test scenario, this comparison isolates the voltage assignment. A larger set of products that require voltage-capable chambers does not, on these instances, produce a higher total tardiness once sample counts and chamber settings are chosen by ICS-SSO. The same ordering of methods appears at each voltage share.
-
-In due-date scenario 2, the destroy ratio \(0.10\) has an average total tardiness of 270.57, close to the 272.27 obtained with the selected ratio \(0.20\). The choice of \(0.20\) is the one justified by the average deviation over all 90 instances in Table~\ref{tab:vns_ratio_comparison}.
-
-Sample counts should be planned rather than fixed at three for every product. Raising that fixed count from three to six lowers tardiness and still leaves a large deviation from ICS-SSO. Chamber settings should be revised when sample counts change. After local search stops, perturbing the sample vector with destroy ratio \(0.20\) for 100 iterations is what separates ICS-SSO from the variants that omit this step. These comparisons are stable across the three due-date regimes and the three voltage shares. The planning setting is tactical. The instances cover a two-month horizon, and the method is not required to return a schedule in real time.
+The contrast highlights the relevance of coordinated sample-allocation and chamber-setting decisions when the test portfolio includes voltage-dependent eligibility restrictions. It should not, however, be interpreted as evidence that a higher nonstandard-voltage share makes the problem intrinsically easier or necessarily benefits ICS-SSO. The reported averages describe the generated groups, and changes in the product mix and other instance characteristics can also influence the outcome. What the experiment establishes is that the advantage over uniform sample policies persists across the tested voltage requirements.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1177,7 +1171,7 @@ This study introduced the Test Chamber Scheduling with Sample Optimization Probl
 
 To address this problem, an iterative framework was proposed. For a given sample vector, chamber environments are assigned according to workload distribution and chamber capabilities, then refined by local search. Given chamber settings, sample sizes are optimized through bounded local search and evaluated by an EDD-based constructive scheduler with explicit feasibility validation. Because sample decisions alter environment-level workload, chamber assignments are updated iteratively. When local improvement stagnates, a VNS diversification mechanism perturbs sample-size decisions to explore alternative workload structures rather than perturbing sequencing or assignment alone.
 
-Computational experiments on 90 benchmark scenarios demonstrate that optimized sample allocation yields substantial tardiness reductions relative to uniform industrial policies. The selected configuration uses a single VNS destroy ratio of \(0.20\) with \(K_{\max}=100\), where one iteration applies both the downward and the upward neighborhood. This configuration obtains the lowest total tardiness in all 90 instances. Relative to the fixed three-sample baseline FS(3), the average deviation is \(360.32\%\). The uniform six-sample policy FS(6) reduces tardiness but still has an average deviation of \(196.95\%\). Removing chamber-assignment feedback (CS-SSO-noFM) or VNS diversification (ICS-SSO-noVNS) leaves average deviations of \(133.61\%\) and \(177.67\%\), respectively. Sample-size optimization, iterative chamber reconfiguration, and VNS diversification are complementary.
+Computational experiments on 90 benchmark scenarios demonstrate that optimized sample allocation yields substantial tardiness reductions relative to uniform industrial policies. The selected configuration uses a single VNS destroy ratio of \(0.20\) with \(K_{\max}=100\), where one iteration applies both the downward and the upward neighborhood. This configuration obtains the lowest total tardiness in all 90 instances. Relative to the fixed three-sample baseline FS(3), the average deviation is \(360.32\%\). The uniform six-sample policy FS(6) reduces tardiness but still has an average deviation of \(196.95\%\). Removing chamber-assignment feedback (CS-SSO-noFM) or VNS diversification (ICS-SSO-noVNS) leaves average deviations of \(139.16\%\) and \(177.67\%\), respectively. Sample-size optimization, iterative chamber reconfiguration, and VNS diversification are complementary.
 
 From a managerial perspective, prototype sample size should be treated as a tactical planning decision rather than a fixed convention applied uniformly across projects. Raising every product from three samples to six lowers tardiness, but the uniform six-sample rule remains substantially inferior to selective allocation. Additional samples should therefore be directed to projects for which downstream parallelism and due-date pressure justify the upstream pull-down cost, while chamber configurations should be reassessed whenever sample decisions change. The lexicographic objective also discourages unnecessary prototype consumption by preferring lower total sample usage among tardiness-equivalent solutions. Finally, the results emphasize the importance of feasibility validation, since schedules that violate chamber compatibility, station capacity, sample exclusivity, or stage-based precedence logic are not operationally implementable.
 
